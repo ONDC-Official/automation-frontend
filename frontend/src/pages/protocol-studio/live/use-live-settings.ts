@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from "@store/hooks";
 import {
     setAutoScrollEnabled,
     setFlowFilterTags,
+    setStudioAdvancedMode,
     setStudioStepThrough,
 } from "@store/slices/sessionSlice";
 import { describeError } from "@pages/protocol-studio/live/use-live-run";
@@ -32,6 +33,14 @@ export interface IUseLiveSettingsResult {
      * it changes.
      */
     stepThrough: boolean;
+    /**
+     * Advanced mode: the side panel also shows the run's Session data and the
+     * mock's Log. This browser's view preference, off by default.
+     */
+    advancedMode: boolean;
+    /** The dialog's Advanced mode switch, until Save. */
+    advancedDraft: boolean;
+    setAdvancedDraft: (value: boolean) => void;
     /** The journey tags the page is filtered to; empty for all journeys. */
     selectedTags: string[];
     clearTags: () => void;
@@ -53,11 +62,13 @@ export const useLiveSettings = (
     const autoScroll = useAppSelector((state) => state.session.autoScrollEnabled);
     // `?? false`: a state rehydrated from before this preference existed lacks it.
     const stepThrough = useAppSelector((state) => state.session.studioStepThrough ?? false);
+    const advancedMode = useAppSelector((state) => state.session.studioAdvancedMode ?? false);
     const selectedTags =
         useAppSelector((state) => state.session.flowFilterTagsBySessionId[sessionId]) ?? NO_TAGS;
     const [putCacheData] = usePutCacheDataMutation();
     const [isOpen, setIsOpen] = useState(false);
     const [draft, setDraft] = useState<SettingsDraft | null>(null);
+    const [advancedDraft, setAdvancedDraft] = useState(advancedMode);
     const [isSaving, setIsSaving] = useState(false);
 
     const open = () => {
@@ -68,6 +79,7 @@ export const useLiveSettings = (
             sessionDifficulty: buildDifficultyState(sessionDifficulty ?? {}),
             selectedTags: [...selectedTags],
         });
+        setAdvancedDraft(advancedMode);
         setIsOpen(true);
     };
     const close = () => {
@@ -85,6 +97,7 @@ export const useLiveSettings = (
                 sessionId,
             }).unwrap();
             dispatch(setAutoScrollEnabled(draft.autoScrollEnabled));
+            dispatch(setStudioAdvancedMode(advancedDraft));
             if (draft.experimentalMode !== stepThrough) {
                 dispatch(setStudioStepThrough(draft.experimentalMode));
                 onStepThroughChange(draft.experimentalMode);
@@ -112,6 +125,9 @@ export const useLiveSettings = (
         },
         autoScroll,
         stepThrough,
+        advancedMode,
+        advancedDraft,
+        setAdvancedDraft,
         selectedTags,
         clearTags: () => dispatch(setFlowFilterTags({ sessionId, tags: [] })),
     };

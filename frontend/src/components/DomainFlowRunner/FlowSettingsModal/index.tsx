@@ -28,6 +28,7 @@ export const FlowSettingsModal = ({
     experimentalLabel,
     experimentalInfo,
     filtersTitle = "Flow Filters",
+    localSettings,
 }: IFlowSettingsModalProps) => {
     if (!draft) return null;
 
@@ -82,6 +83,7 @@ export const FlowSettingsModal = ({
                                     showExperimentalMode={showExperimentalMode}
                                     experimentalLabel={experimentalLabel}
                                     experimentalInfo={experimentalInfo}
+                                    localSettings={localSettings}
                                 />
                             </CollapsibleSection>
 

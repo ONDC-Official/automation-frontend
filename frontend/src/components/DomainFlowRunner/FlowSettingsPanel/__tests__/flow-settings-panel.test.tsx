@@ -29,4 +29,10 @@ describe("FlowSettingsPanel", () => {
         expect(screen.getByText("Step through")).toBeTruthy();
         expect(screen.queryByText("Experimental Mode")).toBeNull();
     });
+
+    it("adds a page's own local switches after the built-in ones", () => {
+        render(<FlowSettingsPanel {...props} localSettings={<span>Advanced mode</span>} />);
+        expect(screen.getByText("Advanced mode")).toBeTruthy();
+        expect(screen.getByText("Experimental Mode")).toBeTruthy();
+    });
 });

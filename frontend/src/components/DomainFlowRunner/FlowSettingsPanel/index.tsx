@@ -34,6 +34,7 @@ const FlowSettingsPanel: React.FC<IFlowSettingsPanelProps> = ({
     showExperimentalMode = true,
     experimentalLabel = "Experimental Mode",
     experimentalInfo = "Advanced features to do custom testing through playground",
+    localSettings,
 }: IFlowSettingsPanelProps) => (
     <>
         <SwitchFieldGroup
@@ -56,6 +57,7 @@ const FlowSettingsPanel: React.FC<IFlowSettingsPanelProps> = ({
                     onCheckedChange={onExperimentalModeChange}
                 />
             ) : null}
+            {localSettings}
         </SwitchFieldGroup>
 
         <SwitchFieldGroup

@@ -21,6 +21,10 @@ const TABS: { key: LiveTab; label: string }[] = [
     { key: "Log", label: "Log" },
 ];
 
+/** The tabs only Advanced mode shows: the run's internals rather than the selected step. */
+export const ADVANCED_TABS: ReadonlySet<LiveTab> = new Set<LiveTab>(["Session", "Log"]);
+const BASIC_TABS = TABS.filter((t) => !ADVANCED_TABS.has(t.key));
+
 /** An ACK / NACK chip: solid in light, a tint of its hue in dark (as the step cards). */
 const ACK_STYLE = (ack: string) =>
     ack === "ACK"
@@ -71,14 +75,25 @@ export interface ILiveSidePanelProps {
     step: LiveStep | null;
     /** The open journey's run, as the mock service reports it. */
     status: IStudioLiveStatus | null;
+    /** Settings › Advanced mode: also show the Session and Log tabs. */
+    advanced: boolean;
 }
 
 /**
  * The right-hand inspector of the live page, as v1's flow-testing panel:
- * the selected step's request and the sync response to it, plus its checks,
- * the run's session data and the mock's log.
+ * the selected step's request and the sync response to it, plus its checks;
+ * in Advanced mode also the run's session data and the mock's log.
  */
-export const LiveSidePanel = ({ tab, onTab, selection, step, status }: ILiveSidePanelProps) => {
+export const LiveSidePanel = ({
+    tab,
+    onTab,
+    selection,
+    step,
+    status,
+    advanced,
+}: ILiveSidePanelProps) => {
+    // A tab Advanced mode no longer shows falls back to Request.
+    const shownTab = !advanced && ADVANCED_TABS.has(tab) ? "Request" : tab;
     const view = useMemo(() => {
         if (selection?.kind === "rejected") {
             const r = status?.rejected[selection.index];
@@ -135,21 +150,29 @@ export const LiveSidePanel = ({ tab, onTab, selection, step, status }: ILiveSide
                     ) : null}
                 </div>
             ) : null}
-            <FlowTabs options={TABS} value={tab} onValueChange={(value) => onTab(value as LiveTab)}>
+            <FlowTabs
+                options={advanced ? TABS : BASIC_TABS}
+                value={shownTab}
+                onValueChange={(value) => onTab(value as LiveTab)}
+            >
                 <Pane value="Request" data={view.request} />
                 <Pane value="Response" data={view.response} />
                 <Pane value="Checks" data={view.checks} />
-                <Pane
-                    value="Session"
-                    data={
-                        status
-                            ? status.sessionData
-                            : { info: "Start the journey to see its session data" }
-                    }
-                />
-                <TabsContent value="Log" className="pt-3 pb-4">
-                    <LiveLog status={status} />
-                </TabsContent>
+                {advanced ? (
+                    <>
+                        <Pane
+                            value="Session"
+                            data={
+                                status
+                                    ? status.sessionData
+                                    : { info: "Start the journey to see its session data" }
+                            }
+                        />
+                        <TabsContent value="Log" className="pt-3 pb-4">
+                            <LiveLog status={status} />
+                        </TabsContent>
+                    </>
+                ) : null}
             </FlowTabs>
         </div>
     );

@@ -113,6 +113,8 @@ export interface IFlowSettingsPanelProps {
     /** The Experimental Mode switch's label and hint, where a page names it for what it does. */
     experimentalLabel?: string;
     experimentalInfo?: string;
+    /** More switches for the "Local · not saved to session" group, after the built-in ones. */
+    localSettings?: ReactNode;
 }
 
 export type SettingsDraft = {
@@ -137,6 +139,8 @@ export interface IFlowSettingsModalProps {
     experimentalInfo?: string;
     /** The filters section's title; defaults to "Flow Filters". */
     filtersTitle?: string;
+    /** Passed to the settings panel. */
+    localSettings?: ReactNode;
 }
 
 export interface IGuideModalProps {

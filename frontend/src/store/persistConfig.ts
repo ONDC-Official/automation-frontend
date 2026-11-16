@@ -13,6 +13,7 @@ export const sessionPersistConfig: PersistConfig<ISessionState> = {
         "autoScrollEnabled",
         "experimentalMode",
         "studioStepThrough",
+        "studioAdvancedMode",
         "flowFilterTagsBySessionId",
     ],
 };

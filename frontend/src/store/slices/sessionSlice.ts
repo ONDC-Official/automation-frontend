@@ -26,6 +26,11 @@ export interface ISessionState {
      * separate from v1's Experimental Mode, and off unless the tester turns it on.
      */
     studioStepThrough: boolean;
+    /**
+     * Studio live: show the run's Session data and the mock's Log in the side
+     * panel. A tester's view preference, off unless they turn it on.
+     */
+    studioAdvancedMode: boolean;
     /** Per-session flow filter tags; keyed by sessionId for redux-persist. */
     flowFilterTagsBySessionId: Record<string, string[]>;
     flowFormDialogLockCount: number;
@@ -51,6 +56,7 @@ const initialState: ISessionState = {
     autoScrollEnabled: true,
     experimentalMode: false,
     studioStepThrough: false,
+    studioAdvancedMode: false,
     flowFilterTagsBySessionId: {},
     flowFormDialogLockCount: 0,
     activeFlowLifecycleInFlight: false,
@@ -139,6 +145,9 @@ const sessionSlice = createSlice({
         setStudioStepThrough: (state, action: PayloadAction<boolean>) => {
             state.studioStepThrough = action.payload;
         },
+        setStudioAdvancedMode: (state, action: PayloadAction<boolean>) => {
+            state.studioAdvancedMode = action.payload;
+        },
         setFlowFilterTags: (
             state,
             action: PayloadAction<{ sessionId: string; tags: string[] }>
@@ -203,6 +212,7 @@ export const {
     setAutoScrollEnabled,
     setExperimentalMode,
     setStudioStepThrough,
+    setStudioAdvancedMode,
     setFlowFilterTags,
     acquireFlowFormDialogLock,
     releaseFlowFormDialogLock,

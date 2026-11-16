@@ -17,6 +17,7 @@ import { FlowSettingsModal } from "@components/DomainFlowRunner/FlowSettingsModa
 import { InfoSection } from "@components/DomainFlowRunner/InfoSection";
 import type { DifficultyCache } from "@components/DomainFlowRunner/types";
 import { Button } from "@components/Shadcn/Button";
+import { SwitchField } from "@components/Shadcn/Switch";
 import { ROUTES } from "@constants/routes";
 import Spinner from "@components/Shadcn/Spinner";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
@@ -325,6 +326,15 @@ const LiveSession = ({
                 experimentalLabel="Step through"
                 experimentalInfo="Pause before every payload the mock sends: each one goes out when you click Run step, so you can check your side at your own pace. v1's Experimental Mode, for Studio runs."
                 filtersTitle="Journey filters"
+                localSettings={
+                    <SwitchField
+                        id="studio-advanced-mode"
+                        label="Advanced mode"
+                        info="Also show the run's Session data and the mock's Log in the side panel."
+                        checked={settings.advancedDraft}
+                        onCheckedChange={settings.setAdvancedDraft}
+                    />
+                }
             />
             <div className="flex flex-col gap-3 py-6">
                 <InfoSection
@@ -443,6 +453,7 @@ const LiveSession = ({
                     selection={selection?.journeyId === openId ? selection : null}
                     step={selectedStep}
                     status={live}
+                    advanced={settings.advancedMode}
                 />
             </div>
 
