@@ -1,6 +1,7 @@
 export * from "./main";
 export * from "./developerGuide";
 export * from "./githubDocs";
+export * from "./specRepo";
 export * from "./loadTest";
 export * from "./dashboard";
 export * from "./engine";

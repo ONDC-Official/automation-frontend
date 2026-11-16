@@ -18,7 +18,7 @@ export const STAGES: { id: StudioStage; label: string; hint: string; Icon: HeroI
     {
         id: "specification",
         label: "Specification",
-        hint: "Domain, version, the spec's APIs and types, shared helpers",
+        hint: "Domain, version and the API contract: schemas, validations, flow rules",
         Icon: DocumentTextIcon,
     },
     {
@@ -98,6 +98,9 @@ export const GRID = {
     minor: { gap: 16, color: "var(--studio-grid-minor)" },
     major: { gap: 128, color: "var(--studio-grid-major)" },
 } as const;
+
+/** The dock's AI Chat tab is hidden until a model is connected; flip to bring it back. */
+export const SHOW_AI_CHAT = false;
 
 export const AI_CHAT_SUGGESTIONS = [
     "Explain this config",

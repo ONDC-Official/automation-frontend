@@ -12,6 +12,7 @@ import {
 import { storage } from "@store/storage";
 import devGuideApi from "@store/api/developerGuide/devGuideApi";
 import githubDocsApi from "@store/api/githubDocs/githubDocsApi";
+import specRepoApi from "@store/api/specRepo/specRepoApi";
 import loadTestApi from "@store/api/loadTest/loadTestApi";
 import mainApi from "@store/api/main/mainApi";
 import dashboardApi from "@store/api/dashboard/dashboardApi";
@@ -32,10 +33,12 @@ import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
 import businessDashboardSlice from "@store/slices/businessDashboardSlice";
 import studioDraftSlice from "@store/slices/studioDraftSlice";
+import studioContractsSlice from "@store/slices/studioContractsSlice";
 import {
     sessionPersistConfig,
     frameworkHealthPersistConfig,
     authPersistConfig,
+    studioContractsPersistConfig,
 } from "@store/persistConfig";
 import authSlice, { selectAuthToken } from "@store/slices/authSlice";
 import { registerAuthTokenReader } from "@store/authTokenReader";
@@ -48,6 +51,7 @@ const rootReducer = combineReducers({
     [engineApi.reducerPath]: engineApi.reducer,
     [devGuideApi.reducerPath]: devGuideApi.reducer,
     [githubDocsApi.reducerPath]: githubDocsApi.reducer,
+    [specRepoApi.reducerPath]: specRepoApi.reducer,
     [loadTestApi.reducerPath]: loadTestApi.reducer,
     theme: persistReducer(localPersist("theme"), themeSlice.reducer),
     auth: persistReducer(authPersistConfig, authSlice.reducer),
@@ -73,6 +77,7 @@ const rootReducer = combineReducers({
         businessDashboardSlice.reducer
     ),
     studioDraft: persistReducer(localPersist("studioDraft"), studioDraftSlice.reducer),
+    studioContracts: persistReducer(studioContractsPersistConfig, studioContractsSlice.reducer),
     devGuideShell: devGuideShellSlice.reducer,
     profileShell: profileShellSlice.reducer,
 });
@@ -92,6 +97,7 @@ export const createAppStore = (preloadedState?: Partial<RootState>) =>
                 dashboardApi.middleware,
                 devGuideApi.middleware,
                 githubDocsApi.middleware,
+                specRepoApi.middleware,
                 loadTestApi.middleware,
                 engineApi.middleware
             ),

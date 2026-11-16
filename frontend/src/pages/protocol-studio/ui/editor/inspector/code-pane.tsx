@@ -16,10 +16,7 @@ import {
     SANDBOX_MARKER_OWNER,
     setSandboxMarkers,
 } from "@pages/protocol-studio/ui/editor/inspector/typescript-setup";
-import type {
-    IInspectorCodePaneProps,
-    RevealRequest,
-} from "@pages/protocol-studio/ui/editor/types";
+import type { IInspectorCodePaneProps, RevealTarget } from "@pages/protocol-studio/ui/editor/types";
 
 const OPTIONS: editor.IStandaloneEditorConstructionOptions = {
     fontSize: 13,
@@ -101,14 +98,16 @@ const CompileFooter = ({ status }: { status: CompileStatus | null }) => {
     );
 };
 
-const revealRange = (ed: editor.IStandaloneCodeEditor, reveal: RevealRequest) => {
+const revealRange = (ed: editor.IStandaloneCodeEditor, reveal: RevealTarget) => {
     const range = {
         startLineNumber: reveal.line,
         startColumn: reveal.column,
         endLineNumber: reveal.line,
         endColumn: reveal.column + reveal.length,
     };
-    ed.revealRangeInCenter(range);
+    // Immediate (`ScrollType.Immediate` = 1): a smooth scroll started while the
+    // editor is still laying out (a freshly opened long file) is cut short.
+    ed.revealRangeInCenter(range, 1);
     ed.setSelection(range);
     ed.focus();
 };
@@ -128,6 +127,8 @@ export const InspectorCodePane = ({
     reveal,
     compileAs,
     helperNames,
+    markers,
+    highlight,
 }: IInspectorCodePaneProps) => {
     const theme = useAppliedTheme();
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -190,8 +191,31 @@ export const InspectorCodePane = ({
         const model = monaco.editor.getModel(monaco.Uri.parse(path));
         if (model) monaco.editor.setModelMarkers(model, SANDBOX_MARKER_OWNER, []);
     }, [compiles, monaco, path]);
+    // Problems this pane is told about (YAML errors, …), kept on the model under their owner.
+    useEffect(() => {
+        if (!monaco || !markers) return;
+        const model = monaco.editor.getModel(monaco.Uri.parse(path));
+        if (model) monaco.editor.setModelMarkers(model, markers.owner, markers.items);
+    }, [monaco, path, markers, value]);
+
+    // A tinted block of lines (the selected api in a whole file).
+    const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
+    useEffect(() => {
+        const ed = editorRef.current;
+        if (!ed || !monaco) return;
+        decorationsRef.current?.clear();
+        decorationsRef.current = highlight
+            ? ed.createDecorationsCollection([
+                  {
+                      range: new monaco.Range(highlight.startLine, 1, highlight.endLine, 1),
+                      options: { isWholeLine: true, className: "studio-code-highlight" },
+                  },
+              ])
+            : null;
+    }, [monaco, path, highlight?.startLine, highlight?.endLine]);
+
     // A reveal that arrives before Monaco has loaded waits for onMount.
-    const pendingRef = useRef<RevealRequest | null>(null);
+    const pendingRef = useRef<RevealTarget | null>(null);
 
     // Runs after the editor has switched to `path` (child effects run first).
     useEffect(() => {
@@ -203,9 +227,11 @@ export const InspectorCodePane = ({
     const onMount: OnMount = (ed, instance) => {
         editorRef.current = ed;
         setMonaco(instance);
-        if (pendingRef.current) {
-            revealRange(ed, pendingRef.current);
+        const pending = pendingRef.current;
+        if (pending) {
             pendingRef.current = null;
+            // Monaco lays out on the next frame; a reveal before that doesn't scroll.
+            requestAnimationFrame(() => revealRange(ed, pending));
         }
     };
 

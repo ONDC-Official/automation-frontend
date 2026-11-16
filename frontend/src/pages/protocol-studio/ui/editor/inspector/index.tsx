@@ -67,6 +67,8 @@ export const InspectorCard = ({
     helperNames,
     domain,
     version,
+    contractTests,
+    onOpenTests,
     lastSaved,
 }: IInspectorCardProps) => {
     const [templates, setTemplates] = useState(() => getTemplateFiles());
@@ -320,6 +322,8 @@ export const InspectorCard = ({
                                     api={node?.api ?? "search"}
                                     domain={domain}
                                     version={version}
+                                    imported={contractTests}
+                                    onOpenTests={onOpenTests}
                                 />
                             ) : tab.id === "saveData" ? (
                                 node ? (

@@ -1,5 +1,6 @@
 import type { CubeIcon } from "@heroicons/react/24/outline";
 import type { MockPlaygroundConfigV2Type, UserCodeKindV2 } from "@ondc/automation-mock-runner";
+import type { editor } from "monaco-editor";
 import type {
     Edge,
     EdgeMouseHandler,
@@ -13,7 +14,10 @@ import type {
     XYPosition,
 } from "@xyflow/react";
 
-import type { FlowEntry } from "@/types/apiShared/developerGuide/developerGuide.types";
+import type {
+    FlowEntry,
+    XValidationTestGroup,
+} from "@/types/apiShared/developerGuide/developerGuide.types";
 
 /** Any heroicons icon component. */
 export type HeroIcon = typeof CubeIcon;
@@ -702,6 +706,10 @@ export interface IInspectorCardProps {
     version: string;
     /** Per node, the session values its last simulated run saved (Session › Last run). */
     lastSaved?: Record<string, Record<string, unknown>>;
+    /** validations.yaml as imported (and edited) in the Specification stage; else the spec service's copy is shown. */
+    contractTests?: { tests: Record<string, XValidationTestGroup[]>; source: string } | null;
+    /** Opens the api's tests in the Specification stage, to edit them. */
+    onOpenTests?: (api: string) => void;
 }
 
 export interface INodePropertiesProps {
@@ -825,6 +833,18 @@ export interface IExplorerCardProps {
     resizeHandleProps: React.HTMLAttributes<HTMLDivElement>;
     nodesTab: INodesTabProps;
     searchTab: Omit<ISearchTabProps, "options" | "onOptionsChange">;
+    /** Config-level files every node shares, pinned above both views (helpers.ts). */
+    configFiles?: IExplorerConfigFile[];
+}
+
+/** A pinned explorer row that opens a config-level file in the code popup. */
+export interface IExplorerConfigFile {
+    id: "helpers";
+    /** e.g. "helpers.ts". */
+    label: string;
+    /** One line on what it is, e.g. "3 functions · prepended to every generate". */
+    hint: string;
+    onOpen: () => void;
 }
 
 export interface IBottomDockProps {
@@ -874,8 +894,15 @@ export interface IInspectorCodePaneProps {
     onChange?: (value: string) => void;
     readOnly?: boolean;
     /** Scroll to and select this range once the file is open. */
-    reveal?: RevealRequest | null;
+    reveal?: RevealTarget | null;
+    /** Problems to mark in the file (e.g. YAML errors), under their own owner. */
+    markers?: { owner: string; items: editor.IMarkerData[] } | null;
+    /** Lines to tint (1-based, inclusive), e.g. the selected api's block in a whole file. */
+    highlight?: { startLine: number; endLine: number } | null;
 }
+
+/** Where to scroll and what to select: a `RevealRequest` without the inspector tab. */
+export type RevealTarget = Pick<RevealRequest, "line" | "column" | "length" | "nonce">;
 
 export interface IConsolePanelProps {
     entries: ConsoleEntry[];

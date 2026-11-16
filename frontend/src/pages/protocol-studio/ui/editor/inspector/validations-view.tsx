@@ -4,32 +4,19 @@ import { stringify as yamlStringify } from "yaml";
 import type { XValidationTestGroup } from "@/types/apiShared/developerGuide/developerGuide.types";
 import { useGetSpecQuery } from "@store/api";
 import { InspectorCodePane } from "@pages/protocol-studio/ui/editor/inspector/code-pane";
+import { getTestKey, RESERVED } from "@pages/protocol-studio/ui/editor/contracts/validations/model";
 
 export interface IValidationsViewProps {
     api: string;
     domain: string;
     version: string;
+    /** validations.yaml as imported in the Specification stage; null / absent reads the spec service's copy. */
+    imported?: { tests: Tests; source: string } | null;
+    /** Opens these tests in the Specification stage, where they can be edited. */
+    onOpenTests?: (api: string) => void;
 }
 
 type Tests = Record<string, XValidationTestGroup[]>;
-
-/** Keys of a test group / rule that are the DSL's own, not operands. */
-const RESERVED = new Set([
-    "_NAME_",
-    "_DESCRIPTION_",
-    "_RETURN_",
-    "_SCOPE_",
-    "_CONTINUE_",
-    "_ERROR_CODE_",
-    "_SUCCESS_CODE_",
-]);
-
-/** `_TESTS_` key for an api; `on_search1` falls back to `on_search` (the developer guide's rule). */
-const getTestKey = (tests: Tests, api: string) => {
-    if (api in tests) return api;
-    const bare = api.replace(/\d+$/, "") || api;
-    return bare in tests ? bare : undefined;
-};
 
 const asText = (value: unknown) =>
     typeof value === "string" ? value : value == null ? "" : JSON.stringify(value);
@@ -88,23 +75,31 @@ const Rule = ({ rule, depth }: { rule: XValidationTestGroup; depth: number }) =>
 };
 
 /**
- * The api's tests from the deployed contract (`config/validations/index.yaml`,
- * served with the spec as `x-validations._TESTS_`), read-only: a tree of test
- * groups and rules, or the YAML itself. Studio never edits this file; it is
- * hand-authored and deployed with the api-service before any journey exists.
+ * The api's tests, read-only: a tree of test groups and rules, or the YAML.
+ * They come from validations.yaml as imported in the Specification stage
+ * (where they're edited), else from the spec service (`x-validations._TESTS_`).
  */
-export const ValidationsView = ({ api, domain, version }: IValidationsViewProps) => {
-    const { data, isLoading, isError } = useGetSpecQuery({
-        domain,
-        version,
-        include: ["validations"],
-    });
+export const ValidationsView = ({
+    api,
+    domain,
+    version,
+    imported,
+    onOpenTests,
+}: IValidationsViewProps) => {
+    const {
+        data,
+        isLoading: loadingSpec,
+        isError: specError,
+    } = useGetSpecQuery({ domain, version, include: ["validations"] }, { skip: !!imported });
+    const isLoading = !imported && loadingSpec;
+    const isError = !imported && specError;
     const [mode, setMode] = useState<"tree" | "source">("tree");
 
     const tests = useMemo<Tests | null>(() => {
+        if (imported) return imported.tests;
         const raw = data?.["x-validations"]?.["_TESTS_"];
         return raw && typeof raw === "object" ? (raw as Tests) : null;
-    }, [data]);
+    }, [data, imported]);
     const key = tests ? getTestKey(tests, api) : undefined;
     const groups = key ? tests?.[key] : undefined;
     const source = useMemo(
@@ -133,7 +128,8 @@ export const ValidationsView = ({ api, domain, version }: IValidationsViewProps)
     } else if (mode === "source") {
         body = (
             <InspectorCodePane
-                path={`studio://validations/${encodeURIComponent(key ?? api)}.yaml`}
+                // Under `config`: the shell disposes `studio://` models of any other authority that isn't a node.
+                path={`studio://config/validations/${encodeURIComponent(key ?? api)}.yaml`}
                 language="yaml"
                 value={source}
                 readOnly
@@ -153,9 +149,20 @@ export const ValidationsView = ({ api, domain, version }: IValidationsViewProps)
         <div className="flex h-full min-h-0 flex-col">
             <div className="studio-hairline-b flex items-center gap-2 px-3 py-1.5">
                 <span className="studio-eyebrow">validations.yaml</span>
-                <span className="studio-text-faint text-[11px]">
-                    {key ? `_TESTS_.${key}` : api} · read-only
+                <span className="studio-text-faint truncate text-[11px]" title={imported?.source}>
+                    {key ? `_TESTS_.${key}` : api} ·{" "}
+                    {imported ? imported.source : "spec service · read-only"}
                 </span>
+                {onOpenTests ? (
+                    <button
+                        type="button"
+                        className="studio-key studio-key-xs"
+                        onClick={() => onOpenTests(key ?? api)}
+                        title="Open these tests in the Specification stage to edit them"
+                    >
+                        Edit
+                    </button>
+                ) : null}
                 {groups?.length ? (
                     <div className="studio-segmented ml-auto" role="tablist" aria-label="View">
                         {(["tree", "source"] as const).map((m) => (

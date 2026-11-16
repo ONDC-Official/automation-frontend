@@ -6,6 +6,7 @@ import {
     SparklesIcon,
 } from "@heroicons/react/24/outline";
 
+import { SHOW_AI_CHAT } from "@pages/protocol-studio/ui/editor/constants";
 import { AiChatPanel } from "@pages/protocol-studio/ui/editor/dock/ai-chat-panel";
 import { ConsolePanel } from "@pages/protocol-studio/ui/editor/dock/console-panel";
 import { ProblemsPanel } from "@pages/protocol-studio/ui/editor/dock/problems-panel";
@@ -14,7 +15,7 @@ import type { DockTab, HeroIcon, IBottomDockProps } from "@pages/protocol-studio
 const DOCK_TABS: { id: DockTab; label: string; Icon: HeroIcon }[] = [
     { id: "console", label: "Console", Icon: CommandLineIcon },
     { id: "problems", label: "Problems", Icon: ExclamationTriangleIcon },
-    { id: "ai", label: "AI Chat", Icon: SparklesIcon },
+    ...(SHOW_AI_CHAT ? [{ id: "ai" as const, label: "AI Chat", Icon: SparklesIcon }] : []),
 ];
 
 /**
@@ -50,7 +51,7 @@ export const BottomDock = ({
     return (
         <section
             className="studio-glass studio-dock flex flex-col"
-            aria-label="Console, problems and AI chat"
+            aria-label={SHOW_AI_CHAT ? "Console, problems and AI chat" : "Console and problems"}
             data-open={open || undefined}
             inert={isHidden}
         >
@@ -119,13 +120,13 @@ export const BottomDock = ({
                         <ConsolePanel entries={entries} onClear={onClearConsole} />
                     ) : tab === "problems" ? (
                         <ProblemsPanel problems={problems} onReveal={onRevealProblem} />
-                    ) : (
+                    ) : tab === "ai" && SHOW_AI_CHAT ? (
                         <AiChatPanel
                             messages={messages}
                             onSend={onSendMessage}
                             onClear={onClearChat}
                         />
-                    )}
+                    ) : null}
                 </div>
             ) : null}
         </section>

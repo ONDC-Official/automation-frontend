@@ -45,9 +45,13 @@ import { useStudioRun } from "@pages/protocol-studio/hooks/use-studio-run";
 import { useStudioGraph } from "@pages/protocol-studio/hooks/use-studio-graph";
 import { useStudioJourneys } from "@pages/protocol-studio/hooks/use-studio-journeys";
 import { useStudioShortcuts } from "@pages/protocol-studio/hooks/use-studio-shortcuts";
+import { useStudioContracts } from "@pages/protocol-studio/hooks/use-studio-contracts";
+import { toPlain } from "@pages/protocol-studio/ui/editor/contracts/yaml/parse";
+import type { XValidationTestGroup } from "@/types/apiShared/developerGuide/developerGuide.types";
 import { useStudioDraft } from "@pages/protocol-studio/persistence/studio-draft";
 import {
     AI_PLACEHOLDER_REPLY,
+    CODE_DIALOG_FILES,
     DOCK_BAR_HEIGHT,
     DOCK_HEIGHT,
     EXPLORER_RAIL_WIDTH,
@@ -135,7 +139,12 @@ import {
 import { JourneyInspectorCard } from "@pages/protocol-studio/ui/editor/journeys/journey-properties";
 import { PathStrip } from "@pages/protocol-studio/ui/editor/journeys/path-strip";
 import { ReviewStage } from "@pages/protocol-studio/ui/editor/stages/review";
-import { SpecificationStage } from "@pages/protocol-studio/ui/editor/stages/specification";
+import {
+    describeContracts,
+    SpecificationStage,
+    type SpecSelection,
+} from "@pages/protocol-studio/ui/editor/stages/specification";
+import { TypesControl } from "@pages/protocol-studio/ui/editor/types-control";
 import { getEntryNodes } from "@pages/protocol-studio/ui/editor/graph/flatten";
 import type {
     ChatMessage,
@@ -636,19 +645,46 @@ const StudioEditorContent = ({
         return map;
     }, [walk]);
 
+    const usedApis = useMemo(() => {
+        const map = new Map<string, number>();
+        for (const node of flat.nodes) {
+            if (node.kind === "decision") continue;
+            map.set(node.api, (map.get(node.api) ?? 0) + 1);
+        }
+        return map;
+    }, [flat]);
+
+    // The API contract (actions / validations / openapi) the Specification stage shows and edits.
+    const contracts = useStudioContracts(config.meta.domain, config.meta.version, usedApis);
+    const [specSelection, setSpecSelection] = useState<SpecSelection | null>(null);
+    // The Protocol inspector's Validation tab reads the imported (and edited) tests too.
+    const contractTests = useMemo(() => {
+        const parsed = contracts.files.validations.parsed;
+        const set = contracts.set;
+        if (!set || !parsed || parsed.errors.length) return null;
+        const tests = (
+            toPlain(parsed) as { _TESTS_?: Record<string, XValidationTestGroup[]> } | undefined
+        )?._TESTS_;
+        if (!tests || typeof tests !== "object") return null;
+        const from = set.source.kind === "github" ? set.source.branch : "uploaded file";
+        return { tests, source: `${from}${contracts.files.validations.dirty ? " · edited" : ""}` };
+    }, [contracts.files.validations.parsed, contracts.files.validations.dirty, contracts.set]);
+    const openTestsInSpecification = useCallback(
+        (api: string) => {
+            setSpecSelection({ kind: "api", api, facet: "validations", mode: "structured" });
+            onStageChange("specification");
+        },
+        [onStageChange]
+    );
+
     const stageStatus = useMemo<Record<StudioStage, StageStatus>>(() => {
         const protocol = countProblems(protocolProblems);
         const journey = countProblems(journeyProblems);
         const groups = [...flat.groupOf.values()].filter((v, i, a) => a.indexOf(v) === i).length;
         return {
             specification: {
-                summary:
-                    specTypes.status === "ready"
-                        ? `${specTypes.apiCount} APIs · ${compiledHelpers.names.length} helpers`
-                        : specTypes.status === "loading"
-                          ? "loading spec…"
-                          : "spec types unavailable",
-                errors: 0,
+                summary: describeContracts(contracts, config.meta.domain, config.meta.version),
+                errors: contracts.summary.errors,
                 warnings: specTypes.status === "unavailable" ? 1 : 0,
             },
             protocol: {
@@ -673,7 +709,9 @@ const StudioEditorContent = ({
         journeys,
         coverage,
         specTypes,
-        compiledHelpers.names.length,
+        contracts,
+        config.meta.domain,
+        config.meta.version,
     ]);
 
     // ⌘1–⌘4 (Ctrl elsewhere) switch stages.
@@ -851,6 +889,18 @@ const StudioEditorContent = ({
             setReveal(null);
         },
         [graphRootRef, path, actions, focusNode]
+    );
+
+    /** From the Specification stage: the Protocol stage, with the first node using `api` in view. */
+    const showApiOnProtocol = useCallback(
+        (api: string) => {
+            const id = [...getAllNodeIds(graphRootRef.current)].find(
+                (nodeId) => findNode(graphRootRef.current, nodeId)?.node.api === api
+            );
+            onStageChange("protocol");
+            if (id) window.setTimeout(() => revealNode(id), 0);
+        },
+        [graphRootRef, onStageChange, revealNode]
     );
 
     /** Fits the whole level (or `target`, a graph about to be shown) into the visible canvas, not under the panels. */
@@ -1575,15 +1625,6 @@ const StudioEditorContent = ({
         [flat, journeyActions, log]
     );
 
-    const usedApis = useMemo(() => {
-        const map = new Map<string, number>();
-        for (const node of flat.nodes) {
-            if (node.kind === "decision") continue;
-            map.set(node.api, (map.get(node.api) ?? 0) + 1);
-        }
-        return map;
-    }, [flat]);
-
     const breadcrumb = useMemo(
         () =>
             levels.map((level, index) => ({
@@ -1668,22 +1709,27 @@ const StudioEditorContent = ({
                 onViewTypes={() => setCodeDialog("types")}
                 onDownloadConfig={downloadConfig}
                 onStartLiveSession={() => setLiveOpen(true)}
+                typesControl={
+                    <TypesControl
+                        types={specTypes}
+                        usecase={specTypes.usecase}
+                        onUsecaseChange={setUsecaseChoice}
+                        onDownloadSession={downloadSessionSchema}
+                        onViewTypes={() => setCodeDialog("types")}
+                    />
+                }
             />
 
             {stage === "specification" ? (
                 <SpecificationStage
                     config={config}
                     onConfigChange={onConfigChange}
-                    specTypes={specTypes}
-                    usecase={specTypes.usecase}
-                    onUsecaseChange={setUsecaseChoice}
-                    onDownloadSession={downloadSessionSchema}
-                    helpers={helpers}
-                    onHelpersChange={setHelpers}
-                    helperNames={compiledHelpers.names}
-                    typeFiles={typeFiles}
+                    contracts={contracts}
                     usedApis={usedApis}
-                    reveal={reveal}
+                    selection={specSelection}
+                    onSelectionChange={setSpecSelection}
+                    onShowOnProtocol={showApiOnProtocol}
+                    container={rootRef.current}
                 />
             ) : null}
 
@@ -1723,6 +1769,17 @@ const StudioEditorContent = ({
                         onEnterGroup: editActions.enterGroup,
                     }}
                     searchTab={{ nodes: flat.nodes, helpers, onOpenMatch: openMatch }}
+                    configFiles={[
+                        {
+                            id: "helpers",
+                            label: CODE_DIALOG_FILES.helpers.label,
+                            hint: `${compiledHelpers.names.length} ${compiledHelpers.names.length === 1 ? "function" : "functions"} · prepended to every generate`,
+                            onOpen: () => {
+                                setReveal(null);
+                                setCodeDialog("helpers");
+                            },
+                        },
+                    ]}
                 />
             ) : null}
 
@@ -1859,6 +1916,8 @@ const StudioEditorContent = ({
                     isMaximized={isInspectorMaximized}
                     onToggleMaximized={() => setInspectorMaximized((max) => !max)}
                     resizeHandleProps={inspectorResize.handleProps}
+                    contractTests={contractTests}
+                    onOpenTests={openTestsInSpecification}
                     graph={graph}
                     inGroup={inGroup}
                     selection={liveSelection}
