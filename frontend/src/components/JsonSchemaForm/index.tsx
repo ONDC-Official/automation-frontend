@@ -16,6 +16,7 @@ import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@components/Shadcn/Button";
 import FormDialogShell from "@components/Forms/form-dialog-shell";
 import GpsWidget from "@components/Forms/GpsMapPicker";
+import { resolveEnvPlaceholders, type PlaceholderContext } from "@utils/env-placeholders";
 
 import "./rsjs.css";
 
@@ -64,6 +65,8 @@ interface JsonSchemaFormProps {
     mapEnabled?: boolean;
     /** `flow` wraps content in FormDialogShell and moves submit to the footer. */
     variant?: "playground" | "flow";
+    /** Session details used to fill {{SESSION_*}} placeholders in schema defaults. */
+    tokenContext?: PlaceholderContext;
 }
 
 function CustomFieldTemplate(props: FieldTemplateProps) {
@@ -151,17 +154,32 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
 
 export { PLAYGROUND_RJSF_FORM_ID };
 export default function JsonSchemaForm({
-    schema,
+    schema: rawSchema,
     formData,
     onSubmit,
     onChange,
     title,
     mapEnabled = false,
     variant = "playground",
+    tokenContext,
 }: JsonSchemaFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const isFlowVariant = variant === "flow";
     const formId = isFlowVariant ? FLOW_RJSF_FORM_ID : PLAYGROUND_RJSF_FORM_ID;
+
+    // Spec defaults may carry {{API_SERVICE_*}} / {{SESSION_*}} placeholders; fill them for
+    // this environment and session.
+    const { npType, subscriberUrl, domain, version } = tokenContext ?? {};
+    const schema = useMemo(
+        () =>
+            resolveEnvPlaceholders(rawSchema, import.meta.env.VITE_BASE_URL, {
+                npType,
+                subscriberUrl,
+                domain,
+                version,
+            }),
+        [rawSchema, npType, subscriberUrl, domain, version]
+    );
 
     const handleSubmit = async ({ formData: nextFormData }: FormChangeEvent) => {
         setIsLoading(true);

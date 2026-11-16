@@ -90,6 +90,7 @@ export const API_ROUTES = {
         // LOGOUT: "/auth/logout",
         ME: "/auth/api/me",
         EXCHANGE: "/auth/exchange",
+        PROVIDER: "/auth/provider",
         SUBSCRIBE: "/auth/subscribe",
         LOOKUP: "/auth/lookup",
         GENERATE_KEYS: "/auth/api/generate-keys",
@@ -106,6 +107,15 @@ export const API_ROUTES = {
             `/user/scenario-preferences/${configKey}`,
         PAST_REPORTS: (userId: string) => `/reports/user/${userId}`,
         FLOW_DATA: "/reports/flow-data",
+    },
+
+    /**
+     * MCP API key (user-management). One key per user, so every verb shares one
+     * path. The key is returned by POST exactly once and is never readable
+     * again — GET returns metadata only.
+     */
+    MCP_KEY: {
+        BASE: "/user/mcp-key",
     },
 
     HEALTH: {

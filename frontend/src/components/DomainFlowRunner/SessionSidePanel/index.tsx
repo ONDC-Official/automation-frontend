@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import Spinner from "@components/Shadcn/Spinner";
 import SearchableJsonView from "@components/DomainFlowRunner/SearchableJsonView";
 import { FlowTabs, TabsContent } from "@components/Shadcn/Tabs";
@@ -7,6 +8,10 @@ import { SESSION_SIDE_PANEL_MAX_HEIGHT } from "@components/DomainFlowRunner/cons
 import type { ISessionSidePanelProps } from "@components/DomainFlowRunner/types";
 import { SESSION_EMPTY_RECORD } from "@store/slices/sessionConstants";
 import type { SessionTab } from "@store/slices/sessionSlice";
+import { useSession } from "@hooks/useSession";
+
+/** DOM id of the side panel, used to scroll it into view (e.g. from the step error popup). */
+export const SESSION_SIDE_PANEL_ID = "session-side-panel";
 
 /** Right-hand inspector for the flow-testing view: Request/Response/Guide/Application tabs. */
 export function SessionSidePanel({
@@ -18,8 +23,14 @@ export function SessionSidePanel({
     mapEnabled,
     activeFlowId,
 }: ISessionSidePanelProps) {
+    const { requestSearchHint, setRequestSearchHint } = useSession();
+    const clearRequestSearchHint = useCallback(
+        () => setRequestSearchHint(""),
+        [setRequestSearchHint]
+    );
+
     return (
-        <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
+        <div id={SESSION_SIDE_PANEL_ID} className="min-w-0 lg:sticky lg:top-20 lg:self-start">
             <div>
                 <FlowTabs
                     options={[
@@ -37,7 +48,11 @@ export function SessionSidePanel({
                                 className="overflow-auto"
                                 style={{ maxHeight: SESSION_SIDE_PANEL_MAX_HEIGHT }}
                             >
-                                <SearchableJsonView value={requestData ?? SESSION_EMPTY_RECORD} />
+                                <SearchableJsonView
+                                    value={requestData ?? SESSION_EMPTY_RECORD}
+                                    searchHint={requestSearchHint}
+                                    onSearchHintApplied={clearRequestSearchHint}
+                                />
                             </div>
                         ) : (
                             <div className="flex items-center justify-center py-16">

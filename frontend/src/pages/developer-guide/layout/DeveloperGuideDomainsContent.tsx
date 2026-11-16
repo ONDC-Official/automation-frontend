@@ -5,6 +5,7 @@ import { getDeveloperGuideUseCasePath } from "@constants/routes";
 import type { BuildEntry } from "../types";
 import {
     groupBuildsByFamily,
+    applyDevGuideBetaDomainScope,
     getDomainDisplayLabel,
     getDomainFriendlyName,
 } from "../domainGrouping";
@@ -20,20 +21,23 @@ import {
 
 const DeveloperGuideDomainsContent: FC = () => {
     const navigate = useNavigate();
-    const { builds, loadError } = useDeveloperGuideShell();
+    const { builds, loadError, closeNavSidebar } = useDeveloperGuideShell();
     const [domainSearch, setDomainSearch] = useState("");
 
     const handleUseCaseClick = (dom: BuildEntry, versionKey: string, usecaseLabel: string) => {
         if (!isUseCaseEnabled(dom, usecaseLabel)) return;
+        closeNavSidebar();
         navigate(getDeveloperGuideUseCasePath(dom.key, versionKey, usecaseLabel));
     };
 
-    const domainFamilies = useMemo(() => groupBuildsByFamily(builds), [builds]);
+    const domainFamilies = useMemo(
+        () => applyDevGuideBetaDomainScope(groupBuildsByFamily(builds)),
+        [builds]
+    );
 
     const filteredFamilies = useMemo(() => {
         const q = domainSearch.trim().toLowerCase();
         if (!q) return domainFamilies;
-
         return domainFamilies
             .map((family) => ({
                 ...family,

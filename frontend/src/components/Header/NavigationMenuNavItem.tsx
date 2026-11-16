@@ -5,6 +5,7 @@ import {
 } from "@components/Shadcn/NavigationMenu/navigation-menu";
 import { NavigationMenuNavLink } from "@components/Header/NavigationMenuNavLink";
 import { INavigationMenuNavItem } from "@components/Header/types";
+import BetaBadge from "@components/BetaBadge";
 
 export const NavigationMenuNavItem = ({
     link,
@@ -37,7 +38,7 @@ export const NavigationMenuNavItem = ({
                 onClick={() => onNavClick(link)}
                 closeDrawer={inDrawer}
             >
-                {link.label}
+                {link.beta ? <BetaBadge>{link.label}</BetaBadge> : link.label}
             </NavigationMenuNavLink>
         </NavigationMenuItem>
     );

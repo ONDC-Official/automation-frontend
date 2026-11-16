@@ -33,6 +33,10 @@ import { IFlowRunAccordionProps } from "@components/DomainFlowRunner/types";
 import { useSession } from "@hooks/useSession";
 import { useAppSelector } from "@store/hooks";
 import { selectActiveFlowLifecycleInFlight } from "@store/slices/sessionSlice";
+import StepErrorDialog, { type StepErrorPopup } from "@components/DomainFlowRunner/StepErrorDialog";
+import { useStepErrorPopup } from "@components/DomainFlowRunner/hooks/useStepErrorPopup";
+import { SESSION_SIDE_PANEL_ID } from "@components/DomainFlowRunner/SessionSidePanel";
+import type { PayloadResponse } from "@store/api";
 
 function normalizeServerActiveFlow(activeFlow: string | null | undefined): string | null {
     if (!activeFlow || activeFlow === "NONE") return null;
@@ -82,6 +86,10 @@ export function FlowRunAccordion({
         applyOptimisticActiveFlow,
         beginActiveFlowLifecycle,
         endActiveFlowLifecycle,
+        setRequestData,
+        setResponseData,
+        setSelectedTab,
+        setRequestSearchHint,
     } = useSession();
     const lifecycleInFlight = useAppSelector(selectActiveFlowLifecycleInFlight);
 
@@ -94,6 +102,42 @@ export function FlowRunAccordion({
     const [proceedFlow] = useProceedFlowMutation();
     const [putCacheData] = usePutCacheDataMutation();
     const [addFlowToSessionInDB] = useAddFlowToSessionInDBMutation();
+
+    const { popup: stepErrorPopup, dismiss: dismissStepError } = useStepErrorPopup({
+        sequence: mappedFlow.sequence,
+        paused: isFlowFormDialogOpen,
+    });
+
+    const viewStepErrorRequest = useCallback(
+        async ({ step }: StepErrorPopup) => {
+            dismissStepError();
+            try {
+                const payloads = await triggerGetCompletePayload({
+                    payloadIds: step.payloadIds,
+                }).unwrap();
+                setRequestData(payloads.map((p: PayloadResponse<unknown, unknown>) => p.req));
+                setResponseData(
+                    payloads.map((p: PayloadResponse<unknown, unknown>) => p.res.response)
+                );
+                setSelectedTab("Request");
+                setRequestSearchHint("error");
+                document
+                    .getElementById(SESSION_SIDE_PANEL_ID)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            } catch (e) {
+                console.error(e);
+                toast.error("Couldn't load the request. Open the step to view it.");
+            }
+        },
+        [
+            dismissStepError,
+            triggerGetCompletePayload,
+            setRequestData,
+            setResponseData,
+            setSelectedTab,
+            setRequestSearchHint,
+        ]
+    );
 
     useEffect(() => {
         if (!inputPopUp) return;
@@ -590,6 +634,11 @@ export function FlowRunAccordion({
                     />
                 </FormFlowDialog>
             )}
+            <StepErrorDialog
+                popup={stepErrorPopup}
+                onClose={dismissStepError}
+                onViewRequest={viewStepErrorRequest}
+            />
         </div>
     );
 }

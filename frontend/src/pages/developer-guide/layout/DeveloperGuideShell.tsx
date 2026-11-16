@@ -30,6 +30,24 @@ const DeveloperGuideShell: FC = () => {
     const { navTree, isLoading, loadError, isNavEnriching } = useDevGuideShellServerState();
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Matches the `duration-300` on the aside's width transition below. The full sidebar
+    // content stays mounted until that transition finishes, so it gets clipped away smoothly
+    // by the shrinking width instead of instantly popping to the collapsed view mid-animation.
+    const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
+    const [renderOpenContent, setRenderOpenContent] = useState(navSidebarOpen);
+
+    useEffect(() => {
+        if (navSidebarOpen) {
+            setRenderOpenContent(true);
+            return;
+        }
+        const timeout = setTimeout(
+            () => setRenderOpenContent(false),
+            SIDEBAR_COLLAPSE_TRANSITION_MS
+        );
+        return () => clearTimeout(timeout);
+    }, [navSidebarOpen]);
+
     useEffect(() => {
         return () => {
             dispatch(resetDevGuideShell());
@@ -64,7 +82,7 @@ const DeveloperGuideShell: FC = () => {
                         navSidebarOpen ? "w-full lg:w-72" : "w-full lg:w-11"
                     }`}
                 >
-                    {navSidebarOpen ? (
+                    {renderOpenContent ? (
                         /* Fixed inner width so content doesn't reflow while the width animates */
                         <div className="flex min-h-0 flex-1 flex-col lg:w-72 lg:shrink-0">
                             <div className="shrink-0">
@@ -111,12 +129,18 @@ const DeveloperGuideShell: FC = () => {
                             <VersionStatusLegend />
                         </div>
                     ) : (
-                        <div className="flex h-11 min-h-11 shrink-0 items-center border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:items-start lg:justify-center lg:border-b-0 lg:px-0 lg:pt-3 dark:border-border-default">
-                            <DeveloperGuideNavSidebarToggle
-                                sidebarOpen={false}
+                        <>
+                            <div
+                                className="flex h-11 min-h-11 shrink-0 border-b border-slate-200 px-4 lg:h-auto lg:min-h-0 lg:w-full lg:flex-1 lg:border-b-0 lg:px-0 dark:border-border-default"
                                 onClick={toggleNavSidebar}
                             />
-                        </div>
+                            <div className="fixed left-2 top-90 z-30">
+                                <DeveloperGuideNavSidebarToggle
+                                    sidebarOpen={false}
+                                    onClick={toggleNavSidebar}
+                                />
+                            </div>
+                        </>
                     )}
                 </aside>
 

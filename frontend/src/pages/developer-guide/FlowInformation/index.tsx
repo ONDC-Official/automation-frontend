@@ -13,11 +13,13 @@ import { useFlowDetailSection } from "./useFlowDetailSection";
 import { useValidationTable } from "./useValidationTable";
 import { useSelectedFlowStep } from "./useSelectedFlowStep";
 import FlowsSidebar from "./FlowsSidebar";
+import XInputFormTab from "./XInputFormTab";
+import HtmlFormPreviewTab from "./HtmlFormPreviewTab";
 import type { FlowInformationProps, FlowInformationSection } from "./types";
 import GuideTabFade from "../shared/components/GuideTabFade";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { Button } from "@components/Shadcn/Button";
 import { cn } from "@/lib/utils";
+import { resolveXInputFormDoc } from "../content/resolveUseCaseDocs";
+import { decodeBase64 } from "../utils";
 
 const FlowInformation: FC<FlowInformationProps> = ({
     data,
@@ -32,7 +34,7 @@ const FlowInformation: FC<FlowInformationProps> = ({
     const validationTable = useValidationTable(domain, version);
 
     const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     // Portaled to body (or the browser fullscreen element) so ancestor transforms — e.g.
     // PageReveal's `page-reveal-child` — cannot turn `position: fixed` into a content-area-
@@ -57,13 +59,43 @@ const FlowInformation: FC<FlowInformationProps> = ({
         selectedFlow,
         selectedFlowAction,
         selectedExampleIndex,
-        validationTable
+        validationTable,
+        data?.["x-docs"]
     );
 
     const resetExampleIndex = useCallback(() => setSelectedExampleIndex(0), []);
+    const xInputFormContent = useMemo(
+        () => resolveXInputFormDoc(data["x-docs"], selectedFlowData?.usecase),
+        [data, selectedFlowData?.usecase]
+    );
+    const formHtml = useMemo(
+        () => decodeBase64(selectedStep?.mock?.formHtml) ?? undefined,
+        [selectedStep]
+    );
+
+    const detailTabOrder = useMemo(() => {
+        const order: FlowInformationSection[] = [];
+        if (sequenceMermaid) order.push("sequence");
+        order.push("preview");
+        if (selectedStep) {
+            order.push("request", "response");
+        }
+        if (formHtml) order.push("html-form");
+        if (hasXValidations) order.push("x-validations");
+        if (xInputFormContent) order.push("xinput-form");
+        return order;
+    }, [
+        hasExampleObject,
+        selectedStep,
+        hasXValidations,
+        xInputFormContent,
+        sequenceMermaid,
+        formHtml,
+    ]);
 
     const { activeSection, showPreviewDetails, handleSectionChange } = useFlowDetailSection({
         selectedFlowAction,
+        availableSections: detailTabOrder,
         onSectionReset: resetExampleIndex,
     });
 
@@ -85,16 +117,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
         document.addEventListener("keydown", onKeyDown);
         return () => document.removeEventListener("keydown", onKeyDown);
     }, [isFullscreen]);
-
-    const detailTabOrder = useMemo(() => {
-        const order: FlowInformationSection[] = ["preview"]; // setting default preview as there is no sequence diagram
-        if (hasExampleObject) order.push("preview");
-        if (selectedStep) {
-            order.push("request", "response");
-        }
-        if (hasXValidations) order.push("x-validations");
-        return order;
-    }, [hasExampleObject, selectedStep, hasXValidations]);
 
     if (isEmpty) {
         return (
@@ -138,22 +160,6 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 setSelectedFlowAction={setSelectedFlowAction}
                 sidebarOpen={sidebarOpen}
             />
-
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen((prev) => !prev)}
-                title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                className={`absolute top-4 z-20 -translate-x-1/2 flex items-center justify-center w-5 h-9 rounded-full bg-white dark:bg-surface-elevated border border-slate-200 dark:border-border-default shadow-sm hover:bg-slate-50 dark:hover:bg-surface-muted transition-[left] duration-300 ease-in-out motion-reduce:transition-none ${
-                    sidebarOpen ? "left-80" : "left-0"
-                }`}
-            >
-                <ChevronLeftIcon
-                    className={`w-3 h-3 text-slate-400 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
-                        sidebarOpen ? "" : "rotate-180"
-                    }`}
-                />
-            </Button>
         </>
     );
 
@@ -182,6 +188,9 @@ const FlowInformation: FC<FlowInformationProps> = ({
                 hasExampleObject={hasExampleObject}
                 hasStep={!!selectedStep}
                 hasXValidations={hasXValidations}
+                hasXInputFormDoc={!!xInputFormContent}
+                hasSequenceDiagram={!!sequenceMermaid}
+                hasFormHtml={!!formHtml}
             />
 
             <GuideTabFade
@@ -241,9 +250,21 @@ const FlowInformation: FC<FlowInformationProps> = ({
                     </div>
                 )}
 
+                {activeSection === "html-form" && formHtml && (
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                        <HtmlFormPreviewTab formHtml={formHtml} />
+                    </div>
+                )}
+
                 {activeSection === "x-validations" && hasXValidations && selectedValidations && (
                     <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                         <ValidationsTable validations={selectedValidations} />
+                    </div>
+                )}
+
+                {activeSection === "xinput-form" && xInputFormContent && (
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                        <XInputFormTab content={xInputFormContent} />
                     </div>
                 )}
             </GuideTabFade>

@@ -3,6 +3,7 @@ import { extractNestedMarkdownToc, stripHeadingNumberPrefix } from "@utils/markd
 import type { BuildEntry, DocMeta } from "../types";
 import {
     groupBuildsByFamily,
+    applyDevGuideBetaDomainScope,
     getDomainDisplayLabel,
     getDomainFamilyLabel,
     getDomainFriendlyName,
@@ -149,6 +150,7 @@ export function buildNavTree(
                     path: getDeveloperGuideUseCasePath(domainKey, verKey, label),
                     disabled: !clickable,
                     searchText: `${domainKey} ${label} v${verKey}`,
+                    isDomainUseCaseLink: true,
                     ...(status ? { status } : {}),
                 };
             });
@@ -195,7 +197,7 @@ export function buildNavTree(
         };
     }
 
-    const domainFamilies = groupBuildsByFamily(sortedDomains);
+    const domainFamilies = applyDevGuideBetaDomainScope(groupBuildsByFamily(sortedDomains));
     const domainChildren: NavNode[] = domainFamilies.map((family) => {
         const familyEnabled = family.domains.some(isDomainEnabled);
         const familyTitle = getDomainFamilyLabel(family.familyKey);
@@ -208,7 +210,12 @@ export function buildNavTree(
             searchText: `${familyTitle} ${family.familyKey} ${family.domains
                 .map((d) => `${getDomainDisplayLabel(d.key)} ${d.key}`)
                 .join(" ")}`,
-            children: family.domains.map(buildDomainGroupNode),
+            // A domain labelled the same as its family (e.g. nic2004:60232 → "Logistics" under
+            // "Logistics") would repeat the name, so its use cases sit directly under the family.
+            children: family.domains.flatMap((dom) => {
+                const node = buildDomainGroupNode(dom);
+                return node.type === "group" && node.label === familyTitle ? node.children : [node];
+            }),
         };
     });
 

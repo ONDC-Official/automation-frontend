@@ -34,9 +34,17 @@ const ChangelogView: FC<ChangelogViewProps> = ({ changelogs }) => {
                         <div className="flex flex-col gap-6">
                             {log.sections.map((sec, sIdx) =>
                                 sec.section === "flows" ? (
-                                    <FlowsSection key={sIdx} section={sec} />
+                                    <FlowsSection
+                                        key={sIdx}
+                                        section={sec}
+                                        generatedAt={log.generatedAt}
+                                    />
                                 ) : (
-                                    <SectionGroup key={sIdx} section={sec} />
+                                    <SectionGroup
+                                        key={sIdx}
+                                        section={sec}
+                                        generatedAt={log.generatedAt}
+                                    />
                                 )
                             )}
                         </div>

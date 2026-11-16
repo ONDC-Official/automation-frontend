@@ -16,6 +16,10 @@ const allNavLinks: INavLink[] = [
     {
         label: "Developer Guide",
         href: ROUTES.DEVELOPER_GUIDE,
+        // This entry only ever renders when isDevGuideEnabled is true (filtered
+        // below), and that flag now means "release the beta version" — so the
+        // badge is unconditional here, not a second independently-gated flag.
+        beta: true,
         analytics: {
             category: "NAV",
             action: "Clicked in developer guide",

@@ -24,6 +24,7 @@ export const DOMAIN_FRIENDLY_NAMES: Record<string, string> = {
     ...Object.fromEntries(domainOptions.map((option) => [option.value, option.key])),
     // Financial Services
     "ONDC:FIS10": "Gift Cards",
+    "ONDC:FIS11": "Metro Card Recharge",
     "ONDC:FIS12": "Credit",
     "ONDC:FIS12:BL": "Credit",
     "ONDC:FIS12:SL": "Credit",

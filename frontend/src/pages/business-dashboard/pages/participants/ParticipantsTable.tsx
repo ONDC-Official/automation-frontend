@@ -176,6 +176,10 @@ const ParticipantsTable = ({
                                       </TableCell>
 
                                       <TableCell className="whitespace-nowrap">
+                                          {formatDateTime(row.lastSessionAt)}
+                                      </TableCell>
+
+                                      <TableCell className="whitespace-nowrap">
                                           {/* null means they created a session but never sent us
                             a payload — a real state, never rendered as a zero date. */}
                                           {row.firstPayloadAt ? (

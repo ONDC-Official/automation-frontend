@@ -101,6 +101,34 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         scrollToSectionWithOffset(sectionId, TOC_TOP, true);
     }, []);
 
+    // Switches the active doc tab *and* selects a section in one navigation —
+    // needed for the "On this page" index, whose entries can belong to a doc
+    // other than the one currently showing. A separate `setActiveDocSlug` +
+    // `selectSection` pair would race (the second call's `prev` search params
+    // wouldn't yet include the first's update), so both go in one `next`. The
+    // scroll itself can't happen synchronously here — `sectionId` only exists
+    // in the DOM once the target doc's content has rendered — so it rides the
+    // existing hash-change effect above, which already re-fires once `content`
+    // (and therefore the doc) switches.
+    const selectDocSection = useCallback((slug: string, sectionId: string) => {
+        setSearchParamsRef.current(
+            (prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("doc", slug);
+                return next;
+            },
+            { replace: true }
+        );
+        navigateRef.current(
+            {
+                pathname: window.location.pathname,
+                search: window.location.search,
+                hash: `#${sectionId}`,
+            },
+            { replace: true }
+        );
+    }, []);
+
     const setRightPanelOpen = useCallback(
         (open: boolean) => {
             dispatch(setCommentsPanelOpen(open));
@@ -114,6 +142,7 @@ export function useDocsSectionSelection({ docSlugs, docs }: UseDocsSectionSelect
         selectedSectionId,
         selectedSectionLabel,
         selectSection,
+        selectDocSection,
         rightPanelOpen,
         setRightPanelOpen,
         toc,

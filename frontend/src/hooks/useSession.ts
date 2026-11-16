@@ -15,6 +15,7 @@ import {
     endActiveFlowLifecycle as endActiveFlowLifecycleAction,
     setSessionData as setSessionDataAction,
     setSelectedTab as setSelectedTabAction,
+    setRequestSearchHint as setRequestSearchHintAction,
     setRequestData as setRequestDataAction,
     setResponseData as setResponseDataAction,
     setSideView as setSideViewAction,
@@ -37,6 +38,8 @@ export interface UseSessionResult {
     setSessionData: Dispatch<SetStateAction<SessionCache | null>>;
     selectedTab: SessionTab;
     setSelectedTab: Dispatch<SetStateAction<SessionTab>>;
+    requestSearchHint: string;
+    setRequestSearchHint: (hint: string) => void;
     requestData: SessionPayloadData;
     setRequestData: Dispatch<SetStateAction<SessionPayloadData>>;
     responseData: SessionPayloadData;
@@ -68,6 +71,7 @@ export const useSession = (): UseSessionResult => {
     const activeFlowId = useAppSelector((state) => state.session.activeFlowId);
     const sessionData = useAppSelector((state) => state.session.sessionData);
     const selectedTab = useAppSelector((state) => state.session.selectedTab);
+    const requestSearchHint = useAppSelector((state) => state.session.requestSearchHint);
     const requestData = useAppSelector((state) => state.session.requestData);
     const responseData = useAppSelector((state) => state.session.responseData);
     const sideView = useAppSelector((state) => state.session.sideView);
@@ -112,6 +116,13 @@ export const useSession = (): UseSessionResult => {
             const current = store.getState().session.selectedTab;
             const next = typeof value === "function" ? value(current) : value;
             if (next !== current) dispatch(setSelectedTabAction(next));
+        },
+        [dispatch]
+    );
+
+    const setRequestSearchHint = useCallback(
+        (hint: string) => {
+            dispatch(setRequestSearchHintAction(hint));
         },
         [dispatch]
     );
@@ -222,6 +233,8 @@ export const useSession = (): UseSessionResult => {
         setSessionData,
         selectedTab,
         setSelectedTab,
+        requestSearchHint,
+        setRequestSearchHint,
         requestData,
         setRequestData,
         responseData,

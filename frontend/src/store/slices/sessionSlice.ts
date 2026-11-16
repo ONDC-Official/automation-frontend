@@ -34,6 +34,8 @@ export interface ISessionState {
      * still be stale. Poll fetches must not overwrite activeFlow until this clears.
      */
     activeFlowLifecycleInFlight: boolean;
+    /** One-shot search text to pre-fill in the Request tab (e.g. "error"); cleared once applied. */
+    requestSearchHint: string;
 }
 
 const initialState: ISessionState = {
@@ -52,6 +54,7 @@ const initialState: ISessionState = {
     flowFilterTagsBySessionId: {},
     flowFormDialogLockCount: 0,
     activeFlowLifecycleInFlight: false,
+    requestSearchHint: "",
 };
 
 function clearFlowRuntimeFields(state: ISessionState) {
@@ -101,6 +104,9 @@ const sessionSlice = createSlice({
         setSelectedTab: (state, action: PayloadAction<SessionTab>) => {
             if (state.selectedTab === action.payload) return;
             state.selectedTab = action.payload;
+        },
+        setRequestSearchHint: (state, action: PayloadAction<string>) => {
+            state.requestSearchHint = action.payload;
         },
         setRequestData: (state, action: PayloadAction<SessionPayloadData>) => {
             if (Object.is(state.requestData, action.payload)) return;
@@ -188,6 +194,7 @@ export const {
     endActiveFlowLifecycle,
     setSessionData,
     setSelectedTab,
+    setRequestSearchHint,
     setRequestData,
     setResponseData,
     setSideView,

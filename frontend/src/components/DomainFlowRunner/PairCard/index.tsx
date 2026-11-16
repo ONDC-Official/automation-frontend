@@ -252,7 +252,13 @@ function StepDisplay({ step, flowId }: { step: MappedStep; flowId: string }) {
                             />
                         ) : null}
                         {apiCount > 0 ? (
-                            <Badge className={getCountStyles(apiCount)}>
+                            <Badge
+                                className={
+                                    apiCount >= 2
+                                        ? STEP_ERROR_COUNT_STYLES
+                                        : getCountStyles(apiCount)
+                                }
+                            >
                                 <span className="font-normal text-text-secondary">×</span>{" "}
                                 {apiCount}
                             </Badge>
@@ -370,6 +376,10 @@ export function getStatusStyles(
             };
     }
 }
+
+/** A count of 2+ means the paired payload was rejected (see StepErrorDialog). */
+const STEP_ERROR_COUNT_STYLES =
+    "border-error-500/40 bg-error-50 text-error-500 dark:border-error-500/40 dark:bg-error-800/30";
 
 function getCount(step: MappedStep) {
     if (step.payloads?.entryType === "FORM") return 0;

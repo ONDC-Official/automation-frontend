@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import SearchField from "@components/Shadcn/SearchField";
 import { Button } from "@components/Shadcn/Button";
@@ -20,8 +20,13 @@ function filterJsonBySearch(data: unknown, query: string): unknown {
 
     const walk = (val: unknown): unknown => {
         if (Array.isArray(val)) {
-            const filtered = val.map((item) => walk(item)).filter((item) => item !== undefined);
-            return filtered.length > 0 ? filtered : undefined;
+            const kept = val
+                .map((item, index) => [index, walk(item)] as const)
+                .filter(([, item]) => item !== undefined);
+            if (kept.length === 0) return undefined;
+            if (kept.length === val.length) return kept.map(([, item]) => item);
+            // Some items were dropped: key by original index so "[1]" still reads as the 2nd item.
+            return Object.fromEntries(kept.map(([index, item]) => [String(index), item]));
         }
         if (val && typeof val === "object") {
             const result: Record<string, unknown> = {};
@@ -50,13 +55,24 @@ function filterJsonBySearch(data: unknown, query: string): unknown {
 interface SearchableJsonViewProps {
     value: unknown;
     placeholder?: string;
+    /** One-shot search text to apply (e.g. "error"); `onSearchHintApplied` fires once it is set. */
+    searchHint?: string;
+    onSearchHintApplied?: () => void;
 }
 
 export default function SearchableJsonView({
     value,
     placeholder = "Search",
+    searchHint,
+    onSearchHintApplied,
 }: SearchableJsonViewProps) {
     const [query, setQuery] = useState<string>("");
+
+    useEffect(() => {
+        if (!searchHint) return;
+        setQuery(searchHint);
+        onSearchHintApplied?.();
+    }, [searchHint, onSearchHintApplied]);
 
     const filteredValue = useMemo(() => filterJsonBySearch(value, query) as object, [value, query]);
 

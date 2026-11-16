@@ -8,6 +8,8 @@ import { buildStepDisplayItems } from "./utils";
  * - `type: SECONDARY` + `visible_actions` / `hide_actions` — nested under its primary,
  *   showing only the visible (or non-hidden) calls;
  * - `type: PREREQUISITE` — rendered inside each primary card above the primary's calls.
+ * - `type: OPTIONAL` — excluded entirely; never shown as a primary, secondary, or
+ *   prerequisite, and never counted as anyone else's parent/child.
  * Legacy schemas (`secondary_of`/`secondary_start`, `is_secondary`/`parent_flow`) are
  * still honored for already-ingested builds. Flip the flag for the flat accordion.
  */
@@ -111,7 +113,10 @@ function toChildFlow(flow: FlowEntry): FlowHierarchyChildFlow {
  * declarations are honored as fallback. A secondary whose primary isn't present falls
  * back to a standalone card so it never disappears from the sidebar.
  */
-export function buildFlowHierarchies(flows: FlowEntry[]): FlowHierarchyGroup[] {
+export function buildFlowHierarchies(allFlows: FlowEntry[]): FlowHierarchyGroup[] {
+    // OPTIONAL flows are dropped up front — never a primary, secondary, or
+    // prerequisite, and never resolved as anyone else's parent/child below.
+    const flows = allFlows.filter((f) => roleOf(f) !== "OPTIONAL");
     const byId = new Map(flows.map((f) => [f.flowId, f]));
 
     // PREREQUISITE flows render inside every primary card, above the primary's calls.

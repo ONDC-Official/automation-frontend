@@ -5,7 +5,9 @@ import { TextField } from "@components/Shadcn/TextField";
 import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
+import { OrganisationField } from "@pages/scenario/OrganisationField";
 import { IManualSessionFormProps } from "@pages/scenario/types";
+import { getScenarioDomainLabel } from "@pages/scenario/constants";
 
 export const ManualSessionForm = ({
     domains,
@@ -62,6 +64,7 @@ export const ManualSessionForm = ({
                     </>
                 ) : ( */}
                 <>
+                    <OrganisationField control={control} name="orgId" />
                     <TextField
                         control={control}
                         name="subscriberUrl"
@@ -84,7 +87,10 @@ export const ManualSessionForm = ({
                         usecaseOptions={usecaseOptions}
                         watchedDomain={watchedDomain}
                         watchedVersion={watchedVersion}
-                        domainOptions={domains.map((d) => d.key)}
+                        domainOptions={domains.map((d) => ({
+                            value: d.key,
+                            label: getScenarioDomainLabel(d.key),
+                        }))}
                         onDomainChange={onDomainChange}
                         onVersionChange={onVersionChange}
                     />

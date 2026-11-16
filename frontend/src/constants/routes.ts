@@ -28,8 +28,12 @@ export const ROUTES = {
     TRACK_PREFIX: "/track/",
     LOGIN: "/login",
     PROFILE: "/profile",
+    /** Read-only NP Portal details for ONDC logins. */
+    PROFILE_ACCOUNT: "/profile/account",
     PROFILE_PAST_REPORTS: "/profile/past-reports",
     PROFILE_HISTORY: "/profile/history",
+    /** Issue, inspect and revoke the user's MCP API key. */
+    PROFILE_MCP_KEY: "/profile/mcp-key",
     SELLER_ONBOARDING: "/seller-onboarding",
     PLAYGROUND: "/playground",
     /** Protocol Studio — the starter form; the multi-flow successor to the Playground. */

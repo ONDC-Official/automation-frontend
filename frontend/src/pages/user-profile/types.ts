@@ -53,6 +53,7 @@ export interface ScenarioPreferences {
     usecaseId: string;
     npType: string;
     env: string;
+    orgId: string;
 }
 
 export interface ScenarioPreferencesAPI {
@@ -62,6 +63,7 @@ export interface ScenarioPreferencesAPI {
     usecase_id: string;
     np_type: string;
     env: string;
+    org_id?: string;
 }
 
 export type IDomainVersionWithUsecase = {
@@ -223,4 +225,20 @@ export interface IScenarioPreferencesFormState {
     isDeleting: boolean;
     isFetching: boolean;
     editingKey: string | null;
+}
+
+export interface IMcpConsentDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onConfirm: () => void;
+    isSubmitting: boolean;
+    /** The server has moved past the consent version this build bundles. */
+    isConsentStale: boolean;
+}
+
+export interface IMcpKeyRevealDialogProps {
+    /** The plaintext key. Non-null only while the reveal is open. */
+    keyValue: string | null;
+    expiresAt: string | null;
+    onDone: () => void;
 }

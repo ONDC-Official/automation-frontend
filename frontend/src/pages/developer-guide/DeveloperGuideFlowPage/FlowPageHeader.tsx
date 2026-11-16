@@ -7,6 +7,7 @@ interface FlowPageHeaderProps {
     activeView: TopLevelView;
     hasErrorCodes: boolean;
     hasFigma: boolean;
+    hasAdditionalResources: boolean;
     errorCodesCount?: number;
     onViewChange: (view: TopLevelView) => void;
 }
@@ -32,6 +33,11 @@ function getPageTitle(
                 title: VIEW_LABEL.flows,
                 description: "Browse and test the flows for this use case.",
             };
+        case "resources":
+            return {
+                title: VIEW_LABEL.resources,
+                description: "Reference links and supplementary material for this use case.",
+            };
         case "error-codes":
             return {
                 title: "Error Codes",
@@ -54,6 +60,7 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
     activeView,
     hasErrorCodes,
     hasFigma,
+    hasAdditionalResources,
     errorCodesCount,
     onViewChange,
 }) => {
@@ -72,8 +79,13 @@ const FlowPageHeader: FC<FlowPageHeaderProps> = ({
                         visible: hasFigma,
                     },
                     { id: "flows", label: VIEW_LABEL.flows, visible: true },
+                    {
+                        id: "resources",
+                        label: VIEW_LABEL.resources,
+                        visible: hasAdditionalResources,
+                    },
                     { id: "error-codes", label: VIEW_LABEL["error-codes"], visible: hasErrorCodes },
-                    // { id: "changelog", label: "Changelog", visible: true },
+                    { id: "changelog", label: "Changelog", visible: true },
                 ] satisfies GuideTabItem<TopLevelView>[]
             }
         />
