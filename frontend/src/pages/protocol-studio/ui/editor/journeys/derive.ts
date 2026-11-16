@@ -183,24 +183,49 @@ export interface JourneyCandidate {
     title: string;
     choices: Record<string, string>;
     expects: Record<string, string>;
+    /** The End node it finishes at, where the protocol would go on. */
+    exit?: string;
     nodeIds: string[];
     end: WalkEnd;
 }
 
-/** A title from the options a path took: `out of stock · PREPAID`, or `Main path`. */
-export const proposeTitle = (walk: WalkResult) => {
+/**
+ * A title from the options a path took: `out of stock · PREPAID`, or `Main
+ * path`; a path finishing early at `exit` adds `ends at <exit>`.
+ */
+export const proposeTitle = (walk: WalkResult, exit?: string) => {
     const parts: string[] = [];
     for (const step of walk.steps) {
         if (step.type === "fork" && step.chosen) parts.push(step.chosen.label.replace(/^on_/, ""));
     }
+    if (exit) parts.push(`ends at ${exit}`);
     return parts.length > 0 ? parts.join(" · ") : "Main path";
+};
+
+/** Whether a journey may stop at `node` although the protocol goes on: it is marked End. */
+const canFinishEarlyAt = (flat: FlatGraph, node: StudioNode) =>
+    !!node.end && (flat.out.get(node.id) ?? []).some(isPathEdge);
+
+/** The choices and expectations a walk actually used, so a shorter path carries no stale ones. */
+const takenOn = (walk: WalkResult) => {
+    const choices: Record<string, string> = {};
+    const expects: Record<string, string> = {};
+    for (const step of walk.steps) {
+        if (step.type !== "fork" || !step.chosen) continue;
+        if (step.fork.kind === "decision") {
+            if (step.chosen.edge.case !== undefined)
+                expects[step.fork.nodeId] = step.chosen.edge.case;
+        } else choices[step.fork.key] = step.chosen.target.id;
+    }
+    return { choices, expects };
 };
 
 /**
  * Every way through the protocol from `entry`: each fork of alternatives and
- * each decision case fans the search out. Bounded by `limit` so a large graph
- * yields a first page rather than hanging. Paths ending at a repeat cap are
- * kept (they are still complete journeys up to that point).
+ * each decision case fans the search out, and each End node the protocol goes
+ * on from adds a journey finishing there (`exit`). Bounded by `limit` so a
+ * large graph yields a first page rather than hanging. Paths ending at a
+ * repeat cap are kept (they are still complete journeys up to that point).
  */
 export const enumeratePaths = (
     flat: FlatGraph,
@@ -211,12 +236,44 @@ export const enumeratePaths = (
     const seen = new Set<string>();
     let truncated = false;
 
+    const add = (candidate: JourneyCandidate) => {
+        if (seen.has(candidate.key)) return;
+        if (candidates.length >= limit) {
+            truncated = true;
+            return;
+        }
+        seen.add(candidate.key);
+        candidates.push(candidate);
+    };
+
+    // Before the paths that go on through them, so a shorter journey lists first.
+    const addEarlyFinishes = (
+        walk: WalkResult,
+        choices: Record<string, string>,
+        expects: Record<string, string>
+    ) => {
+        for (const id of new Set(walk.nodeIds)) {
+            const node = flat.byId.get(id);
+            if (!node || !canFinishEarlyAt(flat, node)) continue;
+            const short = walkJourney(flat, { entry, choices, expects, exit: id });
+            add({
+                key: short.nodeIds.join(">"),
+                title: proposeTitle(short, id),
+                ...takenOn(short),
+                exit: id,
+                nodeIds: short.nodeIds,
+                end: short.end,
+            });
+        }
+    };
+
     const explore = (choices: Record<string, string>, expects: Record<string, string>) => {
         if (candidates.length >= limit) {
             truncated = true;
             return;
         }
         const walk = walkJourney(flat, { entry, choices, expects });
+        addEarlyFinishes(walk, choices, expects);
         if (walk.pending) {
             for (const option of walk.pending.options) {
                 // Options still to explore once the page is full: the result is a first page.
@@ -233,11 +290,8 @@ export const enumeratePaths = (
             }
             return;
         }
-        const key = walk.nodeIds.join(">");
-        if (seen.has(key)) return;
-        seen.add(key);
-        candidates.push({
-            key,
+        add({
+            key: walk.nodeIds.join(">"),
             title: proposeTitle(walk),
             choices,
             expects,
@@ -350,15 +404,18 @@ export const lintJourneys = (flat: FlatGraph, journeys: StudioJourney[]): Protoc
                 });
             }
         }
-        const key = walk.nodeIds.join(">");
-        const other = keys.get(key);
-        if (other && !walk.pending) {
-            add({
-                level: "info",
-                message: `Journey “${journey.title}” walks the same path as “${other}”`,
-                journeyId: journey.id,
-            });
-        } else keys.set(key, journey.title);
+        // A journey stopped at an open fork walks no path yet, so it can't duplicate one.
+        if (!walk.pending) {
+            const key = walk.nodeIds.join(">");
+            const other = keys.get(key);
+            if (other) {
+                add({
+                    level: "info",
+                    message: `Journey “${journey.title}” walks the same path as “${other}”`,
+                    journeyId: journey.id,
+                });
+            } else keys.set(key, journey.title);
+        }
     }
     if (journeys.length > 0) {
         const coverage = getCoverage(flat, journeys);

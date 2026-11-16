@@ -319,6 +319,74 @@ describe("start / end marks and repeat-until in journeys", () => {
         expect(lintJourneys(flat, [j]).filter((p) => /finishes at/.test(p.message))).toEqual([]);
     });
 
+    it("derives a journey finishing at each End node the protocol goes on from", () => {
+        const graph = protocol();
+        const flat = flattenGraph({
+            ...graph,
+            nodes: graph.nodes.map((nd) =>
+                // select is a fork, on_confirm leads on, on_select_oos is a dead end anyway.
+                ["select", "on_confirm", "on_select_oos"].includes(nd.id)
+                    ? { ...nd, end: true }
+                    : nd
+            ),
+        });
+        const { candidates, truncated } = enumeratePaths(flat, "search");
+        expect(truncated).toBe(false);
+        expect(candidates.map((c) => c.title)).toEqual([
+            "ends at select",
+            "in stock · ends at on_confirm",
+            "in stock · PREPAID",
+            "in stock · COD",
+            "out of stock",
+        ]);
+        const atSelect = candidates[0];
+        expect(atSelect).toMatchObject({ exit: "select", choices: {}, expects: {} });
+        expect(atSelect.nodeIds).toEqual(["search", "on_search", "select"]);
+        // Only the forks before the exit are resolved: pay_decision is left alone.
+        const atConfirm = candidates[1];
+        expect(atConfirm).toMatchObject({
+            exit: "on_confirm",
+            choices: { select: "on_select" },
+            expects: {},
+        });
+        expect(atConfirm.nodeIds.at(-1)).toBe("on_confirm");
+        expect(candidates.find((c) => c.title === "out of stock")?.exit).toBeUndefined();
+
+        // Created as journeys, they walk exactly that path and lint clean.
+        const journeys = candidates.map((c, i) =>
+            journey({
+                id: `j${i}`,
+                title: c.title,
+                choices: c.choices,
+                expects: c.expects,
+                exit: c.exit,
+            })
+        );
+        journeys.forEach((j, i) => {
+            const walk = walkJourney(flat, j);
+            expect(walk.pending).toBeNull();
+            expect(walk.nodeIds).toEqual(candidates[i].nodeIds);
+        });
+        expect(
+            lintJourneys(flat, journeys).filter(
+                (p) => p.journeyId !== undefined && p.level !== "info"
+            )
+        ).toEqual([]);
+    });
+
+    it("doesn't count a journey stopped at an open fork as the same path as one finishing there", () => {
+        const graph = protocol();
+        const flat = flattenGraph({
+            ...graph,
+            nodes: graph.nodes.map((nd) => (nd.id === "select" ? { ...nd, end: true } : nd)),
+        });
+        const problems = lintJourneys(flat, [
+            journey({ id: "open", title: "Open" }),
+            journey({ id: "short", title: "Short", exit: "select" }),
+        ]);
+        expect(problems.some((p) => /walks the same path/.test(p.message))).toBe(false);
+    });
+
     it("warns when the journey's exit is off its path or not an End node", () => {
         const flat = flattenGraph(protocol());
         const off = journey({ choices: { select: "on_select_oos" }, exit: "confirm" });

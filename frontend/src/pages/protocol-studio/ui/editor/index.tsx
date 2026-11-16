@@ -1603,7 +1603,11 @@ const StudioEditorContent = ({
 
     const existingPathKeys = useMemo(() => {
         const keys = new Set<string>();
-        for (const journey of journeys) keys.add(walkJourney(flat, journey).nodeIds.join(">"));
+        for (const journey of journeys) {
+            const walk = walkJourney(flat, journey);
+            // Stopped at an open fork, it walks no path a candidate could match.
+            if (!walk.pending) keys.add(walk.nodeIds.join(">"));
+        }
         return keys;
     }, [flat, journeys]);
 
@@ -1615,7 +1619,11 @@ const StudioEditorContent = ({
                 picked.map(({ candidate, title }) => ({
                     title,
                     entry: entry.id,
-                    extra: { choices: candidate.choices, expects: candidate.expects },
+                    extra: {
+                        choices: candidate.choices,
+                        expects: candidate.expects,
+                        ...(candidate.exit ? { exit: candidate.exit } : {}),
+                    },
                 }))
             );
             setDerive((prev) => ({ ...prev, open: false }));

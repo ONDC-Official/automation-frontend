@@ -17,7 +17,8 @@ export interface IDeriveDialogProps {
 
 /**
  * "Derive journeys…": every way through the protocol, each a candidate with
- * a proposed title from the options it takes. Tick the ones to keep.
+ * a proposed title from the options it takes, plus one finishing at each End
+ * node the protocol goes on from. Tick the ones to keep.
  */
 export const DeriveDialog = ({
     open,
@@ -104,6 +105,9 @@ export const DeriveDialog = ({
                                             />
                                             <span className="studio-text-faint shrink-0 text-[11px]">
                                                 {candidate.nodeIds.length} steps
+                                                {candidate.exit
+                                                    ? ` · finishes at ${candidate.exit}`
+                                                    : ""}
                                                 {exists ? " · already a journey" : ""}
                                                 {candidate.end === "cycle" ? " · loops" : ""}
                                             </span>
