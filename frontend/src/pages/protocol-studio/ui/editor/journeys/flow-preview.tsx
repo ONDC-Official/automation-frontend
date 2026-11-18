@@ -8,8 +8,13 @@ import {
     StopIcon,
 } from "@heroicons/react/24/outline";
 
-import type { StudioRun, StudioRunActions } from "@pages/protocol-studio/hooks/use-studio-run";
+import type {
+    RunFailure,
+    StudioRun,
+    StudioRunActions,
+} from "@pages/protocol-studio/hooks/use-studio-run";
 import type { WalkResult } from "@pages/protocol-studio/ui/editor/journeys/derive";
+import { getFailureTitle } from "@pages/protocol-studio/ui/editor/journeys/failure";
 import type { RunStatus, StudioJourney } from "@pages/protocol-studio/ui/editor/types";
 
 export interface IFlowPreviewProps {
@@ -21,6 +26,54 @@ export interface IFlowPreviewProps {
     /** Opens the Run tab on a step's result. */
     onShowRun: () => void;
 }
+
+const Mono = ({ children }: { children: React.ReactNode }) => (
+    <span className="studio-mono">{children}</span>
+);
+
+/** What to change, by the rule the run broke. */
+const FailureHint = ({ failure }: { failure: RunFailure }) => {
+    const node = <Mono>{failure.nodeId}</Mono>;
+    let hint: React.ReactNode = null;
+    switch (failure.cause) {
+        case "repeat":
+            hint = (
+                <>
+                    {node} has run <Mono>repeat.max</Mono> times, and a decision led back into it.
+                    Change that decision's <Mono>decide</Mono> so the loop ends, or raise the limit.
+                </>
+            );
+            break;
+        case "no-wire":
+            hint = (
+                <>
+                    {node}'s <Mono>decide</Mono> returned a case no wire leaves from. Wire that case
+                    to the step it leads to, or change <Mono>decide</Mono>.
+                </>
+            );
+            break;
+        case "requirements":
+            hint = (
+                <>
+                    {node}'s <Mono>meetsRequirements</Mono> returned false for the session so far.
+                    Make the earlier steps save what it needs, or fix its requirements.
+                </>
+            );
+            break;
+        case "exit":
+        case undefined:
+            // A failure stored before causes existed was always this one.
+            hint = (
+                <>
+                    {node} repeats until its <Mono>exit</Mono> returns true, at most{" "}
+                    <Mono>repeat.max</Mono> times. Make its <Mono>generate</Mono> reach the final
+                    state, fix <Mono>exit</Mono>, or raise the limit.
+                </>
+            );
+            break;
+    }
+    return <p className="studio-text-dim text-[12px]">{hint}</p>;
+};
 
 const shortId = (id: string) => (id.length > 13 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id);
 
@@ -161,7 +214,7 @@ export const FlowPreview = ({
                               deviation
                                   ? " · stopped: journey unreachable"
                                   : failure
-                                    ? " · stopped: exit condition never met"
+                                    ? ` · stopped: ${getFailureTitle(failure.cause).toLowerCase()}`
                                     : run.finished
                                       ? " · finished at an End node"
                                       : ended
@@ -384,19 +437,14 @@ export const FlowPreview = ({
                             className="studio-flow-fork studio-flow-deviation"
                             role="alert"
                             data-alert="failure"
+                            data-cause={failure.cause}
                         >
                             <p className="studio-eyebrow">
                                 <ExclamationTriangleIcon />
-                                Exit condition never met
+                                {getFailureTitle(failure.cause)}
                             </p>
                             <p className="text-[12px]">{failure.reason}.</p>
-                            <p className="studio-text-dim text-[12px]">
-                                <span className="studio-mono">{failure.nodeId}</span> repeats until
-                                its <span className="studio-mono">exit</span> returns true, at most{" "}
-                                <span className="studio-mono">repeat.max</span> times. Make its{" "}
-                                <span className="studio-mono">generate</span> reach the final state,
-                                fix <span className="studio-mono">exit</span>, or raise the limit.
-                            </p>
+                            <FailureHint failure={failure} />
                         </li>
                     ) : null}
                     {fork ? (

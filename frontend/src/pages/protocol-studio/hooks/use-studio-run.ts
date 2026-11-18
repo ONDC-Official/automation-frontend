@@ -18,6 +18,7 @@ import {
     type JourneyV2,
     type NextV2,
     type RecogniseResultV2,
+    type RunFailureCauseV2,
     type StepOutcomeV2,
     type StepRunV2,
 } from "@ondc/automation-mock-runner";
@@ -37,12 +38,16 @@ export interface RunDeviation {
 }
 
 /**
- * The protocol can't go on correctly: a repeat-until node ran its `max`
- * times without its exit condition holding. The run stopped there.
+ * The protocol can't go on correctly; the run stopped there. `cause` is the
+ * rule it broke: a repeat-until node never met its exit condition (`exit`),
+ * a decision led into a node past its `repeat.max` (`repeat`), a decision
+ * returned a case with no wire (`no-wire`), or a step's requirements didn't
+ * hold (`requirements`). Absent on a run stored before causes existed.
  */
 export interface RunFailure {
     nodeId: string;
     reason: string;
+    cause?: RunFailureCauseV2;
 }
 
 /** Something the run is waiting on the tester for. */

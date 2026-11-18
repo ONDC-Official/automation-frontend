@@ -290,7 +290,13 @@ export const useLiveRun = ({
                       .filter((n): n is GraphNodeV2 => !!n),
                   end: live.next.end,
                   canEnd: live.next.canEnd,
-                  ...(plan?.kind === "failed" ? { failed: true, reason: plan.reason } : {}),
+                  ...(plan?.kind === "failed"
+                      ? {
+                            failed: true,
+                            reason: plan.reason,
+                            ...(plan.cause ? { cause: plan.cause } : {}),
+                        }
+                      : {}),
               }
             : null;
         const lastSaved: Record<string, Record<string, unknown>> = {};

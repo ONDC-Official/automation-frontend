@@ -52,6 +52,7 @@ export const LiveNextUpBar = ({
             data-next-action={next.action ?? "none"}
             data-next-tone={next.tone}
             data-next-api={next.api ?? undefined}
+            data-cause={next.cause}
             className={cn(
                 "flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border px-3 py-2.5 text-body-2",
                 TONE[next.tone]

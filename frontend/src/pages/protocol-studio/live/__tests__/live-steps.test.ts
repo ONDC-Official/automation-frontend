@@ -364,6 +364,41 @@ describe("getNextUp", () => {
             })
         );
         expect(failed).toMatchObject({ tone: "error", api: "select", detail: "generate threw" });
+        // No cause (a run stored before causes existed): the plain wording.
+        expect(failed.text).toBe("Failed at");
+        expect(failed.cause).toBeUndefined();
+        const unmet = next(
+            statusOf({
+                state: {
+                    ...statusOf({}).state,
+                    failure: {
+                        nodeId: "select",
+                        reason: "requirements false",
+                        cause: "requirements",
+                    },
+                },
+            })
+        );
+        expect(unmet).toMatchObject({
+            text: "Requirements not met at",
+            api: "select",
+            cause: "requirements",
+        });
+        // The plan alone can say so too.
+        const noWire = next(
+            statusOf({
+                plan: {
+                    kind: "failed",
+                    nodeId: "pay",
+                    reason: "case B has no wire",
+                    cause: "no-wire",
+                },
+            })
+        );
+        expect(noWire).toMatchObject({
+            text: "The decision's case has no wire at",
+            cause: "no-wire",
+        });
         const deviated = next(
             statusOf({
                 state: {

@@ -1,7 +1,13 @@
-import { hasInputsV2, type GraphNodeV2, type StepRunV2 } from "@ondc/automation-mock-runner";
+import {
+    hasInputsV2,
+    type GraphNodeV2,
+    type RunFailureCauseV2,
+    type StepRunV2,
+} from "@ondc/automation-mock-runner";
 
 import type { IStudioLiveExchange, IStudioLiveStatus } from "@store/api";
 import type { WalkResult } from "@pages/protocol-studio/ui/editor/journeys/derive";
+import { getFailureTitle } from "@pages/protocol-studio/ui/editor/journeys/failure";
 import type { NodeKind, NodeOwner, StudioNode } from "@pages/protocol-studio/ui/editor/types";
 
 /**
@@ -325,6 +331,8 @@ export interface LiveNextUp {
     api: string | null;
     /** Trailing detail, e.g. a failure reason. */
     detail?: string;
+    /** A failed run: the rule it broke (`exit`, `repeat`, `no-wire`, `requirements`). */
+    cause?: RunFailureCauseV2;
     /** The tester can act on it: reopen the inputs / form prompt, or run the paused step. */
     action?: "inputs" | "step";
 }
@@ -412,12 +420,15 @@ export const getNextUp = ({
                 detail: `${done} of ${total} steps`,
             };
         case "failed": {
+            // Worded as the editor's Flow preview words it, by the rule the run broke.
             const failure = status?.state.failure;
+            const cause = failure?.cause ?? (plan?.kind === "failed" ? plan.cause : undefined);
             return {
                 tone: "error",
-                text: "Failed at",
+                text: cause ? `${getFailureTitle(cause)} at` : "Failed at",
                 api: apiOf(model, failure?.nodeId ?? planNode),
                 detail: failure?.reason ?? (plan?.kind === "failed" ? plan.reason : undefined),
+                ...(cause ? { cause } : {}),
             };
         }
         case "deviated": {

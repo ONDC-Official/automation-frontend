@@ -1,4 +1,9 @@
-import type { DriverLogV2, GraphRunStateV2, NodeRunStatusV2 } from "@ondc/automation-mock-runner";
+import type {
+    DriverLogV2,
+    GraphRunStateV2,
+    NodeRunStatusV2,
+    RunFailureCauseV2,
+} from "@ondc/automation-mock-runner";
 // Raw shape of a single form field descriptor as returned by the API. The UI-specific
 // `FormConfigType` (widget variants, RJSF schema, etc.) is owned by the form renderer,
 // not the API layer — callers cast into it at the point of consumption.
@@ -79,7 +84,7 @@ export interface IStudioLiveStatus {
         | { kind: "await"; nodeId: string; candidates: string[] }
         | { kind: "fork"; nodeId: string; options: string[] }
         | { kind: "end"; canEnd: boolean; reason?: string }
-        | { kind: "failed"; nodeId: string; reason: string }
+        | { kind: "failed"; nodeId: string; reason: string; cause?: RunFailureCauseV2 }
         | { kind: "stopped"; reason: string };
     next: { end: boolean; canEnd: boolean; onDemand: string[] };
     sessionData: Record<string, unknown>;
