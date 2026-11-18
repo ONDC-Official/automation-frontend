@@ -500,3 +500,83 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
 }
+
+/* ── Dark mode ──────────────────────────────────────────────────────────────
+   Everything above hard-codes light surfaces (#fff, #f8fafc, #fafeff) and
+   dark-navy text (#0c4a6e), which do not follow the theme tokens. In dark mode
+   that left white cards with light text, a near-white input on hover, and
+   white checkboxes. Remap each to the tokens the .dark class already redefines;
+   the light theme is unchanged. */
+.dark .rjsf-custom-form {
+    /* Native <select> option lists and date/time pickers follow this. */
+    color-scheme: dark;
+}
+
+.dark .rjsf-custom-form :is(input, textarea)::placeholder {
+    color: color-mix(in srgb, var(--text-secondary) 70%, transparent);
+}
+
+.dark
+    .rjsf-custom-form
+    :is(
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"],
+        select,
+        textarea
+    ):hover:not(:focus):not(:disabled),
+.dark .rjsf-custom-form .form-control:hover:not(:focus):not(:disabled) {
+    border-color: color-mix(in srgb, var(--ring) 45%, var(--border-default));
+    background-color: var(--surface-muted);
+}
+
+.dark .rjsf-custom-form :is(input, select, textarea):disabled {
+    background-color: var(--surface-muted);
+    border-color: var(--border-default);
+    color: var(--text-secondary);
+}
+
+.dark .rjsf-custom-form fieldset {
+    border-color: var(--border-default);
+    background-color: color-mix(in srgb, var(--surface-muted) 50%, transparent);
+    box-shadow: none;
+}
+
+.dark .rjsf-custom-form :is(legend, .array-title, .form-title) {
+    color: var(--text-primary);
+}
+
+.dark .rjsf-custom-form :is(.field-description, .help-block) {
+    color: var(--text-secondary);
+}
+
+.dark .rjsf-custom-form :is(.field-object .field-object, .array-item) {
+    background-color: var(--surface-elevated);
+    border-color: var(--border-default);
+    box-shadow: none;
+}
+
+.dark .rjsf-custom-form .array-item:hover {
+    border-color: color-mix(in srgb, var(--ring) 45%, var(--border-default));
+    box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.4);
+}
+
+.dark .rjsf-custom-form :is(input[type="checkbox"], input[type="radio"]) {
+    background-color: var(--surface-muted);
+    border-color: var(--color-n-400);
+}
+
+.dark .rjsf-custom-form input[type="checkbox"]:checked {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+.dark .rjsf-custom-form input[type="radio"]:checked {
+    border-color: #0ea5e9;
+}

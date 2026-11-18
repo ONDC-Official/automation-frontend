@@ -1,0 +1,45 @@
+_TESTS_:
+  search:
+    - _NAME_: Context_tests
+      _RETURN_:
+        - _NAME_: Context_Attributes_Tests
+          _RETURN_:
+            - &a1
+              attr: $.context.timestamp
+              _RETURN_: attr are present
+              _NAME_: REQUIRED_context_timestamp
+            - &a2
+              attr: $.context.bap_id
+              _RETURN_: attr are present
+              _NAME_: REQUIRED_context_bap_id
+            - &a3
+              attr: $.context.transaction_id
+              _RETURN_: attr are present
+              _NAME_: REQUIRED_context_transaction_id
+
+    - _NAME_: Intent_tests
+      _RETURN_:
+        - _NAME_: VALID_ENUM_fulfillment_type
+          attr: $.message.intent.fulfillment.type
+          enumList:
+            - DELIVERY
+            - SELF_PICKUP
+          _CONTINUE_: '!(attr are present)'
+          _RETURN_: attr all in enumList
+  select:
+    - _NAME_: Context_tests
+      _RETURN_:
+        - &a11
+          _NAME_: Context_Attributes_Tests
+          _RETURN_:
+            - *a1
+            - *a2
+            - *a3
+            - _NAME_: REQUIRED_context_bpp_id
+              attr: $.context.bpp_id
+              _RETURN_: attr are present
+  init:
+    - _NAME_: Context_tests
+      _RETURN_:
+        - *a11
+_SESSION_DATA_: {}

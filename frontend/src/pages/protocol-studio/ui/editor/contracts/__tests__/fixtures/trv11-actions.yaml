@@ -1,0 +1,41 @@
+supportedActions:
+  "null":
+    - search
+    - select
+    - init
+  search:
+    - on_search
+    - search
+  on_search:
+    - search
+    - select
+    - init
+  select:
+    - on_select
+  on_select:
+    - select
+    - init
+  init:
+    - on_init
+  on_init:
+    - init
+    - confirm
+  confirm:
+    - on_confirm
+  on_confirm: []
+apiProperties:
+  search:
+    async_predecessor: null
+    transaction_partner: []
+  on_search:
+    async_predecessor: search
+    transaction_partner: []
+  on_select:
+    async_predecessor: select
+    transaction_partner:
+      - select
+  status:
+    async_predecessor: null
+    transaction_partner:
+      - init
+      - on_init

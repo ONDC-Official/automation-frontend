@@ -4,3 +4,5 @@ build
 .DS_Store
 *.lock
 package-lock.json
+# Byte-exact copies of real spec files: the YAML editor tests depend on their formatting.
+src/pages/protocol-studio/ui/editor/contracts/__tests__/fixtures

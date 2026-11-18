@@ -32,6 +32,10 @@ app.use(
 
 app.use(cors(buildCorsOptions()));
 
+// A Studio live session's graph document is well under 1 MB (the largest seen
+// is ~140 KB): its route gets a 10 MB cap ahead of the global 75 MB one, which
+// then finds the body already parsed.
+app.use("/sessions/studio", express.json({ limit: "10mb" }));
 app.use(express.json({ limit: "75mb" }));
 app.use(express.urlencoded({ limit: "75mb", extended: true }));
 // app.use(express.json());

@@ -1,0 +1,70 @@
+enums:
+  loanCategories: &loanCategories
+      - &LOAN LOAN
+      - &UNSECURED_PERSONAL UNSECURED_PERSONAL
+      - &GOLD_LOAN GOLD_LOAN
+  orderStatus: &orderStatus
+      - CREATED
+      - ACCEPTED
+      - COMPLETED
+tags:
+  providerTags: &providerTags
+    - CONTACT_INFO
+    - LSP_INFO
+
+_TESTS_:
+
+  on_search:
+    - _NAME_: ON_SEARCH_CONTEXT
+      action:
+        - on_search
+      _RETURN_: &COMMON_CONTEXT
+        - _NAME_: CONTEXT_REQUIRED
+          _RETURN_:
+            - _NAME_: REQUIRED_CONTEXT_DOMAIN
+              attr: $.context.domain
+              _RETURN_: attr are present
+            - _NAME_: REQUIRED_CONTEXT_BAP_ID
+              attr: $.context.bap_id
+              _RETURN_: attr are present
+    - _NAME_: ON_SEARCH_CATEGORIES
+      _RETURN_:
+        - _NAME_: ON_SEARCH_CATEGORIES_ID
+          attr:  $.message.catalog.providers[*].categories[*].id
+          _RETURN_: attr are present
+        
+        - _NAME_: ON_SEARCH_CATEGORIES_PARENT_ID
+          attr: $.message.catalog.providers[*].categories[*].parent_category_id
+          category_code_path: $.message.catalog.providers[*].categories[*].descriptor.code
+          var_category_code:
+            - *LOAN
+          _CONTINUE_: '(category_code_path any in var_category_code)'
+          _RETURN_: attr are present
+
+        - _NAME_: VALID_ENUM_CATEGORY_CODE
+          attr: $.message.catalog.providers[*].categories[*].descriptor.code
+          enumList: *loanCategories
+          _CONTINUE_: '!(attr are present)'
+          _RETURN_: attr all in enumList  
+
+    # - _NAME_: ON_SEARCH_DISABLED
+    #   action: on_search
+  select:
+    - _NAME_: SELECT_CONTEXT
+      action:
+        - select
+      _RETURN_: *COMMON_CONTEXT
+
+    - &_REQUIRED_PROVIDER_ID
+      _NAME_: REQUIRED_PROVIDER_ID
+      attr: $.message.order.provider.id
+      _RETURN_: attr are present
+  on_status:
+    - _NAME_: ON_STATUS_CONTEXT
+      _RETURN_: *COMMON_CONTEXT
+    - *_REQUIRED_PROVIDER_ID
+    - _NAME_: VALID_ORDER_STATUS
+      attr: $.message.order.status
+      enumList: *orderStatus
+      _RETURN_: attr all in enumList
+_SESSION_DATA_: {}

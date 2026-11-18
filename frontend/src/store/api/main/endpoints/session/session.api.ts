@@ -23,6 +23,24 @@ export const sessionApi = mainApi.injectEndpoints({
                 data,
             }),
         }),
+        // Protocol Studio live session: the session plus the compiled graph document.
+        createStudioSession: builder.mutation<
+            { sessionId: string; subscriberUrl: string },
+            { sessionData: unknown; studioConfig: unknown }
+        >({
+            query: (data) => ({
+                url: API_ROUTES.SESSIONS.STUDIO,
+                method: "POST",
+                data,
+            }),
+        }),
+        getStudioSession: builder.query<Record<string, unknown>, { sessionId: string }>({
+            query: ({ sessionId }) => ({
+                url: API_ROUTES.SESSIONS.STUDIO,
+                method: "GET",
+                params: { session_id: sessionId },
+            }),
+        }),
         getSessionById: builder.query<Record<string, unknown>, { sessionId: string }>({
             query: ({ sessionId }) => ({
                 url: API_ROUTES.SESSIONS.BASE,
@@ -152,6 +170,8 @@ export const sessionApi = mainApi.injectEndpoints({
 export const {
     useCreateSessionMutation,
     useCreatePlaygroundSessionMutation,
+    useCreateStudioSessionMutation,
+    useGetStudioSessionQuery,
     useGetSessionByIdQuery,
     useLazyGetSessionByIdQuery,
     usePutCacheDataMutation,

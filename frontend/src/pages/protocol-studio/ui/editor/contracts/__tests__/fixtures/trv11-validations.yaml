@@ -1,0 +1,94 @@
+# enums:
+#   vehicleCategory: &vehicleCategory
+#     - &BUS BUS
+#     - &METRO METRO
+
+# _TESTS_:
+#   search:
+#     - _NAME_: OLD_DISABLED_TEST
+#       attr: $.context.domain
+#       _RETURN_: attr are present
+
+# _SESSION_DATA_:
+#     tx: {}
+
+
+
+
+_TESTS_:
+  search:
+    - _NAME_: REQUIRED_CONTEXT_CODE_1
+      attr: "$.context.location.country.code"
+      _RETURN_: attr are present && attr all in enumList
+      enumList:
+        - IND
+      useCasePath: "$.message.intent.fulfillment.vehicle.category"
+    - _NAME_: VALIDATE_CITY_CODE_FORMAT
+      _SCOPE_: "$.context.location.city"
+      subTags: "$.code"
+      match1: ["^std:0\\d+$"]
+      _CONTINUE_: "!(subTags are present)"
+      _RETURN_: subTags follow regex match1
+    - _NAME_: REQUIRED_CONTEXT_ACTION_9
+      attr: "$.context.action"
+      _RETURN_: attr are present && attr all in enumList
+      enumList:
+        - search
+      useCasePath: "$.message.intent.fulfillment.vehicle.category"
+    - _NAME_: REQUIRED_MESSAGE_CATEGORY_12
+      attr: "$.message.intent.fulfillment.vehicle.category"
+      _RETURN_: attr are present && attr all in enumList
+      enumList:
+        - BUS
+        - METRO
+      useCasePath: "$.message.intent.fulfillment.vehicle.category"
+      useCode:
+        - METRO
+      _CONTINUE_: "!(useCasePath all in useCode)"
+
+    - _NAME_: VALID_VEHICLE_VARIANT
+      _SCOPE_: "$.message.intent.fulfillment.vehicle"
+      subTags: "$.variant"
+      validValues:
+        - AC
+        - NON_AC
+      _CONTINUE_: "!(subTags are present)"
+      _RETURN_: subTags all in validValues
+
+    - _NAME_: validate_tag_0_BUYER_FINDER_FEES
+      _SCOPE_: "$.message.intent.payment.tags[?(@.descriptor.code=='BUYER_FINDER_FEES')]"
+      subTags: "$.list[*].descriptor.code"
+      validValues:
+        - BUYER_FINDER_FEES_PERCENTAGE
+        - BUYER_FINDER_FEES_AMOUNT
+      _RETURN_: subTags all in validValues
+#    - _NAME_: DISABLED_INLINE_TEST
+#      attr: "$.context.ttl"
+#      _RETURN_: attr are present
+
+  select:
+    - _NAME_: REQUIRED_CONTEXT_ACTION_9
+      attr: "$.context.action"
+      _RETURN_: attr are present && attr all in enumList
+      enumList:
+        - select
+    - _NAME_: REQUIRED_MESSAGE_ID_1
+      attr: "$.message.order.provider.id"
+      _RETURN_: attr are present
+  issue:
+    - _NAME_: REQUIRED_CONTEXT_FIELDS
+      _RETURN_:
+        - _NAME_: REQUIRED_CONTEXT_DOMAIN
+          attr: $.context.domain
+          _RETURN_: attr are present
+    - _NAME_: ISSUE_VALIDATION_VERSION_200
+      action: [issue]
+      _SCOPE_: $.message.issue.actions
+      _RETURN_:
+        - _NAME_: REQUIRED_MESSAGE_STATUS
+          attr: $.message.issue.status
+          _RETURN_: attr are present && attr all in enumList && attr are unique
+          enumList: [OPEN, CLOSED, PROCESSING]
+  
+_SESSION_DATA_:
+  tx: {}

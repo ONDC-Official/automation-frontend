@@ -36,6 +36,12 @@ export const ROUTES = {
     PROFILE_MCP_KEY: "/profile/mcp-key",
     SELLER_ONBOARDING: "/seller-onboarding",
     PLAYGROUND: "/playground",
+    /** Protocol Studio — the starter form; the multi-flow successor to the Playground. */
+    STUDIO: "/studio",
+    /** The Studio graph editor. Fills the window under the header, so it renders without the footer. */
+    STUDIO_EDITOR: "/studio/editor",
+    /** A Studio live session against a real participant (`?sessionId&subscriberUrl&role`). Scrolls like v1's flow-testing page. */
+    STUDIO_LIVE: "/studio/live",
     HISTORY: "/history",
     DB_BACK_OFFICE: "/db-back-office",
     ROOT: "/",
@@ -91,6 +97,15 @@ export function getDeveloperGuideValidationsPath(domain: string, version: string
  */
 export function isChromelessRoute(pathname: string): boolean {
     return pathname.startsWith(ROUTES.TRACK_PREFIX);
+}
+
+/**
+ * Routes that keep the header but drop the footer: full-height editors that
+ * fill the window under the header. A footer below them would make the page
+ * scroll, so the wheel would scroll the page over a panel but zoom the canvas.
+ */
+export function isFooterlessRoute(pathname: string): boolean {
+    return pathname.startsWith(ROUTES.STUDIO_EDITOR);
 }
 
 /**

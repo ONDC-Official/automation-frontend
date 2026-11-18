@@ -231,7 +231,7 @@ export const getCurrentStateFlow = async (
 			},
 			e,
 		);
-		res.status(500).send(ERROR);
+		sendMockError(res, e, "flow status");
 	}
 };
 
@@ -264,8 +264,23 @@ export const proceedFlow = async (req: Request, res: Response) => {
 			},
 			e,
 		);
-		res.status(500).send(ERROR);
+		sendMockError(res, e, "proceed flow");
 	}
+};
+
+/**
+ * Answers a failed mock-service call with what the mock said (its status and body) rather
+ * than a bare 500, so the UI can show the real reason; 502 when the mock gave no answer.
+ */
+const sendMockError = (res: Response, e: unknown, what: string) => {
+	const response = (e as { response?: { status?: number; data?: unknown } })?.response;
+	if (response?.status) {
+		res.status(response.status).send(response.data ?? ERROR);
+		return;
+	}
+	res.status(502).send({
+		message: `The mock service did not answer (${what}): ${(e as Error)?.message ?? "unknown error"}`,
+	});
 };
 
 export const newFlow = async (req: Request, res: Response) => {
@@ -294,7 +309,7 @@ export const newFlow = async (req: Request, res: Response) => {
 			},
 			e,
 		);
-		res.status(500).send(ERROR);
+		sendMockError(res, e, "start flow");
 	}
 };
 
