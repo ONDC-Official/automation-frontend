@@ -195,3 +195,16 @@ export const applyEdits = (parsed: ParsedContract, edits: ContractEdit[]): Appli
     }
     return { ...current, planned: { ...current.planned, impact } };
 };
+
+/**
+ * The shared node `edits` would change, without applying them: what to
+ * confirm before an edit shows in every use of an anchor. Null when nothing
+ * shared changes, or when the edits can't be applied (applying says why).
+ */
+export const previewImpact = (parsed: ParsedContract, edits: ContractEdit[]) => {
+    try {
+        return applyEdits(parsed, edits).planned.impact;
+    } catch {
+        return null;
+    }
+};

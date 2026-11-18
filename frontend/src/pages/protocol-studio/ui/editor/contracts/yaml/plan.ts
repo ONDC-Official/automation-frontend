@@ -669,6 +669,32 @@ export const outermostAlias = (parsed: ParsedContract, at: Locator): Locator | n
     return null;
 };
 
+/**
+ * The edits that duplicate the list item at `at[index]` without changing what
+ * it shares with other places, optionally setting `rename.key` on the copy:
+ * - a list reached through an alias is shared, so it is copied out here first
+ *   (`outermostAlias`) and the duplicate lands only here;
+ * - a copy of an alias (`- *a1`) is the same alias, so renaming it would
+ *   rename the original: the copy is made a separate copy (`unshare`) first.
+ */
+export const duplicateSeqItemEdits = (
+    parsed: ParsedContract,
+    at: Locator,
+    index: number,
+    rename?: { key: string; value: ScalarValue }
+): ContractEdit[] => {
+    const edits: ContractEdit[] = [];
+    const prefix = outermostAlias(parsed, at);
+    if (prefix) edits.push({ op: "unshare", at: prefix });
+    edits.push({ op: "duplicateSeqItem", at, index });
+    const item = resolveLocator(parsed.doc, [...at, index])?.node;
+    if (item && isAlias(item)) edits.push({ op: "unshare", at: [...at, index + 1] });
+    if (rename) {
+        edits.push({ op: "setScalar", at: [...at, index + 1, rename.key], value: rename.value });
+    }
+    return edits;
+};
+
 /** Every anchor name in the file (to pick fresh names and to check a copy doesn't redefine one). */
 export const anchorNames = (parsed: ParsedContract) =>
     new Set(anchorCensus(parsed).map((a) => a.name));

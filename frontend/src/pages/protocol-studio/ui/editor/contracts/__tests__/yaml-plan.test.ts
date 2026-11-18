@@ -9,12 +9,17 @@ import {
     lineDelta,
 } from "@pages/protocol-studio/ui/editor/contracts/yaml/patch";
 import {
+    duplicateSeqItemEdits,
     EditBlockedError,
     type ContractEdit,
 } from "@pages/protocol-studio/ui/editor/contracts/yaml/plan";
 import { sharedImpact } from "@pages/protocol-studio/ui/editor/contracts/yaml/shared";
 import { detectStyle } from "@pages/protocol-studio/ui/editor/contracts/yaml/style";
-import { applyEdit, applyEdits } from "@pages/protocol-studio/ui/editor/contracts/yaml/verify";
+import {
+    applyEdit,
+    applyEdits,
+    previewImpact,
+} from "@pages/protocol-studio/ui/editor/contracts/yaml/verify";
 
 const fixture = (name: string) => readFileSync(join(__dirname, "fixtures", name), "utf8");
 
@@ -375,6 +380,69 @@ describe("contract yaml: shared nodes", () => {
             6
         );
         expect(after).toContain("      enumList:\n        - CREATED\n");
+    });
+
+    it("duplicates a reused test as a separate copy, leaving the original's name (FIS12)", () => {
+        const before = parseContract(FIS12);
+        const edits = duplicateSeqItemEdits(before, ["_TESTS_", "on_status"], 1, {
+            key: "_NAME_",
+            value: "REQUIRED_PROVIDER_ID_COPY",
+        });
+        expect(edits.map((e) => e.op)).toEqual(["duplicateSeqItem", "unshare", "setScalar"]);
+        expect(previewImpact(before, edits)).toBeNull();
+        const { parsed } = applyEdits(before, edits);
+        const js = parsed.doc.toJS({ maxAliasCount: -1 });
+        expect(js._TESTS_.select[1]._NAME_).toBe("REQUIRED_PROVIDER_ID");
+        expect(js._TESTS_.on_status[1]._NAME_).toBe("REQUIRED_PROVIDER_ID");
+        expect(js._TESTS_.on_status[2]._NAME_).toBe("REQUIRED_PROVIDER_ID_COPY");
+        expect(parsed.census.aliases).toBe(before.census.aliases);
+        expect(parsed.census.redefinedAnchors).toEqual([]);
+    });
+
+    it("copies a list reached through an alias out before duplicating in it (FIS12)", () => {
+        const before = parseContract(FIS12);
+        const at = ["_TESTS_", "select", 0, "_RETURN_", 0, "_RETURN_"];
+        const edits = duplicateSeqItemEdits(before, at, 0, {
+            key: "_NAME_",
+            value: "REQUIRED_CONTEXT_DOMAIN_COPY",
+        });
+        expect(edits[0]).toEqual({ op: "unshare", at: ["_TESTS_", "select", 0, "_RETURN_"] });
+        expect(previewImpact(before, edits)).toBeNull();
+        const { parsed } = applyEdits(before, edits);
+        const js = parsed.doc.toJS({ maxAliasCount: -1 });
+        const names = (list: { _NAME_: string }[]) => list.map((t) => t._NAME_);
+        expect(names(js._TESTS_.select[0]._RETURN_[0]._RETURN_)).toEqual([
+            "REQUIRED_CONTEXT_DOMAIN",
+            "REQUIRED_CONTEXT_DOMAIN_COPY",
+            "REQUIRED_CONTEXT_BAP_ID",
+        ]);
+        // The other uses of &COMMON_CONTEXT are untouched.
+        for (const api of ["on_search", "on_status"]) {
+            expect(names(js._TESTS_[api][0]._RETURN_[0]._RETURN_)).toEqual([
+                "REQUIRED_CONTEXT_DOMAIN",
+                "REQUIRED_CONTEXT_BAP_ID",
+            ]);
+        }
+    });
+
+    it("duplicates an alias item inside a shared group, and says the group is shared (TRV10)", () => {
+        const before = parseContract(TRV10);
+        const at = ["_TESTS_", "select", 0, "_RETURN_", 0, "_RETURN_"];
+        const edits = duplicateSeqItemEdits(before, at, 0, {
+            key: "_NAME_",
+            value: "REQUIRED_context_timestamp_COPY",
+        });
+        // &a11 is reused by init: the copy shows there too, so the editor asks first.
+        expect(previewImpact(before, edits)?.anchor).toBe("a11");
+        const { parsed } = applyEdits(before, edits);
+        const js = parsed.doc.toJS({ maxAliasCount: -1 });
+        expect(js._TESTS_.search[0]._RETURN_[0]._RETURN_[0]._NAME_).toBe(
+            "REQUIRED_context_timestamp"
+        );
+        expect(js._TESTS_.select[0]._RETURN_[0]._RETURN_[1]._NAME_).toBe(
+            "REQUIRED_context_timestamp_COPY"
+        );
+        expect(parsed.census.redefinedAnchors).toEqual([]);
     });
 
     it("refuses to remove a value other places reuse", () => {

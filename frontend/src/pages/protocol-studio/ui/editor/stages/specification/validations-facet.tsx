@@ -16,7 +16,11 @@ import {
     XMarkIcon,
 } from "@heroicons/react/24/outline";
 
-import type { StudioContracts } from "@pages/protocol-studio/hooks/use-studio-contracts";
+import { ConfirmDialog } from "@components/Shadcn/Dialog/confirm-dialog";
+import type {
+    EditResult,
+    StudioContracts,
+} from "@pages/protocol-studio/hooks/use-studio-contracts";
 import { listSchemaPaths } from "@pages/protocol-studio/ui/editor/contracts/specs/schema";
 import { sentenceText } from "@pages/protocol-studio/ui/editor/contracts/validations/jval";
 import {
@@ -25,9 +29,12 @@ import {
     type VTest,
 } from "@pages/protocol-studio/ui/editor/contracts/validations/model";
 import {
+    duplicateSeqItemEdits,
     outermostAlias,
     type ContractEdit,
 } from "@pages/protocol-studio/ui/editor/contracts/yaml/plan";
+import type { SharedImpact } from "@pages/protocol-studio/ui/editor/contracts/yaml/shared";
+import { previewImpact } from "@pages/protocol-studio/ui/editor/contracts/yaml/verify";
 import { RuleForm } from "@pages/protocol-studio/ui/editor/stages/specification/rule-form";
 import { Sentence } from "@pages/protocol-studio/ui/editor/stages/specification/fields";
 import { useSpecPortal } from "@pages/protocol-studio/ui/editor/stages/specification/portal";
@@ -166,11 +173,36 @@ export const ValidationsFacet = ({
         [models.spec, api]
     );
 
-    const edit = (edits: ContractEdit[], done?: string) => {
+    // An edit that lands in a shared (anchored and reused) node shows in every use: confirmed first.
+    const [pendingShared, setPendingShared] = useState<{
+        edits: ContractEdit[];
+        done?: string;
+        then?: () => void;
+        impact: SharedImpact;
+    } | null>(null);
+
+    const commit = (edits: ContractEdit[], done?: string, then?: () => void): EditResult => {
         const result = ops.applyEdit("validations", edits);
         if (!result.ok) toast.error(result.error);
-        else if (done) toast.success(done);
-        return result.ok;
+        else {
+            if (done) toast.success(done);
+            then?.();
+        }
+        return result;
+    };
+
+    /**
+     * Applies `edits` as one undo step, then `then`. One that would change a
+     * shared node isn't applied yet: the result carries its impact, and the
+     * user is asked first.
+     */
+    const edit = (edits: ContractEdit[], done?: string, then?: () => void): EditResult => {
+        const impact = parsed ? previewImpact(parsed, edits) : null;
+        if (impact) {
+            setPendingShared({ edits, done, then, impact });
+            return { ok: true, impact };
+        }
+        return commit(edits, done, then);
     };
 
     const nextName = (base: string) => {
@@ -187,23 +219,26 @@ export const ValidationsFacet = ({
         if (into) {
             const at = [...into.at, "_RETURN_"];
             const index = into.children?.length ?? 0;
-            if (edit([{ op: "insertSeqItem", at, index, value }]))
-                setSelectedId(`${into.id}.${index}`);
+            edit([{ op: "insertSeqItem", at, index, value }], undefined, () =>
+                setSelectedId(`${into.id}.${index}`)
+            );
             return;
         }
         if (!key) {
             const hasTests = model && model.testsLine !== undefined;
-            const ok = edit(
+            edit(
                 hasTests
                     ? [{ op: "setPair", at: ["_TESTS_"], key: api, value: [value] }]
-                    : [{ op: "setPair", at: [], key: "_TESTS_", value: { [api]: [value] } }]
+                    : [{ op: "setPair", at: [], key: "_TESTS_", value: { [api]: [value] } }],
+                undefined,
+                () => setSelectedId(`${api}/0`)
             );
-            if (ok) setSelectedId(`${api}/0`);
             return;
         }
-        if (edit([{ op: "insertSeqItem", at: ["_TESTS_", key], index: tests.length, value }])) {
-            setSelectedId(`${key}/${tests.length}`);
-        }
+        const index = tests.length;
+        edit([{ op: "insertSeqItem", at: ["_TESTS_", key], index, value }], undefined, () =>
+            setSelectedId(`${key}/${index}`)
+        );
     };
 
     const siblingsOf = (test: VTest) => {
@@ -216,36 +251,42 @@ export const ValidationsFacet = ({
 
     const actions = {
         duplicate: (test: VTest) => {
+            if (!parsed) return;
             const index = test.indexPath[test.indexPath.length - 1]!;
             const at = test.at.slice(0, -1);
-            const edits: ContractEdit[] = [{ op: "duplicateSeqItem", at, index }];
-            if (test.name !== undefined) {
-                edits.push({
-                    op: "setScalar",
-                    at: [...at, index + 1, "_NAME_"],
-                    value: nextName(`${test.name.replace(/_COPY(_\d+)?$/, "")}_COPY`),
-                });
-            }
-            if (edit(edits)) setSelectedId(idAt(test, index + 1));
+            // A shared list or a reused test is copied out first, so renaming
+            // the copy can't rename the original (or its other uses).
+            const edits = duplicateSeqItemEdits(
+                parsed,
+                at,
+                index,
+                test.name !== undefined
+                    ? {
+                          key: "_NAME_",
+                          value: nextName(`${test.name.replace(/_COPY(_\d+)?$/, "")}_COPY`),
+                      }
+                    : undefined
+            );
+            edit(edits, undefined, () => setSelectedId(idAt(test, index + 1)));
         },
         move: (test: VTest, delta: number) => {
             const index = test.indexPath[test.indexPath.length - 1]!;
             const to = index + delta;
             if (to < 0 || to >= siblingsOf(test).length) return;
-            if (edit([{ op: "moveSeqItem", at: test.at.slice(0, -1), from: index, to }]))
-                setSelectedId(idAt(test, to));
+            edit(
+                [{ op: "moveSeqItem", at: test.at.slice(0, -1), from: index, to }],
+                undefined,
+                () => setSelectedId(idAt(test, to))
+            );
         },
         remove: (test: VTest) => {
             const index = test.indexPath[test.indexPath.length - 1]!;
-            if (
-                edit(
-                    [{ op: "removeSeqItem", at: test.at.slice(0, -1), index }],
-                    `Deleted ${test.name ?? "the test"} · ⌘Z to undo`
-                )
-            ) {
-                const siblings = siblingsOf(test);
-                setSelectedId(siblings.length > 1 ? idAt(test, Math.max(0, index - 1)) : null);
-            }
+            const siblings = siblingsOf(test);
+            edit(
+                [{ op: "removeSeqItem", at: test.at.slice(0, -1), index }],
+                `Deleted ${test.name ?? "the test"} · ⌘Z to undo`,
+                () => setSelectedId(siblings.length > 1 ? idAt(test, Math.max(0, index - 1)) : null)
+            );
         },
         unshare: (test: VTest) => {
             if (!parsed) return;
@@ -557,7 +598,8 @@ export const ValidationsFacet = ({
                         parsed={parsed}
                         editable={editable}
                         suggestions={suggestions}
-                        onEdit={(edits) => edit(edits)}
+                        // The form shows a shared test's impact itself: no confirmation per field.
+                        onEdit={(edits) => commit(edits).ok}
                         onUnshare={() => actions.unshare(selected)}
                         onShowPath={onShowPath}
                         onReveal={() => onReveal(selected.line)}
@@ -567,6 +609,24 @@ export const ValidationsFacet = ({
                     <p className="studio-spec-empty">Pick a test to read or edit it.</p>
                 )}
             </div>
+            <ConfirmDialog
+                open={pendingShared !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingShared(null);
+                }}
+                title="Change a shared test?"
+                description={
+                    pendingShared
+                        ? `This lands in &${pendingShared.impact.anchor}, which is used in ${pendingShared.impact.uses.length} places: the change shows in all of them. To change only this one, make it a separate copy first.`
+                        : undefined
+                }
+                confirmText="Change all"
+                onConfirm={() => {
+                    const pending = pendingShared;
+                    setPendingShared(null);
+                    if (pending) commit(pending.edits, pending.done, pending.then);
+                }}
+            />
         </div>
     );
 };
