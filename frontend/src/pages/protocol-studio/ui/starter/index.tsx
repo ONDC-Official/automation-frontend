@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
-import { createInitialMockConfigV2 } from "@ondc/automation-mock-runner";
-import { ArrowRightIcon, FolderOpenIcon } from "@heroicons/react/24/outline";
+import {
+    createInitialMockConfigV2,
+    type MockPlaygroundConfigV2Type,
+} from "@ondc/automation-mock-runner";
+import { ArrowRightIcon, ArrowUpTrayIcon, FolderOpenIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 import { Button } from "@components/Shadcn/Button";
+import { ConfirmDialog } from "@components/Shadcn/Dialog/confirm-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@components/Shadcn/Tabs/tabs";
 import GitHubIcon from "@assets/svgs/GitHubIcon";
 import { cn } from "@/lib/utils";
@@ -12,6 +17,10 @@ import { SchemaGeneratorModal } from "@pages/protocol-playground/ui/components/s
 import { useScenarioFormData } from "@pages/protocol-playground/ui/starter/use-scenario-form-data";
 import { STARTER_TABS } from "@pages/protocol-playground/ui/starter/constants";
 import type { StarterTabKey } from "@pages/protocol-playground/ui/starter/types";
+import {
+    readStudioProjectFile,
+    type StudioProjectContent,
+} from "@pages/protocol-studio/persistence/project-file";
 import { StudioFlowFields } from "@pages/protocol-studio/ui/starter/fields";
 import {
     STUDIO_STARTER_FORM_DEFAULTS,
@@ -22,11 +31,21 @@ import type {
     IStudioStarterScreenProps,
 } from "@pages/protocol-studio/ui/starter/types";
 
-// Saved configs and GitHub import are wired to v1 configs (flowId-keyed storage,
-// v1 MockRunner validation); they light up once Studio configs are persisted.
+// GitHub import is wired to v1 configs (flowId-keyed storage, v1 MockRunner
+// validation); it lights up once Studio configs can be imported.
 const COMING_SOON = "Coming soon to Protocol Studio";
 
-export const StudioStarterScreen = ({ onCreate, draft, onResume }: IStudioStarterScreenProps) => {
+/** What replaces the saved draft once the user confirms: a new config, or an opened project. */
+type PendingReplace =
+    | { kind: "create"; config: MockPlaygroundConfigV2Type }
+    | { kind: "open"; project: StudioProjectContent };
+
+export const StudioStarterScreen = ({
+    onCreate,
+    draft,
+    onResume,
+    onOpenProject,
+}: IStudioStarterScreenProps) => {
     const { control, handleSubmit, watch, setValue } = useForm<IStudioStarterFormValues>({
         defaultValues: STUDIO_STARTER_FORM_DEFAULTS,
         mode: "onChange",
@@ -42,12 +61,38 @@ export const StudioStarterScreen = ({ onCreate, draft, onResume }: IStudioStarte
     const canContinue = !!domain && !!version;
     const closeModal = () => setActiveModal(null);
 
+    // Continuing, or opening a project file, replaces the saved draft: ask first.
+    const [pending, setPending] = useState<PendingReplace | null>(null);
+    const replace = (next: PendingReplace) => {
+        if (next.kind === "create") onCreate(next.config);
+        else onOpenProject?.(next.project);
+    };
+    const replaceOrAsk = (next: PendingReplace) => {
+        if (draft) setPending(next);
+        else replace(next);
+    };
+
     const onSubmit = ({ domain, version, useCaseId, description }: IStudioStarterFormValues) => {
         if (!domain || !version) return;
         const initial = createInitialMockConfigV2(domain, version);
         if (useCaseId.trim()) initial.meta.use_case_id = useCaseId.trim();
         if (description.trim()) initial.meta.description = description.trim();
-        onCreate(initial);
+        replaceOrAsk({ kind: "create", config: initial });
+    };
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const openProjectFile = async (event: ChangeEvent<HTMLInputElement>) => {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+        // Cleared, so choosing the same file again fires a change.
+        input.value = "";
+        if (!file) return;
+        const read = readStudioProjectFile(await file.text());
+        if (!read.ok) {
+            toast.error(`Couldn't open ${file.name}`, { description: read.error });
+            return;
+        }
+        replaceOrAsk({ kind: "open", project: read.content });
     };
 
     const handleTabChange = (value: string) => {
@@ -81,12 +126,28 @@ export const StudioStarterScreen = ({ onCreate, draft, onResume }: IStudioStarte
                                 <FolderOpenIcon className="size-4" />
                                 Resume {draft.config.meta.domain} {draft.config.meta.version}
                             </Button>
-                        ) : (
-                            <Button disabled title={COMING_SOON}>
-                                <FolderOpenIcon className="size-4" />
-                                Load Saved
-                            </Button>
-                        )}
+                        ) : null}
+                        {onOpenProject ? (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant={draft ? "outline" : "default"}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Open a project saved with Download project"
+                                >
+                                    <ArrowUpTrayIcon className="size-4" />
+                                    Open project file
+                                </Button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".json,application/json"
+                                    className="hidden"
+                                    aria-label="Project file"
+                                    onChange={(event) => void openProjectFile(event)}
+                                />
+                            </>
+                        ) : null}
                         <Button
                             type="button"
                             variant="outline"
@@ -129,6 +190,26 @@ export const StudioStarterScreen = ({ onCreate, draft, onResume }: IStudioStarte
                     </form>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={pending !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPending(null);
+                }}
+                title="Replace your saved draft?"
+                description={
+                    draft
+                        ? `Your saved draft of ${draft.config.meta.domain} ${draft.config.meta.version} — its graph, journeys and helpers — is replaced. To keep it, resume it and use Download project first.`
+                        : undefined
+                }
+                confirmText="Replace draft"
+                danger
+                onConfirm={() => {
+                    const next = pending;
+                    setPending(null);
+                    if (next) replace(next);
+                }}
+            />
 
             <FlowConverterModal isOpen={activeModal === "flowConverter"} onClose={closeModal} />
 

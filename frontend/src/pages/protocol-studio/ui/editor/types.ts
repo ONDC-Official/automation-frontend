@@ -604,6 +604,8 @@ export interface IEditorHeaderBarProps {
     /** Opens the generated types (spec payloads, sessionData, …) in the code popup. */
     onViewTypes: () => void;
     onDownloadConfig: () => void;
+    /** Downloads the whole project (config, graph, journeys, helpers) as a file the starter opens. */
+    onDownloadProject: () => void;
     /** Opens the Start live session dialog. */
     onStartLiveSession?: () => void;
     /** What step code is typed against: shown next to the validity badge. */

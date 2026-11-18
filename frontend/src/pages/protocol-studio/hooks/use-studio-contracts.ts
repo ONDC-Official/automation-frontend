@@ -328,7 +328,10 @@ export const useStudioContracts = (
     const [storageFull, setStorageFull] = useState(false);
     const [persistFailed, setPersistFailed] = useState(false);
     useEffect(() => {
-        const onFail = () => setPersistFailed(true);
+        // The draft reports its own failures; the editor shows those.
+        const onFail = (event: Event) => {
+            if ((event as CustomEvent<string>).detail === "studioContracts") setPersistFailed(true);
+        };
         window.addEventListener(STUDIO_PERSIST_FAILED_EVENT, onFail);
         return () => window.removeEventListener(STUDIO_PERSIST_FAILED_EVENT, onFail);
     }, []);

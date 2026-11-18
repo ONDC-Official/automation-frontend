@@ -7,6 +7,10 @@ import {
     normaliseStudioGraph,
     normaliseStudioJourneys,
 } from "@pages/protocol-studio/persistence/normalise";
+import {
+    readStudioProjectFile,
+    toStudioProjectFile,
+} from "@pages/protocol-studio/persistence/project-file";
 import type { StudioJourney } from "@pages/protocol-studio/ui/editor/types";
 
 /** A graph as Studio wrote it before 2026-10-27: a `switch` node, guards and effects. */
@@ -106,5 +110,57 @@ describe("migrateStudioDraft", () => {
 
     it("drops a draft of a version it cannot migrate", () => {
         expect(migrateStudioDraft({ version: 99 } as unknown as StudioDraft)).toBeNull();
+    });
+});
+
+describe("Studio project file", () => {
+    const config = {
+        meta: { domain: "ONDC:TRV11", version: "2.1.0", use_case_id: "metro" },
+        helperLib: "",
+    } as unknown as StudioDraft["config"];
+    const content = {
+        config,
+        graph: normaliseStudioGraph(legacyGraph),
+        journeys: [
+            { id: "j", title: "J", choices: { select: "on_select" } },
+        ] as unknown as StudioJourney[],
+        helpers: "export const x = 1;",
+    };
+
+    it("round-trips the draft's content", () => {
+        const file = toStudioProjectFile(content);
+        expect(file).toMatchObject({ kind: "studio-project", version: STUDIO_DRAFT_VERSION });
+        const read = readStudioProjectFile(JSON.stringify(file));
+        expect(read).toEqual({ ok: true, content });
+    });
+
+    it("migrates and normalises a file written at an older version", () => {
+        const read = readStudioProjectFile(
+            JSON.stringify({
+                kind: "studio-project",
+                version: 1,
+                config,
+                graph: legacyGraph,
+                journeys: [{ id: "j", choices: { "pay:switch": "x" } }],
+                helpers: "",
+            })
+        );
+        if (!read.ok) throw new Error(read.error);
+        expect(read.content.graph.nodes[1]).toMatchObject({ kind: "decision" });
+        expect(read.content.graph.nodes[0]).not.toHaveProperty("effects");
+        expect(read.content.journeys[0].choices).toEqual({ "pay:decision": "x" });
+    });
+
+    it("refuses what it can't open", () => {
+        expect(readStudioProjectFile("{nope").ok).toBe(false);
+        expect(readStudioProjectFile(JSON.stringify({ ...content, version: 2 })).ok).toBe(false);
+        expect(
+            readStudioProjectFile(JSON.stringify({ ...toStudioProjectFile(content), version: 99 }))
+        ).toMatchObject({ ok: false, error: expect.stringContaining("version 99") });
+        expect(
+            readStudioProjectFile(
+                JSON.stringify({ ...toStudioProjectFile(content), config: undefined })
+            ).ok
+        ).toBe(false);
     });
 });

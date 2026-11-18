@@ -198,6 +198,43 @@
     height: var(--studio-header-h);
 }
 
+/* A draft that can't be saved: floats under the header until dismissed. */
+.studio-draft-banner {
+    position: absolute;
+    z-index: 40;
+    top: calc(var(--studio-header-h) + var(--studio-gap) * 2);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(720px, calc(100% - var(--studio-gap) * 2));
+    padding: 8px 8px 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 17px;
+    color: var(--studio-text-dim);
+    box-shadow:
+        var(--studio-glass-shadow),
+        inset 0 0 0 1px var(--studio-warn);
+}
+
+.studio-draft-banner strong {
+    color: var(--studio-text);
+    font-weight: 600;
+}
+
+.studio-draft-banner-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--studio-warn);
+}
+
+.studio-draft-banner > .studio-key {
+    flex-shrink: 0;
+}
+
 .studio-inspector {
     position: absolute;
     z-index: 20;

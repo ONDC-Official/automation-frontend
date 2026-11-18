@@ -4,7 +4,12 @@ import type { MockPlaygroundConfigV2Type } from "@ondc/automation-mock-runner";
 
 import PageReveal from "@components/Routes/page-reveal";
 import { ROUTES } from "@constants/routes";
-import { useStudioDraft, type StudioDraft } from "@pages/protocol-studio/persistence/studio-draft";
+import {
+    STUDIO_DRAFT_VERSION,
+    useStudioDraft,
+    type StudioDraft,
+} from "@pages/protocol-studio/persistence/studio-draft";
+import type { StudioProjectContent } from "@pages/protocol-studio/persistence/project-file";
 import { StudioStarterScreen } from "@pages/protocol-studio/ui/starter";
 import StudioLivePage from "@pages/protocol-studio/live";
 import { StudioEditor } from "@pages/protocol-studio/ui/editor";
@@ -30,7 +35,7 @@ const ProtocolStudio: FC = () => {
     // a reload. Still to come, as additions to that slice: several saved configs
     // with a flowId-free configId, Load Saved and Import from GitHub. Never the v1
     // `playgroundConfigs` slice, whose metadata requires a flowId.
-    const { draft, clear: clearDraft } = useStudioDraft();
+    const { draft, save: saveDraft, clear: clearDraft } = useStudioDraft();
     const [config, setConfig] = useState<MockPlaygroundConfigV2Type | undefined>(
         () => draft?.config
     );
@@ -51,6 +56,18 @@ const ProtocolStudio: FC = () => {
         if (!draft) return;
         setResumed(draft);
         setConfig(draft.config);
+        navigate(stagePath(DEFAULT_STAGE));
+    };
+
+    const handleOpenProject = (project: StudioProjectContent) => {
+        // The opened project becomes the draft, then is resumed like one.
+        saveDraft(project);
+        setResumed({
+            ...project,
+            version: STUDIO_DRAFT_VERSION,
+            savedAt: new Date().toISOString(),
+        });
+        setConfig(project.config);
         navigate(stagePath(DEFAULT_STAGE));
     };
 
@@ -78,6 +95,7 @@ const ProtocolStudio: FC = () => {
                                     draft ? { config: draft.config, savedAt: draft.savedAt } : null
                                 }
                                 onResume={handleResume}
+                                onOpenProject={handleOpenProject}
                             />
                         </div>
                     </PageReveal>

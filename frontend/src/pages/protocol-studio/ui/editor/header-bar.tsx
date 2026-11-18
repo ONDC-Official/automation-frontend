@@ -6,6 +6,7 @@ import {
     Bars3Icon,
     CodeBracketSquareIcon,
     CubeTransparentIcon,
+    FolderArrowDownIcon,
     WrenchScrewdriverIcon,
     SignalIcon,
 } from "@heroicons/react/24/outline";
@@ -50,6 +51,7 @@ export const EditorHeaderBar = ({
     onViewRawConfig,
     onViewTypes,
     onDownloadConfig,
+    onDownloadProject,
     onStartLiveSession,
     typesControl,
 }: IEditorHeaderBarProps) => {
@@ -61,6 +63,12 @@ export const EditorHeaderBar = ({
             hint: "Save the config as config.json",
             Icon: ArrowDownTrayIcon,
             onSelect: onDownloadConfig,
+        },
+        {
+            label: "Download project",
+            hint: "Config, graph, journeys and helpers, to open from the start screen",
+            Icon: FolderArrowDownIcon,
+            onSelect: onDownloadProject,
         },
         {
             label: "View raw",

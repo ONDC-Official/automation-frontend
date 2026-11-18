@@ -39,6 +39,7 @@ import {
     frameworkHealthPersistConfig,
     authPersistConfig,
     studioContractsPersistConfig,
+    studioDraftPersistConfig,
 } from "@store/persistConfig";
 import authSlice, { selectAuthToken } from "@store/slices/authSlice";
 import { registerAuthTokenReader } from "@store/authTokenReader";
@@ -76,7 +77,7 @@ const rootReducer = combineReducers({
         localPersist("businessDashboard"),
         businessDashboardSlice.reducer
     ),
-    studioDraft: persistReducer(localPersist("studioDraft"), studioDraftSlice.reducer),
+    studioDraft: persistReducer(studioDraftPersistConfig, studioDraftSlice.reducer),
     studioContracts: persistReducer(studioContractsPersistConfig, studioContractsSlice.reducer),
     devGuideShell: devGuideShellSlice.reducer,
     profileShell: profileShellSlice.reducer,

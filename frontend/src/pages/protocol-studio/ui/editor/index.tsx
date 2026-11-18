@@ -5,7 +5,13 @@ import {
     SANDBOX_GLOBALS_DTS_V2,
     type MockPlaygroundConfigV2Type,
 } from "@ondc/automation-mock-runner";
-import { CircleStackIcon, ListBulletIcon, PlayIcon } from "@heroicons/react/24/outline";
+import {
+    CircleStackIcon,
+    ExclamationTriangleIcon,
+    ListBulletIcon,
+    PlayIcon,
+    XMarkIcon,
+} from "@heroicons/react/24/outline";
 import {
     ReactFlowProvider,
     useReactFlow,
@@ -23,6 +29,8 @@ import { toast } from "sonner";
 import "@pages/protocol-studio/ui/editor/studio-editor.css";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import { useCreateStudioSessionMutation } from "@store/api";
+import { persistor } from "@store/index";
+import { STUDIO_PERSIST_FAILED_EVENT } from "@store/persistConfig";
 import {
     buildStudioLiveSession,
     getLiveBlocker,
@@ -49,6 +57,7 @@ import { useStudioContracts } from "@pages/protocol-studio/hooks/use-studio-cont
 import { toPlain } from "@pages/protocol-studio/ui/editor/contracts/yaml/parse";
 import type { XValidationTestGroup } from "@/types/apiShared/developerGuide/developerGuide.types";
 import { useStudioDraft } from "@pages/protocol-studio/persistence/studio-draft";
+import { toStudioProjectFile } from "@pages/protocol-studio/persistence/project-file";
 import {
     AI_PLACEHOLDER_REPLY,
     CODE_DIALOG_FILES,
@@ -324,6 +333,36 @@ const StudioEditorContent = ({
         }, DRAFT_SAVE_DELAY_MS);
         return () => window.clearTimeout(timer);
     }, [config, root, journeys, helpers, saveDraft]);
+
+    // The debounce above drops the last edits when the editor goes away inside
+    // its delay (Back, a route change, closing the tab), so the latest payload
+    // is also written, and the store flushed to storage, on unmount and on
+    // `pagehide`. Kept apart from the debounce so it runs only then.
+    const latestDraftRef = useRef({ config, graph: root, journeys, helpers });
+    latestDraftRef.current = { config, graph: root, journeys, helpers };
+    const saveDraftRef = useRef(saveDraft);
+    saveDraftRef.current = saveDraft;
+    useEffect(() => {
+        const flush = () => {
+            saveDraftRef.current(latestDraftRef.current);
+            void persistor.flush();
+        };
+        window.addEventListener("pagehide", flush);
+        return () => {
+            window.removeEventListener("pagehide", flush);
+            flush();
+        };
+    }, []);
+
+    // A draft write that failed (storage full): the project can still be downloaded.
+    const [draftSaveFailed, setDraftSaveFailed] = useState(false);
+    useEffect(() => {
+        const onFail = (event: Event) => {
+            if ((event as CustomEvent<string>).detail === "studioDraft") setDraftSaveFailed(true);
+        };
+        window.addEventListener(STUDIO_PERSIST_FAILED_EVENT, onFail);
+        return () => window.removeEventListener(STUDIO_PERSIST_FAILED_EVENT, onFail);
+    }, []);
 
     // What step code is typed against: the spec's API schemas, the chosen use
     // case's session data (undefined = picked from the config's use_case_id),
@@ -784,6 +823,13 @@ const StudioEditorContent = ({
         downloadJson(fileStem("config"), configJson);
         log("success", "Downloaded config.json");
     }, [fileStem, configJson, log]);
+    const downloadProject = useCallback(() => {
+        downloadJson(
+            fileStem("project"),
+            JSON.stringify(toStudioProjectFile({ config, graph: root, journeys, helpers }), null, 2)
+        );
+        log("success", "Downloaded the project");
+    }, [fileStem, config, root, journeys, helpers, log]);
     const downloadJourneys = useCallback(() => {
         downloadJson(
             fileStem("journeys"),
@@ -1728,6 +1774,7 @@ const StudioEditorContent = ({
                 onViewRawConfig={() => setCodeDialog("config")}
                 onViewTypes={() => setCodeDialog("types")}
                 onDownloadConfig={downloadConfig}
+                onDownloadProject={downloadProject}
                 onStartLiveSession={() => setLiveOpen(true)}
                 typesControl={
                     <TypesControl
@@ -1739,6 +1786,28 @@ const StudioEditorContent = ({
                     />
                 }
             />
+
+            {draftSaveFailed ? (
+                <div className="studio-glass studio-draft-banner" role="alert">
+                    <ExclamationTriangleIcon className="studio-draft-banner-icon" />
+                    <p>
+                        <strong>Your draft can't be saved — download it.</strong> This browser's
+                        storage is full, so a reload would lose the latest edits.
+                    </p>
+                    <button type="button" className="studio-key" onClick={downloadProject}>
+                        Download project
+                    </button>
+                    <button
+                        type="button"
+                        className="studio-key studio-key-icon"
+                        onClick={() => setDraftSaveFailed(false)}
+                        aria-label="Dismiss"
+                        title="Dismiss"
+                    >
+                        <XMarkIcon />
+                    </button>
+                </div>
+            ) : null}
 
             {stage === "specification" ? (
                 <SpecificationStage
