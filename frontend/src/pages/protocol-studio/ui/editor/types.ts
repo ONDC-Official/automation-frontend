@@ -287,6 +287,19 @@ export interface FlatGraph {
     into: Map<string, StudioEdge[]>;
     /** The group each node sits in, by node id; absent at the top level. */
     groupOf: Map<string, string>;
+    /**
+     * Wires that loop back through groups' boundaries (a pass-through cycle)
+     * and so lead nowhere a run can follow. Absent when there are none.
+     */
+    unresolved?: UnresolvedWire[];
+}
+
+/** A drawn wire whose group boundaries could not be resolved. */
+export interface UnresolvedWire {
+    /** The drawn wire a join would have repeated. */
+    edgeId: string;
+    /** The joined id that repeated it (`outer>inner>…`). */
+    joined: string;
 }
 
 /**

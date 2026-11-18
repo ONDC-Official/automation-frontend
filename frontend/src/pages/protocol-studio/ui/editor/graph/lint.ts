@@ -1,4 +1,5 @@
 import {
+    findEdge,
     forEachLevel,
     getEntryNodes,
     hasMainWireInto,
@@ -127,6 +128,17 @@ export const lintProtocol = (root: StudioGraph, flat: FlatGraph): ProtocolProble
         }
         void groupId;
     });
+
+    // Wires that loop back through groups' Entry → Exit wires never reach a node.
+    for (const wire of flat.unresolved ?? []) {
+        const edge = findEdge(root, wire.edgeId)?.edge;
+        const name = edge ? `${edge.from} → ${edge.to}` : wire.edgeId;
+        add({
+            level: "error",
+            message: `Wire ${name} loops back to itself through groups that pass straight from Entry to Exit — a run could never get past it`,
+            edgeId: wire.edgeId,
+        });
+    }
 
     // Start / End marks and repeat-until, across levels.
     const unmarkedRoots = new Set<string>();

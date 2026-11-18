@@ -5,6 +5,7 @@ import {
     type StudioEdge,
     type StudioGraph,
     type StudioNode,
+    type UnresolvedWire,
 } from "@pages/protocol-studio/ui/editor/types";
 
 /** Whether an id names a group's boundary pin rather than a node. */
@@ -114,19 +115,19 @@ interface Work {
     edge: StudioEdge;
     from: End;
     to: End;
+    /** The drawn wires this one joins, in order; one for a drawn wire. */
+    raw: string[];
 }
 
-const endKey = (end: End) =>
-    "node" in end
-        ? `n:${end.node}`
-        : "group" in end
-          ? `g:${end.group}`
-          : "boundaryIn" in end
-            ? `bi:${end.boundaryIn}`
-            : `bo:${end.boundaryOut}`;
-
-/** Stops a malformed nesting from spinning; real graphs resolve in a handful of passes. */
-const MAX_PASSES = 100;
+/** The first raw wire id that appears twice, if any. */
+const getRepeat = (raw: readonly string[]) => {
+    const seen = new Set<string>();
+    for (const id of raw) {
+        if (seen.has(id)) return id;
+        seen.add(id);
+    }
+    return undefined;
+};
 
 /**
  * The protocol flattened: every API / decision node at every level, and every
@@ -134,12 +135,42 @@ const MAX_PASSES = 100;
  * `$in → b` becomes `a → b`; an inner `c → $out` joined with an outer `G → d`
  * becomes `c → d`. Composite ids are `outer>inner` so they stay stable.
  * Group nodes themselves are not in `nodes`; `groupOf` says where a node sits.
+ *
+ * Resolution is a worklist: wires into a group are joined first, then wires
+ * out of one, each with the group's `$in` / `$out` wires (indexed per group),
+ * in the order they were drawn or joined. A join that would repeat a drawn
+ * wire is a loop through pass-through groups; it is dropped and listed in
+ * `unresolved`, so the walk always ends however the groups are wired.
  */
 export const flattenGraph = (root: StudioGraph): FlatGraph => {
     const nodes: StudioNode[] = [];
     const groupOf = new Map<string, string>();
     const groups = new Set<string>();
-    let work: Work[] = [];
+
+    // Every working wire in the order it was drawn or joined; resolved ones
+    // are marked rather than spliced out, so the order survives.
+    const work: Work[] = [];
+    const resolved = new Set<Work>();
+    const joined = new Set<string>();
+    const intoGroup: Work[] = [];
+    const fromGroup: Work[] = [];
+    const fromEntry = new Map<string, Work[]>();
+    const intoExit = new Map<string, Work[]>();
+    const unresolved = new Map<string, UnresolvedWire>();
+
+    const index = (map: Map<string, Work[]>, group: string, w: Work) => {
+        const list = map.get(group);
+        if (list) list.push(w);
+        else map.set(group, [w]);
+    };
+    const push = (w: Work) => {
+        work.push(w);
+        joined.add(w.edge.id);
+        if ("group" in w.to) intoGroup.push(w);
+        if ("group" in w.from) fromGroup.push(w);
+        if ("boundaryIn" in w.from) index(fromEntry, w.from.boundaryIn, w);
+        if ("boundaryOut" in w.to) index(intoExit, w.to.boundaryOut, w);
+    };
 
     forEachLevel(root, (graph, groupId) => {
         for (const node of graph.nodes) {
@@ -148,24 +179,31 @@ export const flattenGraph = (root: StudioGraph): FlatGraph => {
             else nodes.push(node);
         }
         for (const edge of graph.edges) {
-            const end = (id: string, side: "from" | "to"): End => {
+            const end = (id: string): End => {
                 if (id === GROUP_IN) return { boundaryIn: groupId ?? "" };
                 if (id === GROUP_OUT) return { boundaryOut: groupId ?? "" };
                 if (groups.has(id) || graph.nodes.some((n) => n.id === id && n.group)) {
                     return { group: id };
                 }
-                void side;
                 return { node: id };
             };
-            work.push({ edge, from: end(edge.from, "from"), to: end(edge.to, "to") });
+            push({ edge, from: end(edge.from), to: end(edge.to), raw: [edge.id] });
         }
     });
 
-    const compose = (outer: Work, inner: Work, from: End, to: End, outerFirst: boolean): Work => {
+    const join = (outer: Work, inner: Work, from: End, to: End, outerFirst: boolean) => {
         const [a, b] = outerFirst ? [outer, inner] : [inner, outer];
-        return {
+        const id = `${a.edge.id}>${b.edge.id}`;
+        const raw = [...a.raw, ...b.raw];
+        const repeat = getRepeat(raw);
+        if (repeat !== undefined) {
+            if (!unresolved.has(repeat)) unresolved.set(repeat, { edgeId: repeat, joined: id });
+            return;
+        }
+        if (joined.has(id)) return;
+        push({
             edge: {
-                id: `${a.edge.id}>${b.edge.id}`,
+                id,
                 from: "node" in from ? from.node : a.edge.from,
                 to: "node" in to ? to.node : b.edge.to,
                 kind: outer.edge.kind,
@@ -175,33 +213,43 @@ export const flattenGraph = (root: StudioGraph): FlatGraph => {
             },
             from,
             to,
-        };
+            raw,
+        });
     };
 
-    for (let pass = 0; pass < MAX_PASSES; pass += 1) {
-        const intoGroup = work.find((w) => "group" in w.to);
-        const fromGroup = intoGroup ? undefined : work.find((w) => "group" in w.from);
-        if (!intoGroup && !fromGroup) break;
-        if (intoGroup) {
-            const group = (intoGroup.to as { group: string }).group;
-            const partners = work.filter((w) => endKey(w.from) === `bi:${group}`);
-            work = work.filter((w) => w !== intoGroup);
-            for (const inner of partners)
-                work.push(compose(intoGroup, inner, intoGroup.from, inner.to, true));
-        } else if (fromGroup) {
-            const group = (fromGroup.from as { group: string }).group;
-            const partners = work.filter((w) => endKey(w.to) === `bo:${group}`);
-            work = work.filter((w) => w !== fromGroup);
-            for (const inner of partners)
-                work.push(compose(fromGroup, inner, inner.from, fromGroup.to, false));
+    // The earliest unresolved wire in a queue; queues only grow at the end.
+    const next = (queue: Work[], cursor: { at: number }) => {
+        while (cursor.at < queue.length && resolved.has(queue[cursor.at])) cursor.at += 1;
+        return queue[cursor.at];
+    };
+    const intoCursor = { at: 0 };
+    const fromCursor = { at: 0 };
+    // A group's open `$in` / `$out` wires, never the wire being resolved itself.
+    const partners = (byGroup: Map<string, Work[]>, group: string, self: Work) =>
+        (byGroup.get(group) ?? []).filter((w) => w !== self && !resolved.has(w));
+
+    for (;;) {
+        const into = next(intoGroup, intoCursor);
+        if (into) {
+            const group = (into.to as { group: string }).group;
+            const inner = partners(fromEntry, group, into);
+            resolved.add(into);
+            for (const w of inner) join(into, w, into.from, w.to, true);
+            continue;
         }
+        const outOf = next(fromGroup, fromCursor);
+        if (!outOf) break;
+        const group = (outOf.from as { group: string }).group;
+        const inner = partners(intoExit, group, outOf);
+        resolved.add(outOf);
+        for (const w of inner) join(outOf, w, w.from, outOf.to, false);
     }
 
     const byId = new Map(nodes.map((node) => [node.id, node]));
     const edges: StudioEdge[] = [];
     const seen = new Set<string>();
     for (const w of work) {
-        if (!("node" in w.from) || !("node" in w.to)) continue;
+        if (resolved.has(w) || !("node" in w.from) || !("node" in w.to)) continue;
         if (!byId.has(w.from.node) || !byId.has(w.to.node) || seen.has(w.edge.id)) continue;
         seen.add(w.edge.id);
         edges.push(w.edge);
@@ -218,7 +266,15 @@ export const flattenGraph = (root: StudioGraph): FlatGraph => {
         into.get(edge.to)?.push(edge);
     }
 
-    return { nodes, edges, byId, out, into, groupOf };
+    return {
+        nodes,
+        edges,
+        byId,
+        out,
+        into,
+        groupOf,
+        ...(unresolved.size > 0 ? { unresolved: [...unresolved.values()] } : {}),
+    };
 };
 
 /**
