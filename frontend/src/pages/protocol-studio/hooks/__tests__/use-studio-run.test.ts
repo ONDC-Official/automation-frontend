@@ -221,6 +221,21 @@ describe("useStudioRun", () => {
         expect(result.current.run.active).toBe(false);
     });
 
+    it("stays blocked while something compiles, even with an earlier executor", () => {
+        // helpers.ts compiling after the graph: a run started now would go stale at once.
+        const { result } = renderHook(() =>
+            useStudioRun({
+                executor: makeExecutor(),
+                blockedReason: "Compiling the graph…",
+                log: jest.fn(),
+                decodeBase64: (s) => s,
+            })
+        );
+        expect(result.current.run.blocked).toBe("Compiling the graph…");
+        act(() => result.current.actions.start(journey));
+        expect(result.current.run.active).toBe(false);
+    });
+
     it("runs a preset journey: asks for inputs, follows the choice, ends", async () => {
         const { result } = setup();
         act(() => result.current.actions.start(journey));

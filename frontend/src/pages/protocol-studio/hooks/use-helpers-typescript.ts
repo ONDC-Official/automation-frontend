@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Monaco } from "@monaco-editor/react";
 import { compileUserCodeV2, extractHelperDeclarationsV2 } from "@ondc/automation-mock-runner";
 
@@ -27,6 +27,11 @@ export interface CompiledHelpers {
     dts: string;
     /** Whether the current source compiles (false while it has errors; `js` is then the last good one). */
     ok: boolean;
+    /**
+     * The current source hasn't compiled yet: typing hasn't settled, or the compile is
+     * in flight. A run started now would go stale the moment `js` lands, so it waits.
+     */
+    compiling: boolean;
 }
 
 /**
@@ -37,12 +42,14 @@ export interface CompiledHelpers {
  * real signatures.
  */
 export const useHelpersTypeScript = (monaco: Monaco | null, source: string): CompiledHelpers => {
-    const [compiled, setCompiled] = useState<CompiledHelpers>({
+    const [compiled, setCompiled] = useState<Omit<CompiledHelpers, "compiling">>({
         js: null,
         names: [],
         dts: "",
         ok: true,
     });
+    // The settled source the last compile (good or not) was for.
+    const [compiledSource, setCompiledSource] = useState<string | null>(null);
 
     // The model exists, and holds `source`, whether or not an editor shows it.
     useEffect(() => {
@@ -59,7 +66,11 @@ export const useHelpersTypeScript = (monaco: Monaco | null, source: string): Com
         if (!monaco) return;
         const model = monaco.editor.getModel(monaco.Uri.parse(HELPERS_PATH));
         const transpiler = model ? createMonacoTranspiler(monaco, model) : null;
-        if (!model || !transpiler) return;
+        if (!model || !transpiler) {
+            // Nothing will compile it: don't hold runs back waiting for it.
+            setCompiledSource(settled);
+            return;
+        }
         let stale = false;
         (async () => {
             const [result, dts] = await Promise.all([
@@ -67,6 +78,7 @@ export const useHelpersTypeScript = (monaco: Monaco | null, source: string): Com
                 emitDeclarations(monaco, model),
             ]);
             if (stale) return;
+            setCompiledSource(settled);
             setCompiled((prev) =>
                 result.ok && result.js
                     ? {
@@ -78,14 +90,17 @@ export const useHelpersTypeScript = (monaco: Monaco | null, source: string): Com
                     : { ...prev, dts: dts || prev.dts, ok: false }
             );
         })().catch(() => {
-            if (!stale) setCompiled((prev) => ({ ...prev, ok: false }));
+            if (stale) return;
+            setCompiledSource(settled);
+            setCompiled((prev) => ({ ...prev, ok: false }));
         });
         return () => {
             stale = true;
         };
     }, [monaco, settled]);
 
-    return compiled;
+    const compiling = monaco !== null && (settled !== source || compiledSource !== settled);
+    return useMemo(() => ({ ...compiled, compiling }), [compiled, compiling]);
 };
 
 export default useHelpersTypeScript;

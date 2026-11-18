@@ -519,13 +519,15 @@ const StudioEditorContent = ({
     // ─── Simulation: the graph compiled for the executor, and the current run ──
 
     const runGraph = useRunGraph(monaco, flat, config, compiledHelpers);
-    const runBlocked = runGraph.compiling
-        ? "Compiling the graph…"
-        : flat.nodes.length === 0
-          ? "The graph is empty"
-          : runGraph.problems.some((p) => p.level === "error")
-            ? `${runGraph.problems.length} compile ${runGraph.problems.length === 1 ? "problem" : "problems"} · see Problems`
-            : null;
+    // helpers.ts lands in the executor too: a run started before it compiles goes stale.
+    const runBlocked =
+        runGraph.compiling || compiledHelpers.compiling
+            ? "Compiling the graph…"
+            : flat.nodes.length === 0
+              ? "The graph is empty"
+              : runGraph.problems.some((p) => p.level === "error")
+                ? `${runGraph.problems.length} compile ${runGraph.problems.length === 1 ? "problem" : "problems"} · see Problems`
+                : null;
     const { run, actions: runActions } = useStudioRun({
         executor: runGraph.executor,
         blockedReason: runBlocked,
@@ -1745,8 +1747,8 @@ const StudioEditorContent = ({
             className="studio-editor relative min-h-0 w-full flex-1 overflow-hidden"
             data-inspector-max={isInspectorMaximized || undefined}
             data-stage={stage}
-            // e2e hook: Run stays blocked while the graph compiles.
-            data-compiling={runGraph.compiling || undefined}
+            // e2e hook: Run stays blocked while the graph or helpers.ts compiles.
+            data-compiling={runGraph.compiling || compiledHelpers.compiling || undefined}
             data-path-strip={(stage === "journeys" && selectedJourneyId !== null) || undefined}
             style={rootStyle}
         >
@@ -2072,7 +2074,7 @@ const StudioEditorContent = ({
                 open={liveOpen}
                 journeys={journeys}
                 blockers={liveBlockers}
-                blocked={runGraph.executor ? null : runBlocked}
+                blocked={runBlocked}
                 container={rootRef.current}
                 onClose={() => setLiveOpen(false)}
                 onStart={startLive}

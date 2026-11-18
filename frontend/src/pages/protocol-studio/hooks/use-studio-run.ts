@@ -151,7 +151,11 @@ const RUN_ALL_LIMIT = 200;
 
 export interface IUseStudioRunOptions {
     executor: GraphExecutorV2 | null;
-    /** Why no run can start right now (compile problems …); null when it can. */
+    /**
+     * Why no run can start right now (compiling, compile problems …); null when it can.
+     * It holds even while an earlier executor exists: a run started on it would go
+     * stale as soon as the compile lands.
+     */
     blockedReason: string | null;
     log: (level: "info" | "success" | "warn" | "error", message: string) => void;
     decodeBase64: (encoded: string) => string;
@@ -247,7 +251,7 @@ export const useStudioRun = ({
 
     const start = useCallback(
         (journey: StudioJourney | null) => {
-            if (!executor) return;
+            if (!executor || blockedReason) return;
             const transactionId =
                 stateRef.current.transactionId ?? executor.options.transactionData.transaction_id;
             const j = journey ? toJourneyV2(journey) : null;
@@ -265,7 +269,7 @@ export const useStudioRun = ({
                 `Run started · ${journey ? journey.title : "open mode"} · tx ${transactionId}`
             );
         },
-        [executor, commit, log]
+        [executor, blockedReason, commit, log]
     );
 
     const runNext = useCallback(() => guarded(async () => void (await step())), [guarded, step]);
@@ -411,7 +415,7 @@ export const useStudioRun = ({
             provenance: session ? getSessionProvenanceV2(session) : {},
             lastSaved,
             selectedRun: selected !== null ? (runs[selected] ?? null) : null,
-            blocked: executor ? null : (blockedReason ?? "The graph isn't ready to run"),
+            blocked: blockedReason ?? (executor ? null : "The graph isn't ready to run"),
         };
     }, [state, busy, stale, selected, executor, blockedReason]);
 
