@@ -5,6 +5,7 @@ import express from "express";
 import { portalRoutes } from "../routes/portalRoutes";
 import {
 	parseSessionsQuery,
+	reportUrl,
 	toSessionDetail,
 	toSessionListItem,
 	type StoredSession,
@@ -286,15 +287,41 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 		failDb = false;
 	});
 
-	const unauthed = (url: string) => {
+	const unauthed = (url: string, publicBaseUrl?: string) => {
 		const app = express();
 		app.use(
 			"/v1",
-			portalRoutes({ apiToken: TOKEN, rateLimitPerMinute: 1000, dbServiceUrl: dbUrl, dbApiKey: DB_KEY })
+			portalRoutes({
+				apiToken: TOKEN,
+				rateLimitPerMinute: 1000,
+				dbServiceUrl: dbUrl,
+				dbApiKey: DB_KEY,
+				publicBaseUrl,
+			})
 		);
 		return request(app).get(url);
 	};
-	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+	const call = (url: string, publicBaseUrl?: string) =>
+		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`);
+
+	it("gives report_url, where NP Portal fetches the report, when the session has a report", async () => {
+		reply = storedDetail({ reportExists: true });
+
+		const res = await call("/v1/organizations/org_1/sessions/sess_1", "https://workbench.example/backend-ui");
+
+		expect(res.status).toBe(200);
+		expect(res.body.report_available).toBe(true);
+		expect(res.body.report_url).toBe(
+			"https://workbench.example/backend-ui/v1/organizations/org_1/sessions/sess_1/report"
+		);
+	});
+
+	it("gives a null report_url when the session has no report", async () => {
+		const res = await call("/v1/organizations/org_1/sessions/sess_1", "https://workbench.example/backend-ui");
+
+		expect(res.body.report_available).toBe(false);
+		expect(res.body.report_url).toBeNull();
+	});
 
 	it("needs the token", async () => {
 		expect((await unauthed("/v1/organizations/org_1/sessions/sess_1")).status).toBe(401);
@@ -312,6 +339,7 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 			user_id: "25716",
 			status: "active",
 			report_available: false,
+			report_url: null,
 			session_type: "AUTOMATION",
 			np_type: "BAP",
 			subscriber_url: "https://buyer.example-np.in/ondc",
@@ -365,6 +393,29 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 
 		expect(res.status).toBe(500);
 		expect(res.type).toBe("application/problem+json");
+	});
+});
+
+describe("reportUrl", () => {
+	const BASE = "https://dev-workbench.ondc.tech/backend-ui";
+
+	it("points at the session's report endpoint in this API", () => {
+		expect(reportUrl("11899", "sess_1", true, BASE)).toBe(
+			"https://dev-workbench.ondc.tech/backend-ui/v1/organizations/11899/sessions/sess_1/report"
+		);
+	});
+
+	it("is null without a report or without a public address", () => {
+		expect(reportUrl("11899", "sess_1", false, BASE)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, null)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, undefined)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, "")).toBeNull();
+	});
+
+	it("keeps odd IDs inside their path segments", () => {
+		expect(reportUrl("o/1", "a/b?c#d", true, "https://w.example")).toBe(
+			"https://w.example/v1/organizations/o%2F1/sessions/a%2Fb%3Fc%23d/report"
+		);
 	});
 });
 

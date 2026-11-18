@@ -109,3 +109,29 @@ export const fetchSessionScope = async (
 		throw e;
 	}
 };
+
+/**
+ * The session's saved report page as HTML, or null if it has no report. Reports
+ * are saved as base64, sometimes with a "data:text/html;base64," prefix.
+ */
+export const fetchReportHtml = async (
+	config: PortalConfig,
+	sessionId: string
+): Promise<string | null> => {
+	try {
+		const response = await dbRequest(config).get(
+			`/report/PW_${encodeURIComponent(sessionId)}`
+		);
+		const data = response.data?.data;
+		if (typeof data !== "string" || data === "") {
+			return null;
+		}
+		const base64 = data.includes("base64,") ? data.slice(data.indexOf("base64,") + 7) : data;
+		return Buffer.from(base64, "base64").toString("utf-8");
+	} catch (e: any) {
+		if (e?.response?.status === 404) {
+			return null;
+		}
+		throw e;
+	}
+};

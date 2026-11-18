@@ -149,8 +149,23 @@ const toContractSettings = (settings: Record<string, boolean>) =>
 			.map(([stored, name]) => [name, settings[stored]])
 	);
 
-export const toSessionDetail = (session: StoredSessionDetail) => ({
+/**
+ * Where NP Portal fetches the session's report (GET .../sessions/{session_id}/report,
+ * with the same token), or null when there is no report or no public address is set.
+ */
+export const reportUrl = (
+	orgId: string,
+	sessionId: string,
+	reportExists: boolean,
+	publicBaseUrl: string | null | undefined
+): string | null =>
+	reportExists && publicBaseUrl
+		? `${publicBaseUrl}/v1/organizations/${encodeURIComponent(orgId)}/sessions/${encodeURIComponent(sessionId)}/report`
+		: null;
+
+export const toSessionDetail = (session: StoredSessionDetail, publicBaseUrl?: string | null) => ({
 	...toSessionListItem(session),
+	report_url: reportUrl(session.orgId, session.sessionId, session.reportExists, publicBaseUrl),
 	org_id: session.orgId,
 	expires_at: session.expiresAt && toRfc3339(new Date(session.expiresAt)),
 	flow_summary: session.flowSummary.map((flow) => ({
