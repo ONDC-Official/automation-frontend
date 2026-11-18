@@ -3,7 +3,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import express from "express";
 import { portalRoutes } from "../routes/portalRoutes";
-import { parseFlowsQuery, sortFlows, toFlowMeta, type StoredFlow } from "../utils/portalFlows";
+import {
+	parseFlowsQuery,
+	sortFlows,
+	titleFromFlowId,
+	toFlowMeta,
+	type StoredFlow,
+} from "../utils/portalFlows";
 
 /**
  * GET /v1/flows against a stand-in for automation-db. Mounted on a bare express
@@ -221,15 +227,45 @@ describe("toFlowMeta", () => {
 	const steps = (...list: [string, string, string | null][]) =>
 		list.map(([action_id, api, responseFor]) => ({ action_id, api, owner: "BAP" as const, responseFor }));
 
-	it("keeps form steps, and gives a null title when the flow has none", () => {
+	it("keeps form steps, and makes a title from the flow ID when the flow has none", () => {
 		const meta = toFlowMeta(
 			stored("F", { config: { steps: steps(["form_1", "html_form", null], ["form_2", "dynamic_form", null]) } })
 		);
 
-		expect(meta.title).toBeNull();
+		expect(meta.title).toBe("F");
 		expect(meta.total_steps).toBe(2);
 		expect(meta.steps.map((s) => s.action)).toEqual(["html_form", "dynamic_form"]);
 		expect(meta.steps[0]).toMatchObject({ description: null, unsolicited: false, pair_step_key: null });
+	});
+
+	it("keeps the spec's flow name as the title when it has one", () => {
+		expect(toFlowMeta(stored("Buyer_Delivery_Flow")).title).toBe("Title Buyer_Delivery_Flow");
+	});
+
+	it.each([
+		["no meta", { steps: [] }],
+		["no flow name", { meta: {}, steps: [] }],
+		["an empty flow name", { meta: { flowName: "" }, steps: [] }],
+		["a blank flow name", { meta: { flowName: "   " }, steps: [] }],
+		["a flow name that is not text", { meta: { flowName: 42 as unknown as string }, steps: [] }],
+	])("makes the title from the flow ID when the spec has %s", (_case, config) => {
+		expect(toFlowMeta(stored("Buyer_Delivery_Flow", { config })).title).toBe("Buyer Delivery Flow");
+	});
+
+	it("makes the title from the flow ID when there is no config at all", () => {
+		expect(toFlowMeta(stored("Return_Flow", { config: undefined })).title).toBe("Return Flow");
+	});
+
+	it.each([
+		["Buyer_Delivery_Flow", "Buyer Delivery Flow"],
+		["Order_to_confirm_to_fulfillment__Prepaid_with_igm_1.0.0", "Order to confirm to fulfillment Prepaid with igm 1.0.0"],
+		["Delivery_Flow_With_IGM(v-2.0.0)", "Delivery Flow With IGM(v-2.0.0)"],
+		["_Leading_and_trailing_", "Leading and trailing"],
+		["Already Spaced Flow", "Already Spaced Flow"],
+		["dedupe_check", "dedupe check"],
+		["Commercial_Model_For_BNP/SNP_Flow", "Commercial Model For BNP/SNP Flow"],
+	])("turns flow ID %s into %s", (flowId, title) => {
+		expect(titleFromFlowId(flowId)).toBe(title);
 	});
 
 	it("gives null when a step answers a step that does not exist", () => {
@@ -263,11 +299,11 @@ describe("sortFlows", () => {
 		expect(ids(sortFlows([meta("A", "x", 3), meta("B", "y", 1)], "total_steps", "asc"))).toEqual(["B", "A"]);
 	});
 
-	it("keeps untitled flows last in both directions", () => {
-		const list = [meta("none"), meta("A", "Apple"), meta("B", "Banana")];
+	it("sorts flows without a spec name by the title made from their flow ID", () => {
+		const list = [meta("Cherry_Flow"), meta("A", "Apple"), meta("B", "Banana")];
 
-		expect(ids(sortFlows(list, "title", "asc"))).toEqual(["A", "B", "none"]);
-		expect(ids(sortFlows(list, "title", "desc"))).toEqual(["B", "A", "none"]);
+		expect(ids(sortFlows(list, "title", "asc"))).toEqual(["A", "B", "Cherry_Flow"]);
+		expect(ids(sortFlows(list, "title", "desc"))).toEqual(["Cherry_Flow", "B", "A"]);
 	});
 
 	it("breaks ties by domain, then flow ID", () => {

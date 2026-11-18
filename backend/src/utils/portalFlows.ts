@@ -41,7 +41,8 @@ export interface FlowMeta {
 	domain: string;
 	version: string;
 	usecase_id: string;
-	title: string | null;
+	/** The spec's flow name, or the flow ID made readable when the spec has none. */
+	title: string;
 	description: string;
 	tags: string[];
 	total_steps: number;
@@ -148,6 +149,20 @@ export function parseFlowsQuery(raw: Record<string, unknown>): {
 	};
 }
 
+/**
+ * A title for a flow whose spec has no name: the flow ID with underscores as
+ * spaces, e.g. "Buyer_Delivery_Flow" -> "Buyer Delivery Flow". Runs of
+ * underscores become one space; everything else is kept as written.
+ */
+export const titleFromFlowId = (flowId: string): string =>
+	flowId.replace(/_+/g, " ").trim();
+
+/** The spec's flow name if it has one with text in it, else one made from the flow ID. */
+const flowTitle = (flow: StoredFlow): string => {
+	const name = flow.config?.meta?.flowName;
+	return (typeof name === "string" && name.trim()) || titleFromFlowId(flow.flowId);
+};
+
 export function toFlowMeta(flow: StoredFlow): FlowMeta {
 	const steps = flow.config?.steps ?? [];
 	const keys = new Set(steps.map((step) => step.action_id));
@@ -157,7 +172,7 @@ export function toFlowMeta(flow: StoredFlow): FlowMeta {
 		domain: flow.domain,
 		version: flow.version,
 		usecase_id: flow.usecase,
-		title: flow.config?.meta?.flowName ?? null,
+		title: flowTitle(flow),
 		description: flow.description ?? "",
 		tags: flow.tags ?? [],
 		total_steps: steps.length,
@@ -181,7 +196,7 @@ export function toFlowMeta(flow: StoredFlow): FlowMeta {
 
 const compareText = (a: string, b: string) => a.localeCompare(b);
 
-/** Sorts by the chosen field, then as the contract says. Untitled flows go last. */
+/** Sorts by the chosen field, then as the contract says. */
 export function sortFlows(
 	flows: FlowMeta[],
 	sort: FlowsQuery["sort"],
@@ -191,9 +206,6 @@ export function sortFlows(
 	const bySortField = (a: FlowMeta, b: FlowMeta) => {
 		if (sort === "total_steps") return direction * (a.total_steps - b.total_steps);
 		if (sort === "flow_id") return direction * compareText(a.flow_id, b.flow_id);
-		if (a.title === null || b.title === null) {
-			return Number(a.title === null) - Number(b.title === null);
-		}
 		return direction * compareText(a.title, b.title);
 	};
 
