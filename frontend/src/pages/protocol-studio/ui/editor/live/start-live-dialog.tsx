@@ -10,6 +10,9 @@ export interface IStartLiveSubmit {
     journeyIds: string[];
 }
 
+/** Why a session didn't start: a message, or that it needs the user signed in. */
+export type StartLiveFailure = string | { signIn: true };
+
 export interface IStartLiveDialogProps {
     open: boolean;
     journeys: StudioJourney[];
@@ -19,8 +22,10 @@ export interface IStartLiveDialogProps {
     blocked: string | null;
     container: HTMLElement | null;
     onClose: () => void;
-    /** Resolves to an error to show, or null once the session is open. */
-    onStart: (data: IStartLiveSubmit) => Promise<string | null>;
+    /** Resolves to why it failed, or null once the session is open. */
+    onStart: (data: IStartLiveSubmit) => Promise<StartLiveFailure | null>;
+    /** Starts the app's login, coming back here; offered when starting needs a signed-in user. */
+    onSignIn?: () => void;
 }
 
 const URL_PATTERN = /^(http|https):\/\/[^ "]+$/;
@@ -40,6 +45,7 @@ export const StartLiveDialog = ({
     container,
     onClose,
     onStart,
+    onSignIn,
 }: IStartLiveDialogProps) => {
     const runnable = useMemo(
         () => journeys.filter((j) => !blockers.get(j.id)).map((j) => j.id),
@@ -48,7 +54,7 @@ export const StartLiveDialog = ({
     const [subscriberUrl, setSubscriberUrl] = useState("");
     const [role, setRole] = useState<"BAP" | "BPP">("BAP");
     const [picked, setPicked] = useState<Set<string>>(new Set());
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<StartLiveFailure | null>(null);
     const [busy, setBusy] = useState(false);
 
     // Every runnable journey is ticked each time the dialog opens.
@@ -198,9 +204,26 @@ export const StartLiveDialog = ({
                                 </ul>
                             )}
                         </div>
-                        {error ? (
+                        {typeof error === "string" ? (
                             <p className="text-[12px] text-red-500" role="alert">
                                 {error}
+                            </p>
+                        ) : error?.signIn ? (
+                            <p
+                                className="text-[12px] text-red-500"
+                                role="alert"
+                                data-start-error="sign-in"
+                            >
+                                Sign in to start a live session.{" "}
+                                {onSignIn ? (
+                                    <button
+                                        type="button"
+                                        className="font-semibold underline underline-offset-2"
+                                        onClick={onSignIn}
+                                    >
+                                        Sign in
+                                    </button>
+                                ) : null}
                             </p>
                         ) : null}
                     </div>

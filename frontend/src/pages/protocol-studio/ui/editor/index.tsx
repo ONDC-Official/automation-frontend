@@ -28,7 +28,8 @@ import { toast } from "sonner";
 
 import "@pages/protocol-studio/ui/editor/studio-editor.css";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
-import { useCreateStudioSessionMutation } from "@store/api";
+import { useGitHubLogin } from "@hooks/useGitHubLogin";
+import { useCreateStudioSessionMutation, type IAxiosBaseQueryError } from "@store/api";
 import { persistor } from "@store/index";
 import { STUDIO_PERSIST_FAILED_EVENT } from "@store/persistConfig";
 import {
@@ -39,6 +40,7 @@ import {
 import {
     StartLiveDialog,
     type IStartLiveSubmit,
+    type StartLiveFailure,
 } from "@pages/protocol-studio/ui/editor/live/start-live-dialog";
 
 import { useDragResize } from "@pages/protocol-studio/hooks/use-drag-resize";
@@ -569,12 +571,23 @@ const StudioEditorContent = ({
 
     const [liveOpen, setLiveOpen] = useState(false);
     const [createStudioSession] = useCreateStudioSessionMutation();
+    // Starting a session needs a signed-in user (unless the backend says otherwise):
+    // a 401 offers the app's login, which comes back to this page.
+    const { startLogin } = useGitHubLogin();
+    const signIn = useCallback(
+        () => startLogin(`${window.location.pathname}${window.location.search}`),
+        [startLogin]
+    );
     const liveBlockers = useMemo(
         () => new Map(journeys.map((j) => [j.id, getLiveBlocker(flat, j)] as const)),
         [flat, journeys]
     );
     const startLive = useCallback(
-        async ({ subscriberUrl, role, journeyIds }: IStartLiveSubmit): Promise<string | null> => {
+        async ({
+            subscriberUrl,
+            role,
+            journeyIds,
+        }: IStartLiveSubmit): Promise<StartLiveFailure | null> => {
             const executor = runGraph.executor;
             if (!executor) return runBlocked ?? "The graph isn't compiled yet";
             const picked = journeys.filter((j) => journeyIds.includes(j.id));
@@ -603,8 +616,16 @@ const StudioEditorContent = ({
                     ...target,
                 });
                 const result = await createStudioSession(body);
-                if (!("data" in result) || !result.data?.sessionId)
+                if (!("data" in result) || !result.data?.sessionId) {
+                    const error =
+                        "error" in result
+                            ? (result.error as IAxiosBaseQueryError | undefined)
+                            : undefined;
+                    if (error?.status === 401) return { signIn: true };
+                    // Refused (an organisation you're not in, too many sessions, a bad graph): say why.
+                    if (error?.status && error.status < 500 && error.message) return error.message;
                     return "The live session could not be created · is the backend running?";
+                }
                 log(
                     "success",
                     `Live session ${result.data.sessionId} · ${target.role} ${target.subscriberUrl} · ${picked.length} journey${picked.length === 1 ? "" : "s"}`
@@ -2055,6 +2076,7 @@ const StudioEditorContent = ({
                 container={rootRef.current}
                 onClose={() => setLiveOpen(false)}
                 onStart={startLive}
+                onSignIn={signIn}
             />
 
             <GroupDialog
