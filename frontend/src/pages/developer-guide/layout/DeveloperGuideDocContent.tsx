@@ -1,12 +1,4 @@
-import {
-    FC,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    type CSSProperties,
-} from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
 import { useGetGithubDocContentQuery } from "@store/api";
@@ -60,7 +52,8 @@ const DeveloperGuideDocContent: FC = () => {
     } = useDocsSectionSelection({ docSlugs, docs: docsRecord });
 
     const indexGroups = useMemo(
-        () => (slug && content ? buildSectionIndexGroups(docsRecord, docSlugs) : []),
+        // A doc page lists every subsection (e.g. all 36 states under "City Codes").
+        () => (slug && content ? buildSectionIndexGroups(docsRecord, docSlugs, Infinity) : []),
         [docsRecord, docSlugs, slug, content]
     );
 

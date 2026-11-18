@@ -1,10 +1,4 @@
-import {
-    FC,
-    useCallback,
-    useMemo,
-    type CSSProperties,
-    type ReactNode,
-} from "react";
+import { FC, useCallback, useMemo, type CSSProperties, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ChevronRightIcon,
@@ -136,7 +130,7 @@ const DeveloperGuideGettingStartedContent: FC = () => {
         },
         {
             id: "auth-tools",
-            title: "Auth Tools",
+            title: "Signing & Verification",
             subtitle: "Authorization",
             description:
                 "Generate and verify ONDC authorization headers using BLAKE2B-512 hashing and Ed25519 signing.",
