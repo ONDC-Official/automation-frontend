@@ -3,6 +3,7 @@ import type {
     FlatGraph,
     Fork,
     ForkOption,
+    GraphRename,
     JourneyStep,
     NodeOwner,
     ProtocolProblem,
@@ -467,3 +468,106 @@ export const createJourney = (
     onDemand: [],
     ...extra,
 });
+
+const has = (record: Record<string, unknown>, key: string) =>
+    Object.prototype.hasOwnProperty.call(record, key);
+
+/** `record` with key `from` moved to `to` in place (a stale `to` gives way); unchanged without `from`. */
+const moveKey = <T>(record: Record<string, T>, from: string, to: string): Record<string, T> => {
+    if (!has(record, from)) return record;
+    const next: Record<string, T> = {};
+    for (const [key, value] of Object.entries(record)) {
+        if (key === to) continue;
+        next[key === from ? to : key] = value;
+    }
+    return next;
+};
+
+/**
+ * Journeys with node `from` renamed `to` wherever they name it: the entry and
+ * exit, the fork keys of `choices` (`getForkKey`, both kinds) and the targets
+ * chosen, the decisions `expects` is keyed by, skips, on-demand nodes and
+ * seeds. Pure; journeys that don't name the node come back as they were, and
+ * the array itself when none does.
+ */
+export const renameNodeInJourneys = (
+    journeys: StudioJourney[],
+    from: string,
+    to: string
+): StudioJourney[] => {
+    if (from === to) return journeys;
+    const id = (value: string) => (value === from ? to : value);
+    const alternatives = [getForkKey(from, "alternatives"), getForkKey(to, "alternatives")];
+    const decision = [getForkKey(from, "decision"), getForkKey(to, "decision")];
+    let changed = false;
+    const next = journeys.map((journey) => {
+        const names =
+            journey.entry === from ||
+            journey.exit === from ||
+            has(journey.choices, alternatives[0]) ||
+            has(journey.choices, decision[0]) ||
+            Object.values(journey.choices).includes(from) ||
+            has(journey.expects, from) ||
+            journey.onDemand.includes(from) ||
+            (journey.skips ?? []).includes(from) ||
+            (journey.seeds !== undefined && has(journey.seeds, from));
+        if (!names) return journey;
+        changed = true;
+        const choices = moveKey(
+            moveKey(journey.choices, alternatives[0], alternatives[1]),
+            decision[0],
+            decision[1]
+        );
+        return {
+            ...journey,
+            entry: id(journey.entry),
+            choices: Object.fromEntries(
+                Object.entries(choices).map(([key, target]) => [key, id(target)])
+            ),
+            expects: moveKey(journey.expects, from, to),
+            onDemand: journey.onDemand.map(id),
+            ...(journey.skips !== undefined ? { skips: journey.skips.map(id) } : {}),
+            ...(journey.exit !== undefined ? { exit: id(journey.exit) } : {}),
+            ...(journey.seeds !== undefined ? { seeds: moveKey(journey.seeds, from, to) } : {}),
+        };
+    });
+    return changed ? next : journeys;
+};
+
+/**
+ * Journeys with decision `nodeId`'s case `from` renamed `to` where they
+ * expect it. Pure; unchanged journeys (and the array, if none) come back as
+ * they were.
+ */
+export const renameCaseInJourneys = (
+    journeys: StudioJourney[],
+    nodeId: string,
+    from: string,
+    to: string
+): StudioJourney[] => {
+    if (from === to) return journeys;
+    let changed = false;
+    const next = journeys.map((journey) => {
+        if (!has(journey.expects, nodeId) || journey.expects[nodeId] !== from) return journey;
+        changed = true;
+        return { ...journey, expects: { ...journey.expects, [nodeId]: to } };
+    });
+    return changed ? next : journeys;
+};
+
+/** Journeys with each rename applied in order. */
+export const applyRenamesToJourneys = (
+    journeys: StudioJourney[],
+    renames: readonly GraphRename[]
+): StudioJourney[] =>
+    renames.reduce(
+        (current, rename) =>
+            rename.type === "node"
+                ? renameNodeInJourneys(current, rename.from, rename.to)
+                : renameCaseInJourneys(current, rename.nodeId, rename.from, rename.to),
+        journeys
+    );
+
+/** The renames that undo `renames`: each one backwards, last first. */
+export const invertRenames = (renames: readonly GraphRename[]): GraphRename[] =>
+    [...renames].reverse().map((rename) => ({ ...rename, from: rename.to, to: rename.from }));

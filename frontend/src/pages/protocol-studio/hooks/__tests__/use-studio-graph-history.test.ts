@@ -1,6 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 
 import { useStudioGraph } from "@pages/protocol-studio/hooks/use-studio-graph";
+import { useStudioJourneys } from "@pages/protocol-studio/hooks/use-studio-journeys";
+import { createJourney } from "@pages/protocol-studio/ui/editor/journeys/derive";
 import { NO_FILES } from "@pages/protocol-studio/ui/editor/graph/catalog";
 import type { NodeKind, StudioEdge, StudioNode } from "@pages/protocol-studio/ui/editor/types";
 
@@ -109,6 +111,110 @@ describe("useStudioGraph history", () => {
             result.current.history.undo();
         });
         expect(ids(result)).toEqual(["search", "on_search", "select"]);
+    });
+
+    it("replays a rename's journey renames: back on undo, forward on redo", () => {
+        const onRenames = jest.fn();
+        const { result } = renderHook(() => useStudioGraph(undefined, { onRenames }));
+        act(() =>
+            result.current.actions.addFragment({
+                nodes: [node("search"), node("select", "request", 300)],
+                edges: [edge("search", "select")],
+            })
+        );
+        act(() => {
+            result.current.actions.renameNode("select", "select_1");
+        });
+        // The edit itself reports nothing: whoever made it applies its renames.
+        expect(onRenames).not.toHaveBeenCalled();
+
+        act(() => {
+            result.current.history.undo();
+        });
+        expect(onRenames).toHaveBeenLastCalledWith([
+            { type: "node", from: "select_1", to: "select" },
+        ]);
+        act(() => {
+            result.current.history.redo();
+        });
+        expect(onRenames).toHaveBeenLastCalledWith([
+            { type: "node", from: "select", to: "select_1" },
+        ]);
+        expect(result.current.graph.nodes.map((x) => x.id)).toEqual(["search", "select_1"]);
+
+        // Steps without renames replay none.
+        onRenames.mockClear();
+        act(() => result.current.actions.addFragment({ nodes: [node("init")], edges: [] }));
+        act(() => {
+            result.current.history.undo();
+        });
+        expect(onRenames).not.toHaveBeenCalled();
+    });
+
+    it("keeps journeys on a renamed node through undo and redo, wired as the editor wires them", () => {
+        const { result } = renderHook(() => {
+            const journeys = useStudioJourneys([
+                createJourney("happy", "Happy", "search", { choices: { search: "select" } }),
+            ]);
+            const graph = useStudioGraph(
+                {
+                    nodes: [node("search"), node("select", "request", 300)],
+                    edges: [edge("search", "select")],
+                },
+                { onRenames: journeys.actions.applyRenames }
+            );
+            return { journeys, graph };
+        });
+        const happy = () => result.current.journeys.journeys[0];
+        act(() => {
+            if (result.current.graph.actions.renameNode("select", "pick") === null) {
+                result.current.journeys.actions.applyRenames([
+                    { type: "node", from: "select", to: "pick" },
+                ]);
+            }
+        });
+        expect(happy().choices).toEqual({ search: "pick" });
+        act(() => {
+            result.current.graph.history.undo();
+        });
+        expect(happy().choices).toEqual({ search: "select" });
+        act(() => {
+            result.current.graph.history.redo();
+        });
+        expect(happy().choices).toEqual({ search: "pick" });
+    });
+
+    it("keeps a burst of case renames on one step and undoes them last first", () => {
+        const onRenames = jest.fn();
+        const { result } = renderHook(() => useStudioGraph(undefined, { onRenames }));
+        act(() =>
+            result.current.actions.addFragment({
+                nodes: [
+                    {
+                        ...node("pay", "decision"),
+                        decision: { cases: ["a", "b"], decide: "" },
+                    },
+                ],
+                edges: [],
+            })
+        );
+        for (const [from, to] of [
+            ["a", "ab"],
+            ["ab", "abc"],
+        ]) {
+            now += 200;
+            act(() =>
+                result.current.actions.updateDecision("pay", { cases: [to, "b"] }, [from, to])
+            );
+        }
+        act(() => {
+            result.current.history.undo();
+        });
+        expect(result.current.graph.nodes[0].decision?.cases).toEqual(["a", "b"]);
+        expect(onRenames).toHaveBeenLastCalledWith([
+            { type: "case", nodeId: "pay", from: "abc", to: "ab" },
+            { type: "case", nodeId: "pay", from: "ab", to: "a" },
+        ]);
     });
 
     it("removes several nodes as one step", () => {

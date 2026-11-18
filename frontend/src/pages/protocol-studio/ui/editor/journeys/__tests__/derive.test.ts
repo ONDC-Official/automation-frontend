@@ -1,11 +1,16 @@
 import { createGroupNode, NO_FILES } from "@pages/protocol-studio/ui/editor/graph/catalog";
 import { flattenGraph, getEntryNodes } from "@pages/protocol-studio/ui/editor/graph/flatten";
 import {
+    applyRenamesToJourneys,
+    createJourney,
     enumeratePaths,
     getCoverage,
     getForks,
+    invertRenames,
     lintJourneys,
     proposeTitle,
+    renameCaseInJourneys,
+    renameNodeInJourneys,
     walkJourney,
 } from "@pages/protocol-studio/ui/editor/journeys/derive";
 import {
@@ -397,5 +402,79 @@ describe("start / end marks and repeat-until in journeys", () => {
         expect(lintJourneys(flat, [notEnd]).map((p) => p.message)).toContainEqual(
             expect.stringContaining("isn't marked End")
         );
+    });
+});
+
+describe("renames in journeys", () => {
+    const journey = () =>
+        createJourney("happy", "Happy", "search", {
+            choices: { select: "on_select", "pay_decision:decision": "on_status_paid" },
+            expects: { pay_decision: "PREPAID" },
+            onDemand: ["status"],
+            skips: ["select"],
+            exit: "on_confirm",
+            seeds: { select: { a: 1 } },
+        });
+
+    it("renames a node wherever a journey names it", () => {
+        const [renamed] = renameNodeInJourneys([journey()], "select", "select_1");
+        expect(renamed.choices).toEqual({
+            select_1: "on_select",
+            "pay_decision:decision": "on_status_paid",
+        });
+        expect(renamed.skips).toEqual(["select_1"]);
+        expect(renamed.seeds).toEqual({ select_1: { a: 1 } });
+
+        const [moved] = renameNodeInJourneys([journey()], "on_select", "on_select_in_stock");
+        expect(moved.choices.select).toBe("on_select_in_stock");
+
+        const [entry] = renameNodeInJourneys([journey()], "search", "search_1");
+        expect(entry.entry).toBe("search_1");
+        const [exit] = renameNodeInJourneys([journey()], "on_confirm", "on_confirm_1");
+        expect(exit.exit).toBe("on_confirm_1");
+        const [onDemand] = renameNodeInJourneys([journey()], "status", "status_1");
+        expect(onDemand.onDemand).toEqual(["status_1"]);
+    });
+
+    it("renames a decision's fork key and its expects key", () => {
+        const [renamed] = renameNodeInJourneys([journey()], "pay_decision", "payment");
+        expect(renamed.choices).toEqual({
+            select: "on_select",
+            "payment:decision": "on_status_paid",
+        });
+        expect(renamed.expects).toEqual({ payment: "PREPAID" });
+    });
+
+    it("gives back the same journeys when none names the node", () => {
+        const journeys = [journey()];
+        expect(renameNodeInJourneys(journeys, "track", "track_1")).toBe(journeys);
+        expect(renameCaseInJourneys(journeys, "pay_decision", "COD", "CASH")).toBe(journeys);
+    });
+
+    it("renames an expected case, only for its decision", () => {
+        const other = createJourney("cod", "COD", "search", {
+            expects: { pay_decision: "COD", other_decision: "PREPAID" },
+        });
+        const [happy, cod] = renameCaseInJourneys(
+            [journey(), other],
+            "pay_decision",
+            "PREPAID",
+            "ONLINE"
+        );
+        expect(happy.expects).toEqual({ pay_decision: "ONLINE" });
+        expect(cod).toBe(other);
+    });
+
+    it("applies renames in order, and their inverse undoes them", () => {
+        const journeys = [journey()];
+        const renames = [
+            { type: "node" as const, from: "select", to: "select_1" },
+            { type: "node" as const, from: "select_1", to: "select_2" },
+            { type: "case" as const, nodeId: "pay_decision", from: "PREPAID", to: "ONLINE" },
+        ];
+        const renamed = applyRenamesToJourneys(journeys, renames);
+        expect(renamed[0].choices.select_2).toBe("on_select");
+        expect(renamed[0].expects.pay_decision).toBe("ONLINE");
+        expect(applyRenamesToJourneys(renamed, invertRenames(renames))).toEqual(journeys);
     });
 });

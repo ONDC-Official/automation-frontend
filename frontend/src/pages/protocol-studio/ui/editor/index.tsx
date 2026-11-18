@@ -285,6 +285,8 @@ const StudioEditorContent = ({
     const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(rootRef);
     const { getViewport, setViewport, screenToFlowPosition } = useReactFlow();
 
+    // Journeys first: undo / redo of a rename on the graph renames them back.
+    const journeysState = useStudioJourneys(draft?.journeys);
     const {
         root,
         graph,
@@ -295,9 +297,8 @@ const StudioEditorContent = ({
         rootRef: graphRootRef,
         actions,
         history,
-    } = useStudioGraph(draft?.graph);
+    } = useStudioGraph(draft?.graph, { onRenames: journeysState.actions.applyRenames });
     const inGroup = path.length > 0;
-    const journeysState = useStudioJourneys(draft?.journeys);
     const {
         journeys,
         selectedId: selectedJourneyId,
@@ -954,7 +955,8 @@ const StudioEditorContent = ({
         [actions, graphRef, log]
     );
 
-    // The graph's edits as panels and the menu see them: deletes, renames and level changes are logged.
+    // The graph's edits as panels and the menu see them: deletes, renames and level changes are
+    // logged, and journeys follow a renamed node or decision case.
     const editActions = useMemo<StudioGraphActions>(
         () => ({
             ...actions,
@@ -964,11 +966,21 @@ const StudioEditorContent = ({
                 const error = actions.renameNode(nodeId, nextId);
                 const id = nextId.trim();
                 if (!error && id !== nodeId) {
+                    journeyActions.applyRenames([{ type: "node", from: nodeId, to: id }]);
                     // The selection follows the node to its new id.
                     setSelection({ type: "node", id });
                     log("info", `Renamed ${nodeId} to ${id}`);
                 }
                 return error;
+            },
+            updateDecision: (nodeId, patch, renamed) => {
+                const before = graphRootRef.current;
+                actions.updateDecision(nodeId, patch, renamed);
+                if (renamed && renamed[0] !== renamed[1] && graphRootRef.current !== before) {
+                    journeyActions.applyRenames([
+                        { type: "case", nodeId, from: renamed[0], to: renamed[1] },
+                    ]);
+                }
             },
             enterGroup: (groupId) => {
                 actions.enterGroup(groupId);
@@ -989,7 +1001,7 @@ const StudioEditorContent = ({
                 log("info", `Ungrouped ${node?.group?.name ?? groupId}`);
             },
         }),
-        [actions, removeNode, removeEdge, graphRef, log]
+        [actions, removeNode, removeEdge, graphRef, graphRootRef, journeyActions, log]
     );
 
     /**

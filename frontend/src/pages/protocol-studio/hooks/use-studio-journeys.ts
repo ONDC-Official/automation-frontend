@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 
-import { createJourney, getJourneyId } from "@pages/protocol-studio/ui/editor/journeys/derive";
-import type { StudioJourney } from "@pages/protocol-studio/ui/editor/types";
+import {
+    applyRenamesToJourneys,
+    createJourney,
+    getJourneyId,
+} from "@pages/protocol-studio/ui/editor/journeys/derive";
+import type { GraphRename, StudioJourney } from "@pages/protocol-studio/ui/editor/types";
 
 /**
  * The Journeys list's built-in first entry: not a journey but a run mode. The
@@ -27,6 +31,8 @@ export interface StudioJourneyActions {
     toggleOnDemand: (id: string, nodeId: string) => void;
     /** Marks an optional node as skipped by this journey, or runs it again. */
     toggleSkip: (id: string, nodeId: string) => void;
+    /** Follows renames made on the graph (a node's id, a decision's case), in order. */
+    applyRenames: (renames: readonly GraphRename[]) => void;
     select: (id: string | null) => void;
 }
 
@@ -112,6 +118,9 @@ export const useStudioJourneys = (initial: StudioJourney[] = []) => {
                             : [...skips, nodeId],
                     };
                 }),
+            applyRenames: (renames) => {
+                if (renames.length > 0) update((prev) => applyRenamesToJourneys(prev, renames));
+            },
             select: setSelectedId,
         };
     }, [update]);

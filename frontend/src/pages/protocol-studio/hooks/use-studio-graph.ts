@@ -23,9 +23,11 @@ import {
     getFreeCase,
     syncDecideSignature,
 } from "@pages/protocol-studio/ui/editor/graph/decision";
+import { invertRenames } from "@pages/protocol-studio/ui/editor/journeys/derive";
 import {
     GROUP_IN,
     GROUP_OUT,
+    type GraphRename,
     type StudioEdge,
     type StudioGraph,
     type StudioGraphActions,
@@ -73,9 +75,18 @@ const HISTORY_LIMIT = 100;
 /** Edits with the same key this close together are one undo step (a burst of typing, one drag). */
 const COALESCE_MS = 1500;
 
+/**
+ * One undo step: the graph before (`past`) or after (`future`) it, and the
+ * renames it made, which journeys follow back on undo and forward on redo.
+ */
+interface HistoryStep {
+    root: StudioGraph;
+    renames: GraphRename[];
+}
+
 interface GraphHistory {
-    past: StudioGraph[];
-    future: StudioGraph[];
+    past: HistoryStep[];
+    future: HistoryStep[];
     /** The coalescing key of the last edit, and when it landed. */
     lastKey: string | null;
     lastAt: number;
@@ -99,8 +110,20 @@ export interface StudioGraphHistory {
  * the draft (see `persistence/studio-draft.ts`). The v2 config schema has no
  * graph yet.
  */
-export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
+export interface StudioGraphOptions {
+    /**
+     * Called when undo or redo replays an edit that renamed something
+     * journeys refer to (a node, a decision's case), with the renames to
+     * apply: inverted, last first, on undo; as made on redo. The edit itself
+     * reports nothing; whoever made it applies its renames.
+     */
+    onRenames?: (renames: GraphRename[]) => void;
+}
+
+export const useStudioGraph = (initial: StudioGraph = EMPTY, options: StudioGraphOptions = {}) => {
     const [root, setRoot] = useState<StudioGraph>(initial);
+    const onRenamesRef = useRef(options.onRenames);
+    onRenamesRef.current = options.onRenames;
     const [path, setPath] = useState<string[]>([]);
 
     // A path whose group was deleted (or ungrouped) falls back to the deepest level that still exists.
@@ -137,10 +160,14 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
      * Every edit lands here and becomes an undo step. Edits passing the same
      * `coalesce` key in quick succession share one step. Computed against
      * `rootRef` (not inside a state updater) so StrictMode's double call of
-     * updaters cannot record a step twice.
+     * updaters cannot record a step twice. `renames` are kept on the step.
      */
     const updateRoot = useCallback(
-        (recipe: (prev: StudioGraph) => StudioGraph, coalesce?: string) => {
+        (
+            recipe: (prev: StudioGraph) => StudioGraph,
+            coalesce?: string,
+            renames: GraphRename[] = []
+        ) => {
             const prev = rootRef.current;
             const next = recipe(prev);
             if (next === prev) return;
@@ -151,8 +178,11 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
                 history.lastKey === coalesce &&
                 now - history.lastAt < COALESCE_MS &&
                 history.past.length > 0;
-            if (!merge) {
-                history.past.push(prev);
+            if (merge) {
+                const top = history.past[history.past.length - 1];
+                if (renames.length > 0) top.renames = [...top.renames, ...renames];
+            } else {
+                history.past.push({ root: prev, renames });
                 if (history.past.length > HISTORY_LIMIT) history.past.shift();
             }
             history.future = [];
@@ -167,8 +197,8 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
 
     /** Edits the level the canvas shows. */
     const updateLevel = useCallback(
-        (recipe: (prev: StudioGraph) => StudioGraph, coalesce?: string) =>
-            updateRoot((prev) => updateGraphAt(prev, pathRef.current, recipe), coalesce),
+        (recipe: (prev: StudioGraph) => StudioGraph, coalesce?: string, renames?: GraphRename[]) =>
+            updateRoot((prev) => updateGraphAt(prev, pathRef.current, recipe), coalesce, renames),
         [updateRoot]
     );
 
@@ -180,16 +210,21 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
                 direction === "undo"
                     ? [history.past, history.future]
                     : [history.future, history.past];
-            const next = from.pop();
-            if (!next) return false;
-            to.push(rootRef.current);
+            const step = from.pop();
+            if (!step) return false;
+            to.push({ root: rootRef.current, renames: step.renames });
             history.lastKey = null;
-            rootRef.current = next;
-            setRoot(next);
+            rootRef.current = step.root;
+            setRoot(step.root);
             // A group the canvas showed may be gone: settle on the deepest level left, so a
             // later redo that brings the group back does not drop the canvas into it.
-            setPath(getLivePath(next, pathRef.current));
+            setPath(getLivePath(step.root, pathRef.current));
             syncDepth();
+            if (step.renames.length > 0) {
+                onRenamesRef.current?.(
+                    direction === "undo" ? invertRenames(step.renames) : step.renames
+                );
+            }
             return true;
         },
         [syncDepth]
@@ -262,21 +297,24 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
                 if (isBoundary(id)) return `"${id}" is reserved for a group's pins`;
                 if (getAllNodeIds(rootRef.current).has(id))
                     return `"${id}" is already on the graph`;
-                updateRoot((prev) =>
-                    repointAll(
-                        updateGraphAt(prev, pathRef.current, (level) => ({
-                            nodes: level.nodes.map((node) =>
-                                node.id === nodeId ? { ...node, id } : node
-                            ),
-                            edges: level.edges.map((edge) => ({
-                                ...edge,
-                                from: edge.from === nodeId ? id : edge.from,
-                                to: edge.to === nodeId ? id : edge.to,
+                updateRoot(
+                    (prev) =>
+                        repointAll(
+                            updateGraphAt(prev, pathRef.current, (level) => ({
+                                nodes: level.nodes.map((node) =>
+                                    node.id === nodeId ? { ...node, id } : node
+                                ),
+                                edges: level.edges.map((edge) => ({
+                                    ...edge,
+                                    from: edge.from === nodeId ? id : edge.from,
+                                    to: edge.to === nodeId ? id : edge.to,
+                                })),
                             })),
-                        })),
-                        nodeId,
-                        id
-                    )
+                            nodeId,
+                            id
+                        ),
+                    undefined,
+                    [{ type: "node", from: nodeId, to: id }]
                 );
                 return null;
             },
@@ -350,31 +388,37 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY) => {
             },
 
             updateDecision: (nodeId, patch, renamed) =>
-                updateLevel((prev) => {
-                    const node = prev.nodes.find((n) => n.id === nodeId);
-                    if (!node?.decision) return prev;
-                    const { decide, ...before } = node.decision;
-                    const after = { ...before, ...patch };
-                    if (after.cases.length === 0) return prev;
-                    // An untouched template is regenerated; edited code keeps
-                    // its body, under a new return type.
-                    const code =
-                        decide === getDecideTemplate(before)
-                            ? getDecideTemplate(after)
-                            : syncDecideSignature(decide, after);
-                    const live = new Set(after.cases);
-                    return {
-                        nodes: prev.nodes.map((n) =>
-                            n.id === nodeId ? { ...n, decision: { ...after, decide: code } } : n
-                        ),
-                        edges: prev.edges.flatMap((edge) => {
-                            if (edge.from !== nodeId || edge.case === undefined) return [edge];
-                            const value =
-                                renamed && edge.case === renamed[0] ? renamed[1] : edge.case;
-                            return live.has(value) ? [{ ...edge, case: value }] : [];
-                        }),
-                    };
-                }, `decision:${nodeId}`),
+                updateLevel(
+                    (prev) => {
+                        const node = prev.nodes.find((n) => n.id === nodeId);
+                        if (!node?.decision) return prev;
+                        const { decide, ...before } = node.decision;
+                        const after = { ...before, ...patch };
+                        if (after.cases.length === 0) return prev;
+                        // An untouched template is regenerated; edited code keeps
+                        // its body, under a new return type.
+                        const code =
+                            decide === getDecideTemplate(before)
+                                ? getDecideTemplate(after)
+                                : syncDecideSignature(decide, after);
+                        const live = new Set(after.cases);
+                        return {
+                            nodes: prev.nodes.map((n) =>
+                                n.id === nodeId ? { ...n, decision: { ...after, decide: code } } : n
+                            ),
+                            edges: prev.edges.flatMap((edge) => {
+                                if (edge.from !== nodeId || edge.case === undefined) return [edge];
+                                const value =
+                                    renamed && edge.case === renamed[0] ? renamed[1] : edge.case;
+                                return live.has(value) ? [{ ...edge, case: value }] : [];
+                            }),
+                        };
+                    },
+                    `decision:${nodeId}`,
+                    renamed && renamed[0] !== renamed[1]
+                        ? [{ type: "case", nodeId, from: renamed[0], to: renamed[1] }]
+                        : undefined
+                ),
 
             updateEdge: (edgeId, patch) =>
                 updateLevel(

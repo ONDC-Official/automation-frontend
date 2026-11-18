@@ -355,6 +355,15 @@ export interface StudioJourney {
     seeds?: Record<string, unknown>;
 }
 
+/**
+ * A rename an edit made that journeys refer to: a node's id, or one of a
+ * decision's cases. Kept on the graph's undo step, so journeys follow the
+ * rename forward, back on undo, and forward again on redo.
+ */
+export type GraphRename =
+    | { type: "node"; from: string; to: string }
+    | { type: "case"; nodeId: string; from: string; to: string };
+
 /** A step of a journey as walked: a node reached, or a fork still open. */
 export type JourneyStep =
     | {
