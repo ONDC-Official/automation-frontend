@@ -280,6 +280,29 @@ describe("useStudioGraph history", () => {
         expect(result.current.graph.nodes[0].position.x).toBe(0);
     });
 
+    it("keeps flat (and the structure) through moves, at any level, and not through edits", () => {
+        const result = seed();
+        act(() => {
+            result.current.actions.groupNodes(["select"], "Pick", "p");
+        });
+        const { flat, structure } = result.current;
+        now += 16;
+        act(() => result.current.actions.moveNodes(new Map([["search", { x: 40, y: 8 }]])));
+        expect(result.current.root).not.toBe(structure);
+        expect(result.current.flat).toBe(flat);
+        expect(result.current.structure).toBe(structure);
+
+        // A move inside a group keeps them too.
+        act(() => result.current.actions.enterGroup("pick"));
+        act(() => result.current.actions.moveNodes(new Map([["select", { x: 99, y: 99 }]])));
+        expect(result.current.flat).toBe(flat);
+
+        // Anything but a move is a new structure.
+        act(() => result.current.actions.updateNodeFile("select", "generate", "changed"));
+        expect(result.current.flat).not.toBe(flat);
+        expect(result.current.structure).toBe(result.current.root);
+    });
+
     it("drops the redo future on a new edit", () => {
         const result = seed();
         act(() => result.current.actions.removeNode("select"));

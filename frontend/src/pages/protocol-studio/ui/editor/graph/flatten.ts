@@ -4,6 +4,7 @@ import {
     type FlatGraph,
     type StudioEdge,
     type StudioGraph,
+    type StudioGroup,
     type StudioNode,
     type UnresolvedWire,
 } from "@pages/protocol-studio/ui/editor/types";
@@ -107,6 +108,38 @@ export const findEdge = (
     });
     return found;
 };
+
+const sameNodeStructure = (a: StudioNode, b: StudioNode): boolean => {
+    if (a === b) return true;
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]) as Set<keyof StudioNode>;
+    for (const key of keys) {
+        if (key === "position" || a[key] === b[key]) continue;
+        if (key !== "group" || !a.group || !b.group) return false;
+        const groupKeys = new Set([...Object.keys(a.group), ...Object.keys(b.group)]) as Set<
+            keyof StudioGroup
+        >;
+        for (const groupKey of groupKeys) {
+            if (groupKey === "graph") {
+                if (!sameStructure(a.group.graph, b.group.graph)) return false;
+            } else if (a.group[groupKey] !== b.group[groupKey]) return false;
+        }
+    }
+    return true;
+};
+
+/**
+ * Whether two graphs differ at most in where nodes sit, at every level:
+ * the same nodes (all but `position` the same values), in the same order,
+ * and the same wires. Shallow, by reference below that, which is what an
+ * edit that only moves nodes leaves. What lets a drag skip everything
+ * derived from the graph's structure.
+ */
+export const sameStructure = (a: StudioGraph, b: StudioGraph): boolean =>
+    a === b ||
+    (a.nodes.length === b.nodes.length &&
+        a.edges.length === b.edges.length &&
+        a.edges.every((edge, i) => edge === b.edges[i]) &&
+        a.nodes.every((node, i) => sameNodeStructure(node, b.nodes[i])));
 
 /** A working wire while boundaries are being resolved: a real end, a group node, or a group's boundary pin. */
 type End = { node: string } | { group: string } | { boundaryIn: string } | { boundaryOut: string };

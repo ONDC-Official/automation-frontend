@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { act, renderHook } from "@testing-library/react";
 import type {
     GraphExecutorV2,
@@ -7,7 +8,9 @@ import type {
     StepRunV2,
 } from "@ondc/automation-mock-runner";
 
+import { useStudioGraph } from "@pages/protocol-studio/hooks/use-studio-graph";
 import { useStudioRun } from "@pages/protocol-studio/hooks/use-studio-run";
+import { NO_FILES } from "@pages/protocol-studio/ui/editor/graph/catalog";
 import type { StudioJourney } from "@pages/protocol-studio/ui/editor/types";
 
 // A scripted executor: a linear search → on_search with an inputs prompt on
@@ -395,6 +398,55 @@ describe("useStudioRun", () => {
             "warn",
             expect.stringMatching(/changed since the run started/)
         );
+    });
+});
+
+describe("useStudioRun: dragging nodes", () => {
+    it("doesn't mark the run stale when nodes only move", () => {
+        const log = jest.fn();
+        const { result } = renderHook(() => {
+            const graph = useStudioGraph({
+                nodes: [
+                    {
+                        id: "search",
+                        api: "search",
+                        owner: "BAP",
+                        kind: "request",
+                        responseFor: null,
+                        description: "",
+                        files: NO_FILES,
+                        position: { x: 0, y: 0 },
+                    },
+                ],
+                edges: [],
+            });
+            // As useRunGraph does: a new executor whenever the flat graph changes.
+            const executor = useMemo(() => {
+                void graph.flat;
+                return makeExecutor();
+            }, [graph.flat]);
+            const run = useStudioRun({
+                executor,
+                blockedReason: null,
+                log,
+                decodeBase64: (s) => s,
+            });
+            return { graph, run };
+        });
+        act(() => result.current.run.actions.start(journey));
+        for (let x = 10; x <= 50; x += 10) {
+            act(() =>
+                result.current.graph.actions.moveNodes(
+                    new Map([["search", { x, y: 0 }]]),
+                    "drag:test"
+                )
+            );
+        }
+        expect(result.current.graph.root.nodes[0].position.x).toBe(50);
+        expect(result.current.run.run.stale).toBe(false);
+
+        act(() => result.current.graph.actions.updateNodeFile("search", "generate", "edited"));
+        expect(result.current.run.run.stale).toBe(true);
     });
 });
 

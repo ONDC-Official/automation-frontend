@@ -6,6 +6,8 @@ import { getCasePin, getPinCase } from "@pages/protocol-studio/ui/editor/graph/d
 import {
     GROUP_IN,
     GROUP_OUT,
+    type BlueprintEdgeData,
+    type BlueprintNodeData,
     type GraphHighlight,
     type GraphSelection,
     type PinId,
@@ -339,4 +341,57 @@ export const buildGraph = (
     }
 
     return { nodes, edges };
+};
+
+/** Equal, or arrays (a node's wired pins) with equal items. */
+const sameValue = (a: unknown, b: unknown) =>
+    a === b ||
+    (Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        a.every((item, i) => item === b[i]));
+
+/** Same keys, each `sameValue` but those `skip` names. */
+const sameFields = <T extends object>(a: T, b: T, skip?: keyof T) => {
+    const keys = Object.keys(a) as (keyof T)[];
+    if (keys.length !== Object.keys(b).length) return false;
+    return keys.every((key) => key === skip || sameValue(a[key], b[key]));
+};
+
+/** A boundary pseudo-node's `node` is made up on every build: it compares by id and place. */
+const sameNodeData = (a: BlueprintNodeData, b: BlueprintNodeData) =>
+    a.node === b.node
+        ? sameFields(a, b)
+        : !!a.boundary &&
+          a.node.id === b.node.id &&
+          a.node.position.x === b.node.position.x &&
+          a.node.position.y === b.node.position.y &&
+          sameFields(a, b, "node");
+
+/**
+ * `next` with each node's and wire's `data` swapped for the object `prev`
+ * had under the same id when nothing in it changed. `buildGraph` makes new
+ * `data` every time; reusing it lets the memoised node and wire components
+ * skip rendering, so a drag re-renders what moved rather than every node.
+ */
+export const reuseGraphData = (
+    prev: { nodes: StudioGraphNode[]; edges: StudioGraphEdge[] },
+    next: { nodes: StudioGraphNode[]; edges: StudioGraphEdge[] }
+): { nodes: StudioGraphNode[]; edges: StudioGraphEdge[] } => {
+    const nodeData = new Map(prev.nodes.map((node) => [node.id, node.data]));
+    const edgeData = new Map(prev.edges.map((edge) => [edge.id, edge.data]));
+    return {
+        nodes: next.nodes.map((node) => {
+            const old: BlueprintNodeData | undefined = nodeData.get(node.id);
+            return old && old !== node.data && sameNodeData(old, node.data)
+                ? { ...node, data: old }
+                : node;
+        }),
+        edges: next.edges.map((edge) => {
+            const old: BlueprintEdgeData | undefined = edgeData.get(edge.id);
+            return old && edge.data && old !== edge.data && sameFields(old, edge.data)
+                ? { ...edge, data: old }
+                : edge;
+        }),
+    };
 };

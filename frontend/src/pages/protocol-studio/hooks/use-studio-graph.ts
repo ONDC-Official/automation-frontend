@@ -16,6 +16,7 @@ import {
     getGraphAt,
     isBoundary,
     mapAllLevels,
+    sameStructure,
     updateGraphAt,
 } from "@pages/protocol-studio/ui/editor/graph/flatten";
 import {
@@ -104,8 +105,9 @@ export interface StudioGraphHistory {
  * The protocol graph: nodes and the wires between them, with groups
  * (sub-protocols) nested inside group nodes. Editing happens one level at a
  * time: `graph` is the level the canvas shows (`path` = the groups entered,
- * top down) and every action applies there; `root` is the whole thing and
- * `flat` the whole thing with boundaries resolved. React state, seeded from
+ * top down) and every action applies there; `root` is the whole thing,
+ * `structure` the same minus moves (it keeps its identity through a drag) and
+ * `flat` the structure with boundaries resolved. React state, seeded from
  * the local draft when there is one; the editor writes every change back to
  * the draft (see `persistence/studio-draft.ts`). The v2 config schema has no
  * graph yet.
@@ -129,7 +131,15 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY, options: StudioGrap
     // A path whose group was deleted (or ungrouped) falls back to the deepest level that still exists.
     const livePath = useMemo(() => getLivePath(root, path), [root, path]);
     const graph = useMemo(() => getGraphAt(root, livePath) ?? root, [root, livePath]);
-    const flat = useMemo(() => flattenGraph(root), [root]);
+    // `root` as far as its structure goes: kept while edits only move nodes,
+    // so a drag doesn't re-flatten, re-lint, recompile or mark a run stale.
+    // Its positions may be stale; read `root` (or `graph`) for those.
+    const structureRef = useRef(root);
+    const structure = useMemo(() => {
+        if (!sameStructure(structureRef.current, root)) structureRef.current = root;
+        return structureRef.current;
+    }, [root]);
+    const flat = useMemo(() => flattenGraph(structure), [structure]);
     const levels = useMemo<GraphLevel[]>(
         () => [
             { id: "", label: "Protocol" },
@@ -609,7 +619,18 @@ export const useStudioGraph = (initial: StudioGraph = EMPTY, options: StudioGrap
         };
     }, [updateLevel, updateRoot]);
 
-    return { root, graph, path: livePath, levels, flat, graphRef, rootRef, actions, history };
+    return {
+        root,
+        structure,
+        graph,
+        path: livePath,
+        levels,
+        flat,
+        graphRef,
+        rootRef,
+        actions,
+        history,
+    };
 };
 
 export default useStudioGraph;

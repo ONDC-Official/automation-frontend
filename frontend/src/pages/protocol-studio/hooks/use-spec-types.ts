@@ -165,7 +165,8 @@ export const useSpecTypes = (
         };
     }, [spec, flowEntries, graphSteps, meta.isLoading, meta.isError, domain, version, usecase]);
 
-    return { ...types, usecases, usecase };
+    // One object per change, so what reads it (the editor's extra libs) doesn't redo its work every render.
+    return useMemo(() => ({ ...types, usecases, usecase }), [types, usecases, usecase]);
 };
 
 export default useSpecTypes;

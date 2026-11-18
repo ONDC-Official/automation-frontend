@@ -109,6 +109,7 @@ import {
     EXEC_PIN_TOP,
     getGraphBounds,
     getNodeRect,
+    reuseGraphData,
     type GraphRect,
 } from "@pages/protocol-studio/ui/editor/graph/layout";
 import { countProblems, lintProtocol } from "@pages/protocol-studio/ui/editor/graph/lint";
@@ -298,6 +299,7 @@ const StudioEditorContent = ({
     const journeysState = useStudioJourneys(draft?.journeys);
     const {
         root,
+        structure,
         graph,
         path,
         levels,
@@ -460,7 +462,7 @@ const StudioEditorContent = ({
     // A deleted (or renamed) node's files would stay in the TypeScript program,
     // their globals visible to every other node: drop their models. Nodes at
     // every level count — entering a group must not drop the top level's.
-    const nodeIdsKey = useMemo(() => [...getAllNodeIds(root)].join("\n"), [root]);
+    const nodeIdsKey = useMemo(() => [...getAllNodeIds(structure)].join("\n"), [structure]);
     useEffect(() => {
         if (!monaco) return;
         const live = new Set(nodeIdsKey.split("\n"));
@@ -531,7 +533,8 @@ const StudioEditorContent = ({
 
     // ─── Derived: lint, forks, journeys ────────────────────────────────────
 
-    const protocolProblems = useMemo(() => lintProtocol(root, flat), [root, flat]);
+    // Structure only, like `flat`: a drag re-lints nothing.
+    const protocolProblems = useMemo(() => lintProtocol(structure, flat), [structure, flat]);
     const forks = useMemo(() => getForks(flat), [flat]);
     const journeyProblems = useMemo(() => lintJourneys(flat, journeys), [flat, journeys]);
     const coverage = useMemo(() => getCoverage(flat, journeys), [flat, journeys]);
@@ -783,10 +786,15 @@ const StudioEditorContent = ({
     // A selection whose node / edge was deleted (or renamed away, or is on another level) is no selection.
     const liveSelection = useMemo(() => getLiveSelection(selection, graph), [selection, graph]);
     const selectedNodeIds = useMemo(() => getSelectedNodeIds(liveSelection), [liveSelection]);
-    const rfGraph = useMemo(
-        () => buildGraph(graph, liveSelection, { boundary: inGroup, highlight }),
-        [graph, liveSelection, inGroup, highlight]
-    );
+    // Node and wire `data` the last build already had is reused, so the memoised
+    // nodes and wires that didn't change skip rendering (a drag re-renders what moved).
+    const lastRfGraph = useRef<ReturnType<typeof buildGraph> | null>(null);
+    const rfGraph = useMemo(() => {
+        const next = buildGraph(graph, liveSelection, { boundary: inGroup, highlight });
+        const reused = lastRfGraph.current ? reuseGraphData(lastRfGraph.current, next) : next;
+        lastRfGraph.current = reused;
+        return reused;
+    }, [graph, liveSelection, inGroup, highlight]);
 
     // The config as it would be exported: helpers.ts edits are encoded back in.
     const configJson = useMemo(
