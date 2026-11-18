@@ -93,3 +93,30 @@ describe("useStudioContracts: re-reading the imported files", () => {
         expect(result.current.summary.failed).toEqual([]);
     });
 });
+
+describe("useStudioContracts: what is kept in the browser", () => {
+    it("refuses an upload too large to keep, and keeps a small one", () => {
+        const { result } = setup();
+        const huge = `_TESTS_: {}\n# ${"x".repeat(2_000_001)}\n`;
+        let outcome: ReturnType<typeof result.current.ops.upload> | undefined;
+        act(() => {
+            outcome = result.current.ops.upload("huge.yaml", huge);
+        });
+        expect(outcome).toMatchObject({ ok: false, error: expect.stringContaining("too large") });
+        expect(result.current.storageFull).toBe(true);
+        expect(result.current.set?.files.validations?.uploadedAs).toBeUndefined();
+
+        act(() => {
+            outcome = result.current.ops.upload("small.yaml", "_TESTS_: {}\n");
+        });
+        expect(outcome).toEqual({ ok: true, id: "validations" });
+        expect(result.current.set?.files.validations?.uploadedAs).toBe("small.yaml");
+    });
+
+    it("clears the contract set", () => {
+        const { result } = setup();
+        expect(result.current.set).not.toBeNull();
+        act(() => result.current.ops.clear());
+        expect(result.current.set).toBeNull();
+    });
+});

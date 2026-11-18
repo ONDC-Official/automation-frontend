@@ -8,8 +8,10 @@ import {
     ArrowUturnLeftIcon,
     ChevronDownIcon,
     CloudArrowDownIcon,
+    TrashIcon,
 } from "@heroicons/react/24/outline";
 
+import { ConfirmDialog } from "@components/Shadcn/Dialog/confirm-dialog";
 import type { StudioContracts } from "@pages/protocol-studio/hooks/use-studio-contracts";
 import { useSpecPortal } from "@pages/protocol-studio/ui/editor/stages/specification/portal";
 import {
@@ -55,6 +57,7 @@ export const ContractBar = ({ contracts, onSelectFile }: IContractBarProps) => {
     const [pickerOpen, setPickerOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [armed, setArmed] = useState<string | null>(null);
+    const [clearing, setClearing] = useState(false);
     const uploadRef = useRef<HTMLInputElement>(null);
     const portal = useSpecPortal();
     const dirty = CONTRACT_FILE_IDS.filter((id) => files[id].dirty);
@@ -404,9 +407,32 @@ export const ContractBar = ({ contracts, onSelectFile }: IContractBarProps) => {
                                 ))}
                             </>
                         ) : null}
+                        <DropdownMenu.Separator className="studio-spec-menu-sep" />
+                        <DropdownMenu.Item
+                            className="studio-menu-item"
+                            data-tone="danger"
+                            data-action="clear-contracts"
+                            onSelect={() => setClearing(true)}
+                        >
+                            <TrashIcon />
+                            Clear contract files…
+                        </DropdownMenu.Item>
                     </DropdownMenu.Content>
                 </DropdownMenu.Portal>
             </DropdownMenu.Root>
+            <ConfirmDialog
+                open={clearing}
+                onOpenChange={setClearing}
+                title="Clear the contract files?"
+                description={`The imported files${dirty.length ? `, with ${dirty.length} edited,` : ""} are removed from this browser. The spec service's read-only copy shows until you import or upload again.`}
+                confirmText="Clear"
+                danger
+                onConfirm={() => {
+                    setClearing(false);
+                    contracts.ops.clear();
+                    toast.success("Cleared the contract files");
+                }}
+            />
         </div>
     );
 };

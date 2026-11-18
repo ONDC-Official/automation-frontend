@@ -9,6 +9,7 @@ import {
 } from "@store/api";
 import {
     contractSetKey,
+    forgetContractSet,
     importContractSet,
     persistedContractChars,
     revertContractFile,
@@ -76,7 +77,11 @@ export const CONTRACT_FILE_LABELS: Record<ContractFileId, string> = {
     specs: "openapi.yaml",
 };
 
-/** Persisted edits beyond this many characters stop being saved in the browser (localStorage is ~5 MB, shared). */
+/**
+ * Persisted edits beyond this many characters stop being saved in the browser:
+ * the slice is in IndexedDB, but falls back to localStorage (~5 MB, shared)
+ * where IndexedDB is missing.
+ */
 const PERSIST_LIMIT_CHARS = 2_000_000;
 const PARSE_SETTLE_MS = 300;
 const PERSIST_SETTLE_MS = 600;
@@ -499,6 +504,8 @@ export const useStudioContracts = (
                     files[id] = { path: paths[id], baseHash: fnv1a(t), baseSize: t.length };
             }
             Object.values(persistTimers.current).forEach((t) => window.clearTimeout(t));
+            // The old set (and every edit in it) goes first; the import replaces it whole.
+            dispatch(forgetContractSet({ key }));
             dispatch(
                 importContractSet({
                     domain,
@@ -518,8 +525,20 @@ export const useStudioContracts = (
             history.current.clear();
             return true;
         },
-        [dispatch, domain, version, fetchContracts]
+        [dispatch, key, domain, version, fetchContracts]
     );
+
+    /** Drops the imported (and uploaded) files and their edits: the spec service's copy shows again. */
+    const clear = useCallback(() => {
+        Object.values(persistTimers.current).forEach((t) => window.clearTimeout(t));
+        dispatch(forgetContractSet({ key }));
+        setDrafts({});
+        setTyped({});
+        setStorageFull(false);
+        setImportError(null);
+        history.current.clear();
+        bumpHistory((n) => n + 1);
+    }, [dispatch, key]);
 
     /** Adds an uploaded file; its kind comes from its keys. Returns what it was taken as, or an error. */
     const upload = useCallback(
@@ -532,6 +551,16 @@ export const useStudioContracts = (
                 return {
                     ok: false,
                     error: `${fileName} isn't an actions, validations or OpenAPI file (no supportedActions, _TESTS_ or paths).`,
+                };
+            }
+            // An upload is stored whole, so it goes through the same guard as edits.
+            const others =
+                persistedCharsRef.current - (setRef.current?.files[id]?.text?.length ?? 0);
+            if (others + text.length > PERSIST_LIMIT_CHARS) {
+                setStorageFull(true);
+                return {
+                    ok: false,
+                    error: `${fileName} is too large to keep in this browser alongside the other edited files. Export and revert some of them, or clear the contract, then upload it again.`,
                 };
             }
             dispatch(uploadContractFile({ domain, version, file: id, fileName, text }));
@@ -689,6 +718,7 @@ export const useStudioContracts = (
             undo: (id: ContractFileId) => step(id, "undo"),
             redo: (id: ContractFileId) => step(id, "redo"),
             revert,
+            clear,
             isEditable: editableOf,
         },
     };

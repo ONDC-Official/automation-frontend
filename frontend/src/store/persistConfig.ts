@@ -1,4 +1,5 @@
 import { storage, sessionStorage } from "@store/storage";
+import { idbStorage } from "@store/idbStorage";
 import type { PersistConfig } from "redux-persist";
 import type { ISessionState } from "@store/slices/sessionSlice";
 import type { IFrameworkHealthState } from "@store/slices/frameworkHealthSlice";
@@ -58,10 +59,14 @@ export const studioDraftPersistConfig: PersistConfig<IStudioDraftState> = {
 
 /**
  * Studio's contract files can be large (an edited validations file is ~300 KB),
- * so a failed write is reported rather than silently lost.
+ * so they live in IndexedDB (`idbStorage`; localStorage where it is missing),
+ * and a failed write is reported rather than silently lost. `timeout: 0`:
+ * rehydration waits for IndexedDB, which always settles (its open is capped),
+ * instead of giving up after 5 s and later overwriting what is stored.
  */
 export const studioContractsPersistConfig: PersistConfig<IStudioContractsState> = {
     key: "studioContracts",
-    storage,
+    storage: idbStorage,
+    timeout: 0,
     writeFailHandler: reportPersistFailure("studioContracts"),
 };
