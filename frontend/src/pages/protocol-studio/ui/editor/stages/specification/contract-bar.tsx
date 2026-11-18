@@ -213,6 +213,31 @@ export const ContractBar = ({ contracts, onSelectFile }: IContractBarProps) => {
                 {CONTRACT_FILE_IDS.map((id) => {
                     const view = files[id];
                     const errors = view.parsed?.errors.length ?? 0;
+                    // A file whose GitHub copy didn't load: the pill retries it.
+                    if (view.error !== undefined) {
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                className="studio-spec-pill"
+                                data-contract-file={id}
+                                data-state="failed"
+                                onClick={() => {
+                                    contracts.retry();
+                                    onSelectFile(id);
+                                }}
+                                title={`Couldn't load ${view.path ?? view.label} from GitHub: ${view.error}. Click to retry.`}
+                            >
+                                <span
+                                    className="studio-spec-dot"
+                                    data-state="failed"
+                                    aria-hidden="true"
+                                />
+                                <span className="studio-mono">{view.label}</span>
+                                <span className="studio-spec-delta">Couldn't load — Retry</span>
+                            </button>
+                        );
+                    }
                     const state = errors
                         ? "error"
                         : view.dirty

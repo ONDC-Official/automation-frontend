@@ -4140,6 +4140,12 @@ textarea.bp-input {
     background: var(--studio-error);
 }
 
+/* The GitHub copy didn't load: a hollow error ring, the pill retries. */
+.studio-spec-dot[data-state="failed"] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--studio-error);
+}
+
 .studio-spec-dot[data-state="readonly"] {
     background: transparent;
     box-shadow: inset 0 0 0 1.5px var(--studio-text-faint);

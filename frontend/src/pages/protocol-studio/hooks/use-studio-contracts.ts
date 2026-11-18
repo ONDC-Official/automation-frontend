@@ -100,6 +100,8 @@ export interface ContractFileView {
     /** Lines added / removed against the GitHub base. */
     delta?: { added: number; removed: number };
     loading: boolean;
+    /** Its GitHub base couldn't be fetched (rate limit, network): why. `retry` fetches it again. */
+    error?: string;
 }
 
 export interface ApiSummary {
@@ -179,11 +181,12 @@ export const useStudioContracts = (
         CONTRACT_FILE_IDS.some(
             (id) => set?.files[id]?.hasBase && set.files[id]?.text === undefined
         );
+    const skipBase = !github || !needsBase;
     const base = useGetSpecContractsQuery(
         github
             ? { repo: github.repo, branch: github.branch, sha: github.sha }
             : { repo: "", branch: "", sha: "" },
-        { skip: !github || !needsBase }
+        { skip: skipBase }
     );
     const [fetchContracts, importing] = useLazyGetSpecContractsQuery();
     const needsEndpointValidations = !set?.files.validations;
@@ -545,6 +548,15 @@ export const useStudioContracts = (
     );
 
     // ─── Views ───────────────────────────────────────────────────────────────
+    // The unedited files are re-read from GitHub by commit; a failed read says why, and can be retried.
+    const baseError = base.isError
+        ? ((base.error as { error?: string } | undefined)?.error ?? "GitHub didn't answer")
+        : undefined;
+    const { refetch: refetchBase } = base;
+    const retry = useCallback(() => {
+        // A skipped query can't be refetched; with nothing to fetch there is nothing to retry.
+        if (!skipBase) void refetchBase();
+    }, [skipBase, refetchBase]);
     const files = useMemo(() => {
         const out = {} as Record<ContractFileId, ContractFileView>;
         for (const id of CONTRACT_FILE_IDS) {
@@ -556,6 +568,7 @@ export const useStudioContracts = (
                 !!file &&
                 (file.uploadedAs !== undefined ||
                     (text !== undefined && file.hasBase && !matchesBase(text, file)));
+            const loading = !!file && text === undefined && (base.isFetching || base.isLoading);
             out[id] = {
                 id,
                 label: CONTRACT_FILE_LABELS[id],
@@ -569,7 +582,11 @@ export const useStudioContracts = (
                     dirty && baseText !== undefined && text !== undefined
                         ? lineDelta(baseText, text)
                         : undefined,
-                loading: !!file && text === undefined && (base.isFetching || base.isLoading),
+                loading,
+                // A file kept only as its base whose base didn't come back.
+                ...(file?.hasBase && text === undefined && !loading && base.isError
+                    ? { error: baseError }
+                    : {}),
             };
         }
         return out;
@@ -582,6 +599,8 @@ export const useStudioContracts = (
         parsedSpecs,
         base.isFetching,
         base.isLoading,
+        base.isError,
+        baseError,
         sourceOf,
     ]);
 
@@ -618,6 +637,7 @@ export const useStudioContracts = (
 
     const summary = useMemo(() => {
         const present = CONTRACT_FILE_IDS.filter((id) => files[id].text !== undefined);
+        const failed = CONTRACT_FILE_IDS.filter((id) => files[id].error !== undefined);
         return {
             apiCount: apis.length,
             fileCount: present.length,
@@ -626,6 +646,8 @@ export const useStudioContracts = (
                 .length,
             readOnly: !set,
             loading: spec.isLoading || CONTRACT_FILE_IDS.some((id) => files[id].loading),
+            /** Files whose GitHub base couldn't be fetched. */
+            failed,
         };
     }, [apis.length, files, set, spec.isLoading]);
 
@@ -652,6 +674,9 @@ export const useStudioContracts = (
         },
         importing: importing.isFetching,
         importError,
+        /** Why the unedited files couldn't be re-read from GitHub, if they couldn't. */
+        loadError: baseError,
+        retry,
         storageFull,
         persistFailed,
         canUndo: (id: ContractFileId) => (history.current.get(id)?.undo.length ?? 0) > 0,

@@ -45,7 +45,9 @@ export const SourcePane = ({ contracts, file, reveal, highlight }: ISourcePanePr
             <p className="studio-spec-empty">
                 {view.loading
                     ? `Loading ${view.label}…`
-                    : `No ${view.label} yet: import from GitHub or upload one.`}
+                    : view.error !== undefined
+                      ? `Couldn't load ${view.label} from GitHub (${view.error}). Retry above.`
+                      : `No ${view.label} yet: import from GitHub or upload one.`}
             </p>
         );
     }

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { MockPlaygroundConfigV2Type } from "@ondc/automation-mock-runner";
 import { toast } from "sonner";
 import {
+    ArrowPathIcon,
     CloudArrowDownIcon,
     CodeBracketIcon,
     ExclamationTriangleIcon,
@@ -165,6 +166,27 @@ export const SpecificationStage = ({
                         <ContractBar contracts={contracts} onSelectFile={selectFile} />
                     </div>
                     {readOnlyBanner}
+                    {contracts.summary.failed.length ? (
+                        <div className="studio-spec-banner" data-tone="warn" data-load-error>
+                            <ExclamationTriangleIcon />
+                            <p className="min-w-0 flex-1">
+                                Couldn't load{" "}
+                                {contracts.summary.failed
+                                    .map((id) => contracts.files[id].label)
+                                    .join(", ")}{" "}
+                                from GitHub ({contracts.loadError}). Your edits are safe; the
+                                unedited files are read again from the imported commit.
+                            </p>
+                            <button
+                                type="button"
+                                className="studio-key studio-key-sm"
+                                onClick={contracts.retry}
+                            >
+                                <ArrowPathIcon />
+                                Retry
+                            </button>
+                        </div>
+                    ) : null}
                     {contracts.importError ? (
                         <div className="studio-spec-banner" data-tone="warn">
                             <ExclamationTriangleIcon />
@@ -188,7 +210,9 @@ export const SpecificationStage = ({
                                 <p className="studio-empty-hint-title">
                                     {contracts.summary.loading
                                         ? "Loading the contract…"
-                                        : "No apis yet"}
+                                        : contracts.summary.failed.length
+                                          ? "Couldn't load the contract"
+                                          : "No apis yet"}
                                 </p>
                                 <p className="studio-empty-hint-sub">
                                     Import the spec's files from GitHub, or upload them.

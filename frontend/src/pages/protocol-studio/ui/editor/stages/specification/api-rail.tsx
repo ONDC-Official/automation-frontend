@@ -181,13 +181,15 @@ export const ApiRail = ({ contracts, selection, onSelectApi, onSelectFile }: IAp
                     const selected = selection.kind === "file" && selection.file === id;
                     const state = view.parsed?.errors.length
                         ? "error"
-                        : view.dirty
-                          ? "edited"
-                          : view.source === "endpoint"
-                            ? "readonly"
-                            : view.text === undefined
-                              ? "missing"
-                              : "clean";
+                        : view.error !== undefined
+                          ? "failed"
+                          : view.dirty
+                            ? "edited"
+                            : view.source === "endpoint"
+                              ? "readonly"
+                              : view.text === undefined
+                                ? "missing"
+                                : "clean";
                     return (
                         <button
                             key={id}
