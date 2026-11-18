@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { PencilSquareIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { RJSFSchema } from "@rjsf/utils";
@@ -12,6 +13,17 @@ export interface IRunDialogProps {
     /** The editor root: the popup portals into it, so it keeps the Studio theme and fullscreen. */
     container: HTMLElement | null;
 }
+
+/**
+ * A form step's HTML with scripts, event handlers and `javascript:` URLs
+ * removed before v1's `MockDynamicForm` writes it into the page: the HTML
+ * comes from the config (or, on the live page, from a session anyone with
+ * the link opens). `WHOLE_DOCUMENT` keeps the form's `<head><style>`;
+ * `SANITIZE_DOM: false` keeps fields like `name="name"` (the lib's default
+ * form has one), which DOM-clobbering protection would strip.
+ */
+export const sanitizeFormHtml = (html: string) =>
+    DOMPurify.sanitize(html, { WHOLE_DOCUMENT: true, SANITIZE_DOM: false });
 
 /**
  * What a running step asks the tester for: the step's inputs (its
@@ -57,7 +69,7 @@ export const RunDialog = ({ pending, actions, container }: IRunDialogProps) => {
                         {pending.kind === "form" ? (
                             pending.html ? (
                                 <MockDynamicForm
-                                    htmlForm={pending.html}
+                                    htmlForm={sanitizeFormHtml(pending.html)}
                                     onSubmit={(data) => void actions.submitForm(data)}
                                 />
                             ) : (
