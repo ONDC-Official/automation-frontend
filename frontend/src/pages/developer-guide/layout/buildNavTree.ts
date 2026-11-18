@@ -227,14 +227,15 @@ export function buildNavTree(
             type: "group",
             path: ROUTES.DEVELOPER_GUIDE_GENERAL,
             defaultOpen: true,
-            searchText: "general documentation auth tools guides reference",
+            searchText: "general documentation signing verification auth tools guides reference",
             children: (() => {
                 const authToolsNode: NavNode = {
                     id: "auth-tools",
-                    label: "Auth Tools",
+                    label: "Signing & Verification",
                     type: "link",
                     path: ROUTES.DEVELOPER_GUIDE_AUTH_TOOLS,
-                    searchText: "auth authorization header blake ed25519",
+                    searchText:
+                        "signing verification auth authorization header playground blake ed25519",
                 };
                 const docNodes = sortedDocs.map((doc) => {
                     const markdown = docMarkdownBySlug?.[doc.slug];

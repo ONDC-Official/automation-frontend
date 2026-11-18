@@ -19,12 +19,12 @@ export const recommendedCards: RecommendedCardConfig[] = [
         title: "Getting Started",
         subtitle: "Explore a reference use case",
         description:
-            "New to the developer guide? Open a reference use case, inspect flows and payloads, then jump into Auth Tools or Schema Validation.",
+            "New to the developer guide? Open a reference use case, inspect flows and payloads, then jump into Signing & Verification or Schema Validation.",
         icon: <BookOpenIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
     },
     {
         id: RECOMMENDED_CARD_IDS.AUTH_TOOLS,
-        title: "Auth Tools",
+        title: "Signing & Verification",
         subtitle: "Generate & Verify ONDC Headers",
         description:
             "Generate and verify ONDC authorization headers using BLAKE2B-512 hashing and Ed25519 signing.",

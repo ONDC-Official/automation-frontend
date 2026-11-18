@@ -25,7 +25,7 @@ const DeveloperGuideGeneralContent: FC = () => {
 
         const authToolsCard = {
             id: "auth-tools",
-            title: "Auth Tools",
+            title: "Signing & Verification",
             subtitle: "Authorization",
             description:
                 "Generate and validate authorization headers using Blake2b and Ed25519 signing.",

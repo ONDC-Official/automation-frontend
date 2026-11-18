@@ -14,7 +14,7 @@ const Header: FC<HeaderProps> = ({ tabs, embedded = false }) => (
                 <div className="min-w-0 max-w-3xl flex-1">
                     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-n-40 bg-brand-light px-3 py-1.5 text-caption-2-size font-semibold uppercase tracking-widest text-brand-normal dark:border-border-default dark:bg-brand-normal/10">
                         <KeyIcon className="h-2.75 w-2.75" aria-hidden />
-                        Auth tools
+                        Signing &amp; verification
                     </div>
                     <h1 className="mb-4 text-3xl font-bold leading-tight tracking-tight text-n-900 dark:text-n-0 md:text-4xl">
                         Authorization Header{" "}

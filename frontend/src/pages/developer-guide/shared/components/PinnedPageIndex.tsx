@@ -271,26 +271,28 @@ export function buildDocIndexGroups(
     });
 }
 
-/** Each section's `###` subsections are capped to this many in the index —
- * the sections themselves are never capped (see `buildSectionIndexGroups`). */
+/** Default cap on each section's `###` subsections in the index — the sections
+ * themselves are never capped (see `buildSectionIndexGroups`). */
 const MAX_SUBSECTIONS_PER_SECTION = 4;
 
 /** Builds one `PageIndexGroup` per `##` section across all docs (no doc-level
  * wrapper, no cap) — every section is listed, each with its first
- * `MAX_SUBSECTIONS_PER_SECTION` `###` subsections nested underneath. Used by
- * the Use Case Brief index, where the doc is usually one long brief and the
- * index should mirror its full section structure, with just a quick-scan
- * sample of each section's subsections rather than every one of them. */
+ * `maxSubsections` `###` subsections nested underneath. The default
+ * (`MAX_SUBSECTIONS_PER_SECTION`) suits the Use Case Brief index, where the doc
+ * is usually one long brief and the index should mirror its full section
+ * structure, with just a quick-scan sample of each section's subsections. Pass
+ * `Infinity` to list every subsection, as a General Documentation page does. */
 export function buildSectionIndexGroups(
     docs: Record<string, string>,
-    slugs: string[]
+    slugs: string[],
+    maxSubsections: number = MAX_SUBSECTIONS_PER_SECTION
 ): PageIndexGroup[] {
     return slugs.flatMap((slug) => {
         const content = docs[slug] ?? "";
         return extractNestedMarkdownToc(content).map(({ section, subsections }) => ({
             id: section.id,
             label: stripHeadingNumberPrefix(section.text),
-            items: subsections.slice(0, MAX_SUBSECTIONS_PER_SECTION).map((sub) => ({
+            items: subsections.slice(0, maxSubsections).map((sub) => ({
                 id: sub.id,
                 label: stripHeadingNumberPrefix(sub.text),
             })),
@@ -311,16 +313,14 @@ const PageIndexLink: FC<PageIndexLinkProps> = ({ id, label, isActive, indent, on
             title={label}
             className={cn(
                 "h-auto flex-1 justify-start text-left leading-snug rounded transition-colors truncate",
-                indent
-                    ? "pl-5 py-1 text-xs font-normal"
-                    : "pl-3 py-1.5 text-sm font-medium",
+                indent ? "pl-5 py-1 text-xs font-normal" : "pl-3 py-1.5 text-sm font-medium",
                 isActive
                     ? indent
                         ? "bg-sky-50 dark:bg-sky-500/10 text-sky-800 dark:text-sky-300 font-medium"
                         : "bg-sky-50 dark:bg-sky-500/10 text-sky-800 dark:text-sky-300 font-semibold"
                     : indent
-                        ? "text-slate-500 dark:text-n-40 hover:bg-slate-100 dark:hover:bg-surface-muted hover:text-slate-800 dark:hover:text-n-10"
-                        : "text-slate-700 dark:text-n-20 hover:bg-slate-100 dark:hover:bg-surface-muted hover:text-slate-900 dark:hover:text-n-10"
+                      ? "text-slate-500 dark:text-n-40 hover:bg-slate-100 dark:hover:bg-surface-muted hover:text-slate-800 dark:hover:text-n-10"
+                      : "text-slate-700 dark:text-n-20 hover:bg-slate-100 dark:hover:bg-surface-muted hover:text-slate-900 dark:hover:text-n-10"
             )}
         >
             {label}
