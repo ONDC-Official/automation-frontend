@@ -482,7 +482,7 @@ const planSetPair = (
         const current = existing.value as Node | null;
         const isScalarValue = value === null || typeof value !== "object";
         if (current && isScalar(current) && isScalarValue && current.srcToken) {
-            return [scalarPatch(current, value as ScalarValue, !!map.flow)];
+            return [scalarPatch(current, value as ScalarValue, !!map.flow, { afterKey: true })];
         }
         guardAnchors(parsed, current, "replace");
         if (map.flow) {
@@ -541,7 +541,7 @@ const planRenameKey = (
     if (findPair(map, to)) return blocked(`"${to}" already exists here`);
     const pair = findPair(map, from);
     if (!pair || !isScalar(pair.key)) return blocked(`No "${from}" here`);
-    return [scalarPatch(pair.key, to, !!map.flow)];
+    return [scalarPatch(pair.key, to, !!map.flow, { implicitKey: true })];
 };
 
 /** Indent every line after the first by `shift` columns (negative removes). */
@@ -610,7 +610,10 @@ export const planEdit = (parsed: ParsedContract, edit: ContractEdit): PlannedEdi
             if (node && isScalar(node) && node.srcToken) {
                 const parent = target.parent;
                 const inFlow = !!(parent && (isMap(parent) || isSeq(parent)) && parent.flow);
-                patches = [scalarPatch(node, edit.value, inFlow)];
+                // A map's value: a multi-line string indents under its key.
+                patches = [
+                    scalarPatch(node, edit.value, inFlow, { afterKey: !!parent && isMap(parent) }),
+                ];
             } else {
                 const key = edit.at[edit.at.length - 1];
                 if (typeof key !== "string") return blocked("Nothing to set here");

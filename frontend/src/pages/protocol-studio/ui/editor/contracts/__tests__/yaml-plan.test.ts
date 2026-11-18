@@ -95,6 +95,68 @@ describe("contract yaml: scalar edits", () => {
         );
     });
 
+    describe("multi-line strings", () => {
+        const DOC = [
+            "info:",
+            "  title: Studio",
+            "  description: one line",
+            '  summary: "quoted"',
+            "  notes: |",
+            "    first",
+            "    second",
+            "  tags:",
+            "    - plain item",
+            "",
+        ].join("\n");
+        // Long enough that the writer breaks a double-quoted string over lines.
+        const LONG =
+            "The first line of a long description that goes on\nand a second line that is quite long too";
+
+        it.each([
+            ["a plain value", ["info", "description"]],
+            ["a quoted value", ["info", "summary"]],
+            ["a list item", ["info", "tags", 0]],
+        ])("writes several lines into %s, indented under it", (_name, at) => {
+            const { parsed } = edit(DOC, { op: "setScalar", at, value: LONG });
+            expect(parsed.doc.getIn(at)).toBe(LONG);
+            expect(parsed.doc.getIn(["info", "title"])).toBe("Studio");
+        });
+
+        it("keeps a block scalar a block scalar", () => {
+            const { after, parsed } = edit(DOC, {
+                op: "setScalar",
+                at: ["info", "notes"],
+                value: "alpha\nbeta\ngamma\n",
+            });
+            expect(after).toContain("  notes: |\n    alpha\n    beta\n    gamma\n  tags:");
+            expect(parsed.doc.getIn(["info", "notes"])).toBe("alpha\nbeta\ngamma\n");
+            // One line is plain again.
+            const single = edit(DOC, { op: "setScalar", at: ["info", "notes"], value: "alpha" });
+            expect(single.after).toContain("  notes: alpha\n");
+        });
+
+        it("sets an existing pair's value over several lines", () => {
+            const { parsed } = edit(DOC, {
+                op: "setPair",
+                at: ["info"],
+                key: "description",
+                value: LONG,
+            });
+            expect(parsed.doc.getIn(["info", "description"])).toBe(LONG);
+        });
+
+        it("keeps a renamed key on one line", () => {
+            const { after, parsed } = edit(DOC, {
+                op: "renameKey",
+                at: ["info"],
+                from: "title",
+                to: "name: with a colon",
+            });
+            expect(after.split("\n")[1]).toBe('  "name: with a colon": Studio');
+            expect(parsed.doc.getIn(["info", "name: with a colon"])).toBe("Studio");
+        });
+    });
+
     it("keeps the trailing spaces and comments of other lines", () => {
         const { after } = edit(FIS12, {
             op: "setScalar",

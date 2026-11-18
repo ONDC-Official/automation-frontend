@@ -17,34 +17,49 @@ const plainRoundTrips = (value: string) => {
     }
 };
 
+/** Where a scalar sits: a map's key, a map's value, or neither (a list item, the document). */
+export interface ScalarPlace {
+    /** A map value: lines after the first (a multi-line string) indent past its key. */
+    afterKey?: boolean;
+    /** A map key: kept on one line. */
+    implicitKey?: boolean;
+}
+
 /**
  * Rewrites one scalar in place, keeping its style (quotes, trailing comment)
  * where the new value allows it. Strings that would read back as something
- * else (`true`, `123`, `null`, `a: b`) are double-quoted.
+ * else (`true`, `123`, `null`, `a: b`) are double-quoted; a block scalar
+ * (`|`, `>`) given several lines stays one. `place` says where the scalar
+ * sits, so a value that spans lines is indented under its key.
  */
-export const scalarPatch = (node: Scalar, value: ScalarValue, inFlow: boolean): TextPatch => {
+export const scalarPatch = (
+    node: Scalar,
+    value: ScalarValue,
+    inFlow: boolean,
+    place: ScalarPlace = {}
+): TextPatch => {
     const token = node.srcToken;
     if (!token || !("offset" in token)) throw new Error("This value has no source to edit");
     const original = CST.stringify(token);
     // CST tokens are plain data; jsdom (tests) has no structuredClone.
     const copy = JSON.parse(JSON.stringify(token)) as typeof token;
+    const { afterKey = false, implicitKey = false } = place;
     let type: Scalar.Type | undefined;
     let text: string;
     if (typeof value === "string") {
         text = value;
         const current = node.type ?? Scalar.PLAIN;
-        const plainLike =
-            current === Scalar.PLAIN ||
-            current === Scalar.BLOCK_FOLDED ||
-            current === Scalar.BLOCK_LITERAL;
-        if (plainLike && !plainRoundTrips(value)) type = Scalar.QUOTE_DOUBLE;
-        else if (current === Scalar.BLOCK_FOLDED || current === Scalar.BLOCK_LITERAL)
-            type = Scalar.PLAIN;
+        const block = current === Scalar.BLOCK_FOLDED || current === Scalar.BLOCK_LITERAL;
+        if (block && value.includes("\n") && !implicitKey && !inFlow) {
+            // Several lines into a block scalar: it stays a block scalar.
+        } else if ((current === Scalar.PLAIN || block) && !plainRoundTrips(value)) {
+            type = Scalar.QUOTE_DOUBLE;
+        } else if (block) type = Scalar.PLAIN;
     } else {
         text = value === null ? "null" : String(value);
         type = Scalar.PLAIN;
     }
-    CST.setScalarValue(copy, text, { inFlow, ...(type ? { type } : {}) });
+    CST.setScalarValue(copy, text, { inFlow, afterKey, implicitKey, ...(type ? { type } : {}) });
     return { from: token.offset, to: token.offset + original.length, insert: CST.stringify(copy) };
 };
 
