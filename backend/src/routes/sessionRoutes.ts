@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import {
 	clearFlow,
 	createExpectation,
@@ -10,6 +12,7 @@ import {
 	getSession,
 	getTransactionData,
 	requestForFlowPermission,
+	studioSessionsRequireLogin,
 	updateSession,
 } from "../controllers/sessionController";
 import validateRequiredParams from "../middlewares/generic";
@@ -31,7 +34,31 @@ router.post(
 
 router.post("/playground", createPlaygroundSession);
 
-router.post("/studio", createStudioSession);
+/**
+ * Starting Studio live sessions, per login token (behind the ingress every
+ * caller shares one IP). Off when logins aren't required: the local workbench
+ * and the e2e drivers start many sessions without one.
+ */
+const studioSessionLimit = rateLimit({
+	windowMs: 60 * 1000,
+	limit: Number(process.env.STUDIO_SESSIONS_PER_MINUTE) || 20,
+	standardHeaders: "draft-7",
+	legacyHeaders: false,
+	skip: () => !studioSessionsRequireLogin(),
+	keyGenerator: (req) => {
+		const auth = req.get("Authorization");
+		return auth
+			? `token:${createHash("sha256").update(auth).digest("hex")}`
+			: `ip:${req.ip}`;
+	},
+	handler: (_req, res) => {
+		res
+			.status(429)
+			.send({ message: "Too many live sessions started; try again in a minute." });
+	},
+});
+
+router.post("/studio", studioSessionLimit, createStudioSession);
 
 router.get(
 	"/studio",

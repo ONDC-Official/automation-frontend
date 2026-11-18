@@ -16,6 +16,7 @@ import {
 import {
 	OrganisationNotAllowedError,
 	resolveSessionOwner,
+	type SessionOwner,
 } from "../services/sessionOwnerService";
 import { saveLog } from "../utils/console";
 import logger from "@ondc/automation-logger";
@@ -122,26 +123,105 @@ export const createPlaygroundSession = async (req: Request, res: Response) => {
 	}
 };
 
-/** Why a Studio live session request is malformed, or null when it is fine. */
-const checkStudioSession = (sessionData: any, studioConfig: any) => {
-	if (!sessionData || typeof sessionData !== "object")
-		return "sessionData is required.";
-	if (!sessionData.subscriberUrl || !["BAP", "BPP"].includes(sessionData.npType))
-		return "sessionData needs subscriberUrl and npType (BAP or BPP).";
-	if (!studioConfig || studioConfig.kind !== "graph-v2-live")
+/**
+ * Whether Studio live sessions need a signed-in user: to create one, and to
+ * read one's graph document. On unless `STUDIO_SESSIONS_REQUIRE_LOGIN=false`
+ * (the local workbench and the e2e drivers run without a login service).
+ * Read per request, so it can be flipped without a restart in tests.
+ */
+export const studioSessionsRequireLogin = () =>
+	process.env.STUDIO_SESSIONS_REQUIRE_LOGIN !== "false";
+
+const isText = (value: unknown) => typeof value === "string" && value.length > 0;
+const isRecord = (value: unknown): value is Record<string, any> =>
+	!!value && typeof value === "object" && !Array.isArray(value);
+
+/**
+ * Why a graph document isn't one the mock can load, or null. A hand-written
+ * subset of the lib's `LiveGraphConfigV2Schema` (live-schema.ts): what a host
+ * relies on. The mock re-validates with the real schema when it loads it.
+ */
+const checkStudioConfig = (studioConfig: any): string | null => {
+	if (!isRecord(studioConfig) || studioConfig.kind !== "graph-v2-live")
 		return "studioConfig must be a graph-v2-live document.";
-	if (!Array.isArray(studioConfig.graph?.nodes) || !Array.isArray(studioConfig.graph?.edges))
+	const graph = studioConfig.graph;
+	if (!isRecord(graph) || !Array.isArray(graph.nodes) || !Array.isArray(graph.edges))
 		return "studioConfig.graph needs nodes and edges.";
+	for (const [i, node] of graph.nodes.entries()) {
+		if (
+			!isRecord(node) ||
+			!isText(node.id) ||
+			!isText(node.api) ||
+			!["BAP", "BPP"].includes(node.owner) ||
+			!isText(node.kind)
+		)
+			return `studioConfig.graph.nodes[${i}] needs an id, an api, an owner (BAP or BPP) and a kind.`;
+	}
+	for (const [i, edge] of graph.edges.entries()) {
+		if (
+			!isRecord(edge) ||
+			!isText(edge.id) ||
+			!isText(edge.from) ||
+			!isText(edge.to) ||
+			!isText(edge.kind)
+		)
+			return `studioConfig.graph.edges[${i}] needs an id, a from, a to and a kind.`;
+	}
 	if (!Array.isArray(studioConfig.journeys) || studioConfig.journeys.length === 0)
 		return "studioConfig needs at least one journey.";
+	for (const [i, journey] of studioConfig.journeys.entries()) {
+		if (!isRecord(journey) || !isText(journey.id) || !isText(journey.entry))
+			return `studioConfig.journeys[${i}] needs an id and an entry.`;
+	}
 	return null;
 };
+
+/** Why a Studio live session request is malformed, or null when it is fine. */
+const checkStudioSession = (sessionData: any, studioConfig: any) => {
+	if (!isRecord(sessionData)) return "sessionData is required.";
+	if (!isText(sessionData.subscriberUrl) || !["BAP", "BPP"].includes(sessionData.npType))
+		return "sessionData needs subscriberUrl and npType (BAP or BPP).";
+	return checkStudioConfig(studioConfig);
+};
+
+/**
+ * The session fields a Studio live session keeps from the request; anything
+ * else (a userId or orgId nobody checked, stray keys) is dropped. The owner
+ * goes on the graph document instead.
+ */
+const STUDIO_SESSION_FIELDS = [
+	"transactionIds",
+	"flowMap",
+	"npType",
+	"domain",
+	"version",
+	"subscriberId",
+	"subscriberUrl",
+	"env",
+	"sessionDifficulty",
+	"flowConfigs",
+	"activeFlow",
+	"activeStep",
+] as const;
+
+const pickStudioSessionFields = (sessionData: Record<string, unknown>) =>
+	Object.fromEntries(
+		STUDIO_SESSION_FIELDS.filter((key) => sessionData[key] !== undefined).map((key) => [
+			key,
+			sessionData[key],
+		])
+	);
 
 /**
  * A live session of a Protocol Studio graph. Stored like a playground session
  * (`usecaseId: PLAYGROUND-FLOW`, so the flow proxies and the api-service route
  * it to the mock's playground router), flagged `engine: "graph-v2"` so the mock
  * runs the graph executor on `PLAYGROUND_V2_<sessionId>` instead of a v1 config.
+ *
+ * Needs a signed-in user unless `STUDIO_SESSIONS_REQUIRE_LOGIN=false`. The
+ * owner is kept on the graph document (`owner: { userId, orgId }`): the
+ * api-service rewrites the session JSON through its own struct. The document
+ * is written first, so a session never points at a graph that isn't there.
  */
 export const createStudioSession = async (req: Request, res: Response) => {
 	const sessionId = req.sessionID;
@@ -151,25 +231,52 @@ export const createStudioSession = async (req: Request, res: Response) => {
 		return;
 	}
 	const { sessionData, studioConfig } = req.body ?? {};
+	let owner: SessionOwner;
+	try {
+		// Never a userId from the body: only the login service says who this is.
+		owner = await resolveSessionOwner(
+			req.headers.authorization,
+			undefined,
+			isRecord(sessionData) && isText(sessionData.orgId) ? sessionData.orgId : undefined,
+			getLoggerMeta(req)
+		);
+	} catch (error: any) {
+		if (error instanceof OrganisationNotAllowedError) {
+			res.status(403).send({ message: error.message });
+			return;
+		}
+		logger.error("Error resolving the studio session owner", getLoggerMeta(req), error);
+		res.status(500).send({ message: "Error creating session", error: error.message });
+		return;
+	}
+	if (studioSessionsRequireLogin() && !owner.userId) {
+		res.status(401).send({ message: "Sign in to start a live session." });
+		return;
+	}
 	const problem = checkStudioSession(sessionData, studioConfig);
 	if (problem) {
 		res.status(400).send({ message: problem });
 		return;
 	}
 	try {
+		// An `owner` in the request is never kept: only the one the login service confirmed.
+		const { owner: _claimed, ...document } = studioConfig;
+		const configRes = await setStudioLiveConfig(
+			sessionId,
+			{
+				...document,
+				...(owner.userId ? { owner: { userId: owner.userId, orgId: owner.orgId } } : {}),
+			},
+			getLoggerMeta(req)
+		);
 		const session = {
-			...sessionData,
+			...pickStudioSessionFields(sessionData),
 			usecaseId: "PLAYGROUND-FLOW",
 			engine: "graph-v2",
 		};
 		const sessionRes = await createSessionWithCompleteData(
 			sessionId,
-			session,
-			getLoggerMeta(req)
-		);
-		const configRes = await setStudioLiveConfig(
-			sessionId,
-			studioConfig,
+			session as any,
 			getLoggerMeta(req)
 		);
 		res.status(201).send({
@@ -185,10 +292,26 @@ export const createStudioSession = async (req: Request, res: Response) => {
 	}
 };
 
-/** The graph document of a Studio live session (for the live page). */
+/**
+ * The graph document of a Studio live session (for the live page). With
+ * logins required, any signed-in user may read it (not only its owner): the
+ * live page of a session is shared by link.
+ */
 export const getStudioSession = async (req: Request, res: Response) => {
 	const sessionId = req.query.session_id as string;
 	try {
+		if (studioSessionsRequireLogin()) {
+			const { userId } = await resolveSessionOwner(
+				req.headers.authorization,
+				undefined,
+				undefined,
+				getLoggerMeta(req)
+			);
+			if (!userId) {
+				res.status(401).send({ message: "Sign in to open a live session." });
+				return;
+			}
+		}
 		const doc = await getStudioLiveConfig(sessionId);
 		if (!doc) {
 			res.status(404).send({ message: "Studio live session not found." });
