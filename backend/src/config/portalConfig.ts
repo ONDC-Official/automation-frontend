@@ -18,6 +18,11 @@ export interface PortalConfig {
 	dbServiceUrl: string | null;
 	/** Key for automation-db's internal routes. */
 	dbApiKey: string | null;
+	/**
+	 * This backend's public address (BACKEND_URL, e.g. https://dev-workbench.ondc.tech/backend-ui),
+	 * for report_url links; null leaves report_url null.
+	 */
+	publicBaseUrl?: string | null;
 }
 
 const DEFAULT_RATE_LIMIT_PER_MINUTE = 120;
@@ -44,5 +49,6 @@ export function loadPortalConfig(): PortalConfig {
 			Number.isInteger(limit) && limit > 0 ? limit : DEFAULT_RATE_LIMIT_PER_MINUTE,
 		dbServiceUrl: process.env.DB_SERVICE?.trim().replace(/\/$/, "") || null,
 		dbApiKey: process.env.DB_SERVICE_API_KEY?.trim() || null,
+		publicBaseUrl: process.env.BACKEND_URL?.trim().replace(/\/+$/, "") || null,
 	};
 }

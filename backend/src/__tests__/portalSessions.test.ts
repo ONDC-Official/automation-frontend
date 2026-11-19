@@ -5,6 +5,7 @@ import express from "express";
 import { portalRoutes } from "../routes/portalRoutes";
 import {
 	parseSessionsQuery,
+	reportUrl,
 	toSessionDetail,
 	toSessionListItem,
 	type StoredSession,
@@ -267,12 +268,20 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 	let received: string[];
 	let reply: StoredSessionDetail | null;
 	let failDb: boolean;
+	// The build's flow catalog, which the API reads each flow's tags from.
+	let catalog: { flowId: string; tags?: string[] }[];
+	let catalogQueries: Record<string, unknown>[];
+	let failCatalog: boolean;
 
 	beforeAll(() => {
 		const db = express();
 		db.use((req, res) => {
 			received.push(req.path);
 			if (failDb) return res.status(500).end();
+			if (req.path === "/protocol-specs/flows") {
+				catalogQueries.push(req.query);
+				return failCatalog ? res.status(500).end() : res.json({ flows: catalog });
+			}
 			return reply ? res.json(reply) : res.status(404).end();
 		});
 		server = db.listen(0);
@@ -284,17 +293,49 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 		received = [];
 		reply = storedDetail();
 		failDb = false;
+		catalog = [
+			{ flowId: "OTHER", tags: ["WORKBENCH", "OPTIONAL"] },
+			{ flowId: "ORDER", tags: ["WORKBENCH", "MANDATORY", "REPORTABLE"] },
+		];
+		catalogQueries = [];
+		failCatalog = false;
 	});
 
-	const unauthed = (url: string) => {
+	const unauthed = (url: string, publicBaseUrl?: string) => {
 		const app = express();
 		app.use(
 			"/v1",
-			portalRoutes({ apiToken: TOKEN, rateLimitPerMinute: 1000, dbServiceUrl: dbUrl, dbApiKey: DB_KEY })
+			portalRoutes({
+				apiToken: TOKEN,
+				rateLimitPerMinute: 1000,
+				dbServiceUrl: dbUrl,
+				dbApiKey: DB_KEY,
+				publicBaseUrl,
+			})
 		);
 		return request(app).get(url);
 	};
-	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+	const call = (url: string, publicBaseUrl?: string) =>
+		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`);
+
+	it("gives report_url, where NP Portal fetches the report, when the session has a report", async () => {
+		reply = storedDetail({ reportExists: true });
+
+		const res = await call("/v1/organizations/org_1/sessions/sess_1", "https://workbench.example/backend-ui");
+
+		expect(res.status).toBe(200);
+		expect(res.body.report_available).toBe(true);
+		expect(res.body.report_url).toBe(
+			"https://workbench.example/backend-ui/v1/organizations/org_1/sessions/sess_1/report"
+		);
+	});
+
+	it("gives a null report_url when the session has no report", async () => {
+		const res = await call("/v1/organizations/org_1/sessions/sess_1", "https://workbench.example/backend-ui");
+
+		expect(res.body.report_available).toBe(false);
+		expect(res.body.report_url).toBeNull();
+	});
 
 	it("needs the token", async () => {
 		expect((await unauthed("/v1/organizations/org_1/sessions/sess_1")).status).toBe(401);
@@ -305,13 +346,14 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 		const res = await call("/v1/organizations/org_1/sessions/sess_1");
 
 		expect(res.status).toBe(200);
-		expect(received).toEqual(["/api/sessions/portal/org_1/sess_1"]);
+		expect(received).toEqual(["/api/sessions/portal/org_1/sess_1", "/protocol-specs/flows"]);
 		expect(res.body).toEqual({
 			session_id: "sess_1",
 			org_id: "org_1",
 			user_id: "25716",
 			status: "active",
 			report_available: false,
+			report_url: null,
 			session_type: "AUTOMATION",
 			np_type: "BAP",
 			subscriber_url: "https://buyer.example-np.in/ondc",
@@ -322,7 +364,14 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 			last_activity_at: "2026-10-21T08:03:10Z",
 			expires_at: "2026-10-25T08:03:10Z",
 			flow_summary: [
-				{ flow_id: "ORDER", total_steps: 4, passed_steps: 2, failed_steps: 1, transaction_ids: ["t1", "t2"] },
+				{
+					flow_id: "ORDER",
+					tags: ["WORKBENCH", "MANDATORY", "REPORTABLE"],
+					total_steps: 4,
+					passed_steps: 2,
+					failed_steps: 1,
+					transaction_ids: ["t1", "t2"],
+				},
 			],
 			settings: {
 				protocol_validation: true,
@@ -340,6 +389,96 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 					changes: [{ setting: "header_validation", previous_value: true, new_value: false }],
 				},
 			],
+		});
+	});
+
+	describe("flow tags in flow_summary", () => {
+		const flowSummary = (...ids: string[]) =>
+			ids.map((flowId) => ({ flowId, totalSteps: 2, passedSteps: 0, failedSteps: 0, transactionIds: [] }));
+
+		it("reads them from the catalog of the session's domain, version and use case", async () => {
+			await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(catalogQueries).toEqual([
+				expect.objectContaining({ domain: "ONDC:RET10", version: "1.2.5", usecase: "GROCERY" }),
+			]);
+		});
+
+		it("gives every flow its own tags, keeping flow_summary's order", async () => {
+			reply = storedDetail({ flowSummary: flowSummary("ORDER", "OTHER") });
+
+			const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(res.body.flow_summary.map((f: { flow_id: string; tags: string[] }) => [f.flow_id, f.tags])).toEqual([
+				["ORDER", ["WORKBENCH", "MANDATORY", "REPORTABLE"]],
+				["OTHER", ["WORKBENCH", "OPTIONAL"]],
+			]);
+		});
+
+		it("passes tags exactly as the spec has them (case, order, unusual tags)", async () => {
+			catalog = [{ flowId: "ORDER", tags: ["Mandatory", "WITH_AA", "REPORTABLE"] }];
+
+			const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(res.body.flow_summary[0].tags).toEqual(["Mandatory", "WITH_AA", "REPORTABLE"]);
+		});
+
+		it("gives an empty list for a flow missing from the catalog, or one without tags", async () => {
+			reply = storedDetail({ flowSummary: flowSummary("ORDER", "GONE") });
+			catalog = [{ flowId: "ORDER" }];
+
+			const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(res.body.flow_summary.map((f: { tags: string[] }) => f.tags)).toEqual([[], []]);
+		});
+
+		it("does not ask the catalog when the session has no flows", async () => {
+			reply = storedDetail({ flowSummary: [] });
+
+			const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(res.status).toBe(200);
+			expect(res.body.flow_summary).toEqual([]);
+			expect(catalogQueries).toEqual([]);
+		});
+
+		it.each([["domain"], ["version"], ["usecaseId"]] as const)(
+			"does not ask the catalog when the session has no %s, and gives empty tags",
+			async (field) => {
+				reply = storedDetail({ [field]: null });
+
+				const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+				expect(res.status).toBe(200);
+				expect(res.body.flow_summary[0].tags).toEqual([]);
+				expect(catalogQueries).toEqual([]);
+			}
+		);
+
+		it("answers 500 as a problem when the catalog cannot be read, rather than wrong tags", async () => {
+			failCatalog = true;
+
+			const res = await call("/v1/organizations/org_1/sessions/sess_1");
+
+			expect(res.status).toBe(500);
+			expect(res.type).toBe("application/problem+json");
+		});
+
+		it("does not add tags to the session list", async () => {
+			const app = express();
+			app.use(
+				"/v1",
+				portalRoutes({ apiToken: TOKEN, rateLimitPerMinute: 1000, dbServiceUrl: dbUrl, dbApiKey: DB_KEY })
+			);
+			reply = { sessions: [stored()], hasMore: false } as never;
+
+			const res = await request(app)
+				.get("/v1/organizations/org_1/sessions")
+				.set("Authorization", `Bearer ${TOKEN}`);
+
+			expect(res.status).toBe(200);
+			expect(res.body.data[0]).not.toHaveProperty("tags");
+			expect(res.body.data[0]).not.toHaveProperty("flow_summary");
 		});
 	});
 
@@ -368,7 +507,42 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 	});
 });
 
+describe("reportUrl", () => {
+	const BASE = "https://dev-workbench.ondc.tech/backend-ui";
+
+	it("points at the session's report endpoint in this API", () => {
+		expect(reportUrl("11899", "sess_1", true, BASE)).toBe(
+			"https://dev-workbench.ondc.tech/backend-ui/v1/organizations/11899/sessions/sess_1/report"
+		);
+	});
+
+	it("is null without a report or without a public address", () => {
+		expect(reportUrl("11899", "sess_1", false, BASE)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, null)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, undefined)).toBeNull();
+		expect(reportUrl("11899", "sess_1", true, "")).toBeNull();
+	});
+
+	it("keeps odd IDs inside their path segments", () => {
+		expect(reportUrl("o/1", "a/b?c#d", true, "https://w.example")).toBe(
+			"https://w.example/v1/organizations/o%2F1/sessions/a%2Fb%3Fc%23d/report"
+		);
+	});
+});
+
 describe("toSessionDetail", () => {
+	it("gives every flow an empty tag list when no tags are passed in", () => {
+		const detail = toSessionDetail(storedDetail());
+
+		expect(detail.flow_summary[0].tags).toEqual([]);
+	});
+
+	it("puts tags right after flow_id", () => {
+		const detail = toSessionDetail(storedDetail(), null, new Map([["ORDER", ["MANDATORY"]]]));
+
+		expect(Object.keys(detail.flow_summary[0]).slice(0, 2)).toEqual(["flow_id", "tags"]);
+	});
+
 	it("keeps null for an expired session's expiry and an older session's settings", () => {
 		const detail = toSessionDetail(
 			storedDetail({ expiresAt: null, settings: null, settingsHistory: [] })
