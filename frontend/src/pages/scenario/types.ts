@@ -195,6 +195,12 @@ export type IConfigListProps = {
     selectedId: string | null;
     onSelect: (id: string) => void;
     onNewSession: () => void;
+    /**
+     * Organisation names by ID. Pass it only when the user has more than one
+     * organisation: each row then names its organisation, so the same config from
+     * two organisations doesn't look like a repeat.
+     */
+    organisationNames?: Record<string, string>;
 };
 
 export type IConfigDetailPanelProps = {

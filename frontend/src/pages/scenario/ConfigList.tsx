@@ -11,13 +11,14 @@ import { SearchField } from "@components/Shadcn/SearchField";
 import { Tabs, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
 import { cn } from "@/lib/utils";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
-import { groupConfigsBySubscriberUrl } from "@pages/scenario/helpers";
+import { groupConfigsBySubscriberUrl, versionLabel } from "@pages/scenario/helpers";
 import { IConfigCardItem, IConfigListProps, IConfigRoleFilter } from "@pages/scenario/types";
 
-const ROLE_FILTERS: { value: IConfigRoleFilter; label: string }[] = [
+// "apps" is dropped when the list is too narrow for it (the count stays).
+const ROLE_FILTERS: { value: IConfigRoleFilter; label: string; suffix?: string }[] = [
     { value: "all", label: "All" },
-    { value: "BAP", label: "Buyer apps" },
-    { value: "BPP", label: "Seller apps" },
+    { value: "BAP", label: "Buyer", suffix: " apps" },
+    { value: "BPP", label: "Seller", suffix: " apps" },
 ];
 
 /** Text a config can be found by: its name, URL, domain, version and use case. */
@@ -36,7 +37,7 @@ const searchText = (item: IConfigCardItem) =>
 /** "Grocery (RET10) · v1.2.5", or what is missing. */
 export const buildLabel = (item: IConfigCardItem) => {
     const domain = item.data.domain ? getScenarioDomainLabel(item.data.domain) : "Domain not set";
-    return `${domain}${item.data.version ? ` · v${item.data.version}` : ""}`;
+    return `${domain}${item.data.version ? ` · ${versionLabel(item.data.version)}` : ""}`;
 };
 
 /**
@@ -44,18 +45,33 @@ export const buildLabel = (item: IConfigCardItem) => {
  * app type, grouped by subscriber URL. Everything here works on data the page
  * already has; nothing is fetched.
  */
-export const ConfigList = ({ items, selectedId, onSelect, onNewSession }: IConfigListProps) => {
+export const ConfigList = ({
+    items,
+    selectedId,
+    onSelect,
+    onNewSession,
+    organisationNames,
+}: IConfigListProps) => {
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<IConfigRoleFilter>("all");
 
-    const visible = useMemo(() => {
+    // Configs matching the search; each tab counts these, so the numbers follow the search.
+    const searched = useMemo(() => {
         const query = search.trim().toLowerCase();
-        return items.filter(
-            (item) =>
-                (roleFilter === "all" || item.data.npType === roleFilter) &&
-                (!query || searchText(item).includes(query))
-        );
-    }, [items, search, roleFilter]);
+        return query ? items.filter((item) => searchText(item).includes(query)) : items;
+    }, [items, search]);
+    const roleCounts: Record<IConfigRoleFilter, number> = {
+        all: searched.length,
+        BAP: searched.filter((item) => item.data.npType === "BAP").length,
+        BPP: searched.filter((item) => item.data.npType === "BPP").length,
+    };
+    const visible = useMemo(
+        () =>
+            roleFilter === "all"
+                ? searched
+                : searched.filter((item) => item.data.npType === roleFilter),
+        [searched, roleFilter]
+    );
     const groups = useMemo(() => groupConfigsBySubscriberUrl(visible), [visible]);
 
     // Each subscriber URL folds open to show its configs. Only the picked config's
@@ -102,12 +118,7 @@ export const ConfigList = ({ items, selectedId, onSelect, onNewSession }: IConfi
     return (
         <div className="flex min-h-0 flex-1 flex-col">
             <div className="space-y-3 border-b border-n-30 px-5 pb-1 pt-5 dark:border-border-default">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-body-1 font-bold text-text-primary">Your configs</h2>
-                    <Badge variant="info" data-testid="config-count">
-                        {visible.length}
-                    </Badge>
-                </div>
+                <h2 className="text-body-1 font-bold text-text-primary">Your configs</h2>
                 <SearchField
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -117,13 +128,33 @@ export const ConfigList = ({ items, selectedId, onSelect, onNewSession }: IConfi
                     className="h-10"
                 />
                 <Tabs
+                    className="@container/tabs"
                     value={roleFilter}
                     onValueChange={(value) => setRoleFilter(value as IConfigRoleFilter)}
                 >
                     <TabsList aria-label="Filter by app type">
                         {ROLE_FILTERS.map((filter) => (
-                            <TabsTrigger key={filter.value} value={filter.value}>
-                                {filter.label}
+                            <TabsTrigger
+                                key={filter.value}
+                                value={filter.value}
+                                aria-label={`${filter.label}${filter.suffix ?? ""}, ${roleCounts[filter.value]} configs`}
+                                className="flex-auto gap-1 px-1.5"
+                            >
+                                <span>
+                                    {filter.label}
+                                    {filter.suffix ? (
+                                        <span className="hidden @[21rem]/tabs:inline">
+                                            {filter.suffix}
+                                        </span>
+                                    ) : null}
+                                </span>
+                                <Badge
+                                    variant={roleFilter === filter.value ? "info" : "outline"}
+                                    data-testid={`config-count-${filter.value}`}
+                                    className="px-1.5"
+                                >
+                                    {roleCounts[filter.value]}
+                                </Badge>
                             </TabsTrigger>
                         ))}
                     </TabsList>
@@ -193,7 +224,11 @@ export const ConfigList = ({ items, selectedId, onSelect, onNewSession }: IConfi
                                                                     {item.name
                                                                         ? buildLabel(item)
                                                                         : item.data.usecaseId ||
-                                                                          "Use case not set"}
+                                                                          "Version & use case: pick at launch"}
+                                                                    {organisationNames &&
+                                                                    item.data.orgId
+                                                                        ? ` · ${organisationNames[item.data.orgId] ?? item.data.orgId}`
+                                                                        : null}
                                                                 </span>
                                                             </span>
                                                             {item.data.npType ? (

@@ -220,6 +220,7 @@ describe("How it works", () => {
         expect(slide).toHaveAccessibleName("1 of 3: What Workbench is");
         expect(within(slide).getByRole("heading", { name: "ONDC Workbench" })).toBeInTheDocument();
         expect(within(slide).getByText("A safe place to test")).toBeInTheDocument();
+        expect(slide).toHaveTextContent("a dedicated testing suite called Scenario Testing");
         for (const title of [
             "Run scenarios",
             "Identify & fix issues",

@@ -7,7 +7,10 @@ import {
     buildConfigCards,
     findMissingFields,
     groupConfigsBySubscriberUrl,
+    npPortalConfigsFromUser,
+    versionLabel,
 } from "@pages/scenario/helpers";
+import type { IUser, IUserOrganisationConfig } from "@/types/user";
 import type { IScenarioFormData } from "@pages/scenario/types";
 
 // constants.ts reads import.meta, which Jest cannot parse.
@@ -148,7 +151,13 @@ describe("config list (left side)", () => {
         expect(screen.getByText("Needs input")).toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: /two\.example\.com/ }));
         expect(rows()).toEqual(["kiranakart-buyer", "kiranakart-seller"]);
-        expect(screen.getByTestId("config-count")).toHaveTextContent("3");
+        // Counts sit on the filter tabs, not next to the heading.
+        expect(screen.getByTestId("config-count-all")).toHaveTextContent("3");
+        expect(screen.getByTestId("config-count-BAP")).toHaveTextContent("2");
+        expect(screen.getByTestId("config-count-BPP")).toHaveTextContent("1");
+        expect(screen.getByRole("heading", { name: "Your configs" })).toHaveTextContent(
+            /^Your configs$/
+        );
 
         const selected = screen.getByRole("button", { name: /kiranakart-buyer/ });
         expect(selected).toHaveAttribute("aria-current", "true");
@@ -163,13 +172,24 @@ describe("config list (left side)", () => {
             await userEvent.click(screen.getByRole("button", { name }));
         }
 
-        await userEvent.click(screen.getByRole("tab", { name: "Seller apps" }));
+        await userEvent.click(screen.getByRole("tab", { name: /Seller apps/ }));
         expect(rows()).toEqual(["kiranakart-seller"]);
-        expect(screen.getByTestId("config-count")).toHaveTextContent("1");
-        await userEvent.click(screen.getByRole("tab", { name: "Buyer apps" }));
+        expect(screen.getByRole("tab", { name: /Seller apps/ })).toHaveTextContent("Seller apps1");
+        await userEvent.click(screen.getByRole("tab", { name: /Buyer apps/ }));
         expect(rows()).toEqual(["kiranakart-buyer", "other-buyer"]);
-        await userEvent.click(screen.getByRole("tab", { name: "All" }));
+        await userEvent.click(screen.getByRole("tab", { name: /^All/ }));
         expect(rows()).toHaveLength(3);
+    });
+
+    it("tab counts follow the search", async () => {
+        renderList(PREFS);
+        await userEvent.type(
+            screen.getByRole("textbox", { name: "Search configs" }),
+            "two.example"
+        );
+        expect(screen.getByTestId("config-count-all")).toHaveTextContent("1");
+        expect(screen.getByTestId("config-count-BAP")).toHaveTextContent("1");
+        expect(screen.getByTestId("config-count-BPP")).toHaveTextContent("0");
     });
 
     it("searches by name, domain or URL, and says when nothing matches", async () => {
@@ -335,5 +355,290 @@ describe("config details (right side)", () => {
         expect(screen.getByText("Select Organisation")).toBeInTheDocument();
         expect(within(document.body).queryByText("99001")).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
+    });
+});
+
+describe("NP Portal configs from SSO", () => {
+    // Shaped like the real UAT SSO reply (19 Nov 2026), via /auth/api/me.
+    const sso = (over: Partial<IUserOrganisationConfig> = {}): IUserOrganisationConfig => ({
+        environmentAccessId: "5128",
+        environment: "Pre-Prod",
+        status: "Subscribed",
+        requestType: "Update Request",
+        subscriberId: "newuattet22442.com",
+        subscriberUrl: "https://newuattet22442.com/",
+        npType: "BPP",
+        domain: "ONDC:RET10",
+        version: "1.2.5",
+        usecase: "GROCERY",
+        ...over,
+    });
+    const userWith = (...orgs: { id: string; configs?: IUserOrganisationConfig[] }[]) =>
+        ({
+            username: "25716",
+            organisations: orgs.map((o) => ({
+                organisationId: o.id,
+                organisationName: `Org ${o.id}`,
+                networkStatus: "3",
+                npType: "Admin",
+                isRepresentative: true,
+                status: 1,
+                subscriberIds: [],
+                configs: o.configs,
+            })),
+        }) as unknown as IUser;
+    const DOMAINS_WITH_LOG = [
+        ...DOMAINS,
+        { key: "ONDC:LOG10", version: [{ key: "1.2.5", usecase: ["Logistics (P2P)"] }] },
+    ] as unknown as IDomain[];
+
+    it("reads every organisation's configs, tagged with that organisation", () => {
+        const configs = npPortalConfigsFromUser(
+            userWith(
+                { id: "11899", configs: [sso()] },
+                { id: "22222", configs: [sso({ npType: "BAP" })] }
+            )
+        );
+        expect(configs).toEqual([
+            {
+                subscriber_url: "https://newuattet22442.com/",
+                np_type: "BPP",
+                domain: "ONDC:RET10",
+                version: "1.2.5",
+                usecase: "GROCERY",
+                org_id: "11899",
+            },
+            expect.objectContaining({ np_type: "BAP", org_id: "22222" }),
+        ]);
+    });
+
+    it.each([
+        ["no user (logged out)", undefined],
+        ["a GitHub user (no organisations)", { username: "octo" } as IUser],
+        ["an organisation without configs", userWith({ id: "1" })],
+        ["an organisation with an empty list", userWith({ id: "1", configs: [] })],
+    ])("gives no configs for %s", (_case, user) => {
+        expect(npPortalConfigsFromUser(user)).toEqual([]);
+    });
+
+    it("makes one card per URL + role + domain + version + use case, and drops exact repeats", () => {
+        const configs = npPortalConfigsFromUser(
+            userWith({
+                id: "11899",
+                configs: [
+                    sso(),
+                    sso({ environmentAccessId: "999" }), // same five details: a repeat
+                    sso({ npType: "BAP" }),
+                    sso({ domain: "ONDC:LOG10", usecase: "Logistics (P2P)" }),
+                    sso({ subscriberUrl: "https://other.example.com" }),
+                ],
+            })
+        );
+        const cards = buildConfigCards(configs, {}, DOMAINS_WITH_LOG);
+
+        expect(cards).toHaveLength(4);
+        expect(cards.every((c) => c.source === "np_portal" && !c.name)).toBe(true);
+        const groups = groupConfigsBySubscriberUrl(cards);
+        expect(groups.map((g) => [g.subscriberUrl, g.items.length])).toEqual([
+            ["https://newuattet22442.com", 3],
+            ["https://other.example.com", 1],
+        ]);
+    });
+
+    it("never uses NP Portal's version or use case; uses URL, role and domain as sent", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(
+                userWith({
+                    id: "11899",
+                    configs: [
+                        sso(), // even exact Workbench values are not used
+                        sso({ domain: "ONDC:RET1A", npType: "BAP" }),
+                        sso({ npType: "Admin" }),
+                        sso({ subscriberUrl: "" }),
+                    ],
+                })
+            ),
+            {},
+            DOMAINS
+        );
+        expect(cards.map((c) => [c.data.version, c.data.usecaseId])).toEqual([
+            ["", ""],
+            ["", ""],
+            ["", ""],
+            ["", ""],
+        ]);
+        expect(cards.map((c) => c.missingFields)).toEqual([
+            ["version", "usecaseId"],
+            ["domain", "version", "usecaseId"],
+            ["npType", "version", "usecaseId"],
+            ["subscriberUrl", "version", "usecaseId"],
+        ]);
+    });
+
+    it("treats configs that differ only by version or use case as one", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(
+                userWith({
+                    id: "11899",
+                    configs: [
+                        sso({ version: "v 1.2", usecase: "Grocery" }),
+                        sso({ version: "v 2.0.0", usecase: "Something else" }),
+                    ],
+                })
+            ),
+            {},
+            DOMAINS
+        );
+        expect(cards).toHaveLength(1);
+    });
+
+    it("shows NP Portal and saved configs together", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(userWith({ id: "11899", configs: [sso()] })),
+            { mine: saved() },
+            DOMAINS
+        );
+        expect(cards.map((c) => c.source)).toEqual(["np_portal", "saved"]);
+    });
+
+    it("never writes a version as 'vv'", () => {
+        expect(versionLabel("1.2.5")).toBe("v1.2.5");
+        expect(versionLabel("v 1.2")).toBe("v 1.2");
+        expect(versionLabel("V2.0.0")).toBe("V2.0.0");
+        expect(versionLabel("")).toBe("");
+        expect(versionLabel(undefined)).toBe("");
+    });
+
+    it("lists an NP Portal config by its domain, asking for version and use case at launch", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(
+                userWith({ id: "11899", configs: [sso({ version: "v 1.2" })] })
+            ),
+            {},
+            DOMAINS
+        );
+        render(
+            <ConfigList
+                items={cards}
+                selectedId={cards[0].id}
+                onSelect={jest.fn()}
+                onNewSession={jest.fn()}
+            />
+        );
+        expect(screen.getByText("Grocery (RET10)")).toBeInTheDocument();
+        expect(screen.getByText("Version & use case: pick at launch")).toBeInTheDocument();
+        expect(screen.queryByText(/v 1\.2|vv/)).not.toBeInTheDocument();
+    });
+
+    it("names each row's organisation when the user has more than one", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(
+                userWith({ id: "11899", configs: [sso()] }, { id: "99001", configs: [sso()] })
+            ),
+            {},
+            DOMAINS
+        );
+        expect(cards).toHaveLength(2); // same five details, different organisations
+        const { rerender } = render(
+            <ConfigList
+                items={cards}
+                selectedId={cards[0].id}
+                onSelect={jest.fn()}
+                onNewSession={jest.fn()}
+                organisationNames={{ "11899": "UAT_1 Org", "99001": "Second Org" }}
+            />
+        );
+        expect(
+            screen.getByText("Version & use case: pick at launch · UAT_1 Org")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Version & use case: pick at launch · Second Org")
+        ).toBeInTheDocument();
+
+        rerender(
+            <ConfigList
+                items={cards}
+                selectedId={cards[0].id}
+                onSelect={jest.fn()}
+                onNewSession={jest.fn()}
+            />
+        );
+        expect(screen.queryByText(/UAT_1 Org|Second Org/)).not.toBeInTheDocument();
+    });
+
+    describe("details of an NP Portal config", () => {
+        const renderSso = (config: IUserOrganisationConfig) => {
+            const onLaunch = jest.fn().mockResolvedValue(undefined);
+            const [item] = buildConfigCards(
+                npPortalConfigsFromUser(userWith({ id: "11899", configs: [config] })),
+                {},
+                DOMAINS
+            );
+            render(
+                <ConfigDetailPanel
+                    item={item}
+                    domains={DOMAINS}
+                    isSubmitting={false}
+                    onLaunch={onLaunch}
+                />
+            );
+            return onLaunch;
+        };
+
+        it("always asks for version and use case, then launches with the picked ones and its organisation", async () => {
+            const onLaunch = renderSso(sso()); // even exact Workbench values from NP Portal
+            expect(screen.getByText("2 details to fill before launch")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
+            const fillIn = screen.getByTestId("fill-in-section");
+            expect(within(fillIn).getByPlaceholderText("Select version")).toBeInTheDocument();
+            expect(within(fillIn).getByPlaceholderText("Select use case")).toBeDisabled();
+
+            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
+            expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
+            await userEvent.click(screen.getByPlaceholderText("Select use case"));
+            await userEvent.click(await screen.findByRole("option", { name: "GROCERY" }));
+            expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("button", { name: "Launch" }));
+            await waitFor(() =>
+                expect(onLaunch).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        subscriberUrl: "https://newuattet22442.com/",
+                        npType: "BPP",
+                        domain: "ONDC:RET10",
+                        version: "1.2.5",
+                        usecaseId: "GROCERY",
+                        orgId: "11899",
+                    })
+                )
+            );
+        });
+
+        it("doesn't show NP Portal's version or use case anywhere", () => {
+            renderSso(sso({ version: "v 1.2", usecase: "Grocery" }));
+            expect(screen.queryByText(/v 1\.2/)).not.toBeInTheDocument();
+            expect(screen.queryByText("Grocery")).not.toBeInTheDocument();
+            expect(screen.getByRole("heading", { name: "Grocery (RET10)" })).toBeInTheDocument();
+        });
+
+        it("shows no 'NP Portal sent' notes, even for a domain Workbench doesn't have", () => {
+            renderSso(sso({ domain: "ONDC:RET1A" }));
+            expect(screen.queryByText(/NP Portal sent/)).not.toBeInTheDocument();
+            expect(screen.queryByTestId("sent-value")).not.toBeInTheDocument();
+            expect(screen.getByPlaceholderText("Select domain")).toBeInTheDocument();
+        });
+
+        it("clears the use case when the version changes", async () => {
+            renderSso(sso());
+            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
+            await userEvent.click(screen.getByPlaceholderText("Select use case"));
+            await userEvent.click(await screen.findByRole("option", { name: "GROCERY" }));
+            expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
+            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
+            expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
+        });
     });
 });

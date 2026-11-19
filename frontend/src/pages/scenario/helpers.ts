@@ -1,3 +1,4 @@
+import type { IUser } from "@/types/user";
 import { toast } from "sonner";
 import { trackEvent } from "@utils/analytics";
 import { ROUTES } from "@constants/routes";
@@ -45,13 +46,40 @@ const SUBSCRIBER_URL_PATTERN = /^https?:\/\/.+/i;
 const DEFAULT_ENV = "PRE-PRODUCTION";
 
 /** Turns one NP Portal config into the same data the form produces. */
+/**
+ * Every NP Portal config the logged-in user's organisations came with (from SSO,
+ * via /auth/api/me), tagged with its organisation. Values are passed on as sent;
+ * buildConfigCards drops exact repeats and marks what Workbench doesn't support.
+ */
+export function npPortalConfigsFromUser(user?: IUser): INpPortalConfig[] {
+    return (user?.organisations ?? []).flatMap((org) =>
+        (org.configs ?? []).map((config) => ({
+            subscriber_url: config.subscriberUrl,
+            np_type: config.npType,
+            domain: config.domain,
+            version: config.version,
+            usecase: config.usecase,
+            org_id: org.organisationId,
+        }))
+    );
+}
+
+/** A version for display: "v1.2.5". NP Portal already writes "v 1.2", so don't add a second v. */
+export function versionLabel(version?: string): string {
+    const v = version?.trim() ?? "";
+    if (!v) return "";
+    return /^v/i.test(v) ? v : `v${v}`;
+}
+
 export function npPortalConfigToFormData(config: INpPortalConfig): IScenarioFormData {
+    // NP Portal's version and use case are not used: they never match Workbench's own
+    // values, so the user always picks them (from Workbench's list) before launching.
     return {
         subscriberUrl: config.subscriber_url?.trim() ?? "",
         npType: config.np_type?.trim().toUpperCase() ?? "",
         domain: config.domain?.trim() ?? "",
-        version: config.version?.trim() ?? "",
-        usecaseId: config.usecase?.trim() ?? "",
+        version: "",
+        usecaseId: "",
         env: DEFAULT_ENV,
         orgId: config.org_id || undefined,
     };

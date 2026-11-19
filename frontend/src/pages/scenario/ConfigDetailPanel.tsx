@@ -11,6 +11,7 @@ import { ROUTES } from "@constants/routes";
 import { useAuth } from "@hooks/useAuth";
 import { OrganisationField, useOrganisationOptions } from "@pages/scenario/OrganisationField";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
+import { versionLabel } from "@pages/scenario/helpers";
 import {
     IConfigDetailPanelProps,
     IConfigField,
@@ -104,7 +105,12 @@ export const ConfigDetailPanel = ({
 
     const domainLabel = values.domain ? getScenarioDomainLabel(values.domain) : "";
     const title =
-        item.name || `${domainLabel || "Config"}${values.version ? ` · v${values.version}` : ""}`;
+        item.name ||
+        `${domainLabel || getScenarioDomainLabel(item.data.domain) || "Config"}${
+            values.version || item.data.version
+                ? ` · ${versionLabel(values.version || item.data.version)}`
+                : ""
+        }`;
 
     const onSubmit = async (formValues: IScenarioFormData) => {
         await onLaunch({

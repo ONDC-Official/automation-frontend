@@ -26,6 +26,22 @@ export interface IUserOrganisation {
     isRepresentative: boolean;
     status: number;
     subscriberIds: string[];
+    /** NP Portal registrations sent at the last login, as sent (not translated). */
+    configs?: IUserOrganisationConfig[];
+}
+
+/** One NP Portal registration: subscriber URL + role + domain + version + use case. */
+export interface IUserOrganisationConfig {
+    environmentAccessId?: string;
+    environment?: string;
+    status?: string;
+    requestType?: string;
+    subscriberId?: string;
+    subscriberUrl?: string;
+    domain?: string;
+    version?: string;
+    usecase?: string;
+    npType?: string;
 }
 
 /** Name to show people: first + last name when known, else the username. */

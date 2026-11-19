@@ -31,7 +31,11 @@ import {
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@pages/scenario/types";
-import { buildConfigCards, openSessionInNewTab } from "@pages/scenario/helpers";
+import {
+    buildConfigCards,
+    npPortalConfigsFromUser,
+    openSessionInNewTab,
+} from "@pages/scenario/helpers";
 import NewSessionForm from "@pages/scenario/NewSessionForm";
 import { LoginGate } from "@pages/scenario/LoginGate";
 import Spinner from "@components/Shadcn/Spinner";
@@ -259,11 +263,20 @@ const Scenario = () => {
         }
     }, [flowStepNum, session]);
 
-    // Cards: NP Portal configs (empty until NP Portal's API is connected) plus
-    // the user's saved profile configs.
+    // Cards: the NP Portal configs SSO sent with the user's organisations, plus the
+    // user's saved profile configs. Nothing extra is fetched: both are already loaded.
+    const npPortalConfigs = useMemo(() => npPortalConfigsFromUser(user), [user]);
+    // With more than one organisation, list rows say which one each config is for.
+    const organisationNames = useMemo(() => {
+        const orgs = user?.organisations ?? [];
+        if (orgs.length < 2) return undefined;
+        return Object.fromEntries(
+            orgs.map((o) => [o.organisationId, o.organisationName || o.organisationId])
+        );
+    }, [user]);
     const configCards = useMemo(
-        () => buildConfigCards([], savedPreferences, domains),
-        [savedPreferences, domains]
+        () => buildConfigCards(npPortalConfigs, savedPreferences, domains),
+        [npPortalConfigs, savedPreferences, domains]
     );
     // Grouping keeps first-seen order, so the first card is the top-most one in the list.
     const selectedConfig =
@@ -407,6 +420,7 @@ const Scenario = () => {
                                 selectedId={selectedConfig?.id ?? null}
                                 onSelect={selectConfig}
                                 onNewSession={openNewSession}
+                                organisationNames={organisationNames}
                             />
                         )}
                     </section>

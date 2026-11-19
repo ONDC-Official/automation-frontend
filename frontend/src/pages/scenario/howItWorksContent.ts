@@ -37,7 +37,7 @@ export const GUIDE_INTRO = {
     eyebrow: "Test your APIs with",
     title: "ONDC Workbench",
     description:
-        "We provide a dedicated testing suite called ONDC Workbench, where you can run scenarios, check responses and fix issues before going live.",
+        "We provide a dedicated testing suite called Scenario Testing, where you can run scenarios, check responses and fix issues before going live.",
     tip: {
         title: "A safe place to test",
         description:
