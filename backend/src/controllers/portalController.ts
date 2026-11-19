@@ -15,6 +15,7 @@ import {
 	parseSessionsQuery,
 	toSessionDetail,
 	toSessionListItem,
+	type StoredSessionDetail,
 } from "../utils/portalSessions";
 
 const DB_HEALTH_TIMEOUT_MS = 2000;
@@ -113,11 +114,36 @@ export const getSession =
 				sendProblem(res, 404, "Session not found");
 				return;
 			}
-			res.json(toSessionDetail(session, config.publicBaseUrl));
+			const flowTags = await fetchSessionFlowTags(config, session);
+			res.json(toSessionDetail(session, config.publicBaseUrl, flowTags));
 		} catch (e) {
 			next(e);
 		}
 	};
+
+/**
+ * The tags of the session's flows, so NP Portal can count mandatory and
+ * optional flows without calling /v1/flows. Read from the catalog of the
+ * session's domain, version and use case, where a flow ID is unique.
+ */
+const fetchSessionFlowTags = async (
+	config: PortalConfig,
+	session: StoredSessionDetail
+): Promise<Map<string, string[]>> => {
+	const { domain, version, usecaseId } = session;
+	if (!session.flowSummary.length || !domain || !version || !usecaseId) {
+		return new Map();
+	}
+	const flows = await fetchFlows(config, {
+		domains: [domain],
+		versions: [version],
+		usecases: [usecaseId],
+		tagMatch: "any",
+		sort: "flow_id",
+		order: "asc",
+	});
+	return new Map(flows.map((flow) => [flow.flowId, flow.tags ?? []]));
+};
 
 /**
  * The report's own scripts (expand/collapse, download) may run, but the page is

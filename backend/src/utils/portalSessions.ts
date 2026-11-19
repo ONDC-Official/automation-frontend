@@ -163,13 +163,22 @@ export const reportUrl = (
 		? `${publicBaseUrl}/v1/organizations/${encodeURIComponent(orgId)}/sessions/${encodeURIComponent(sessionId)}/report`
 		: null;
 
-export const toSessionDetail = (session: StoredSessionDetail, publicBaseUrl?: string | null) => ({
+/**
+ * flowTags: each flow's tags (MANDATORY, OPTIONAL, REPORTABLE...) from the
+ * session's build, by flow ID. A flow missing from it gets an empty list.
+ */
+export const toSessionDetail = (
+	session: StoredSessionDetail,
+	publicBaseUrl?: string | null,
+	flowTags?: ReadonlyMap<string, string[]>
+) => ({
 	...toSessionListItem(session),
 	report_url: reportUrl(session.orgId, session.sessionId, session.reportExists, publicBaseUrl),
 	org_id: session.orgId,
 	expires_at: session.expiresAt && toRfc3339(new Date(session.expiresAt)),
 	flow_summary: session.flowSummary.map((flow) => ({
 		flow_id: flow.flowId,
+		tags: flowTags?.get(flow.flowId) ?? [],
 		total_steps: flow.totalSteps,
 		passed_steps: flow.passedSteps,
 		failed_steps: flow.failedSteps,
