@@ -24,6 +24,7 @@ export const ManualSessionForm = ({
     onDomainChange,
     onVersionChange,
     // onConfigChange,
+    onCancel,
 }: IManualSessionFormProps) => {
     const watchedDomain = watch("domain");
     const watchedVersion = watch("version");
@@ -41,7 +42,9 @@ export const ManualSessionForm = ({
                 </Button>
             )}
 
-            <FieldGroup>
+            {/* Two fields per row; an odd last field spans the whole row.
+                Inputs here are a little taller (44px) than the app default (36px). */}
+            <FieldGroup className="grid gap-x-4 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2 [&_[data-slot=input-group]]:h-11 [&_[data-slot=input]]:h-11">
                 {/* {isLoggedIn ? (
                     <>
                         <ComboBox
@@ -106,22 +109,12 @@ export const ManualSessionForm = ({
                         required
                         onValueChange={(value) => trackSchemaValidationForm("Added np type", value)}
                     />
-                    <ComboBox
-                        control={control}
-                        name="env"
-                        label="Select Environment"
-                        options={["PRE-PRODUCTION"]}
-                        placeholder="Select environment"
-                        required
-                        onValueChange={(value) =>
-                            trackSchemaValidationForm("Added environment", value)
-                        }
-                    />
+                    {/* No Environment field: sessions use the default, PRE-PRODUCTION (its only option). */}
                 </>
                 {/* )} */}
             </FieldGroup>
 
-            <SessionFormActions isSubmitting={isSubmitting} />
+            <SessionFormActions isSubmitting={isSubmitting} onCancel={onCancel} />
         </form>
     );
 };

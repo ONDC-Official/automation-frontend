@@ -21,6 +21,8 @@ export type INewSessionFormProps = {
     initialSavedConfigKey?: string;
     isSubmitting?: boolean;
     onSubmit: (data: IScenarioFormData) => Promise<void>;
+    /** Called after Cancel clears the form (e.g. to leave "continue without login"). */
+    onCancel?: () => void;
 };
 
 export type ISavedConfigPanelProps = {
@@ -57,6 +59,7 @@ export type IManualSessionFormProps = {
     onDomainChange: (domain: string) => void;
     onVersionChange: (version: string) => void;
     onConfigChange: (config: string) => void;
+    onCancel: () => void;
 };
 
 export type IDomainVersionWithUsecase = IDomainVersion & {
@@ -145,4 +148,60 @@ export type ISessionFormActionsProps = {
     onSubmit?: () => void;
     extraActions?: ReactNode;
     className?: string;
+    /** Shows a Cancel button left of Submit. */
+    onCancel?: () => void;
+};
+
+/** One config as NP Portal sends it. Any field may be missing. */
+export type INpPortalConfig = {
+    subscriber_url?: string;
+    np_type?: string;
+    domain?: string;
+    version?: string;
+    usecase?: string;
+    /** The organisation this config belongs to. */
+    org_id?: string;
+};
+
+/** Where a config card came from. */
+export type IConfigSource = "np_portal" | "saved";
+
+/** The config fields that can be missing (or not supported by Workbench). */
+export type IConfigField = "subscriberUrl" | "npType" | "domain" | "version" | "usecaseId";
+
+/** One card in the "Your configs" list. */
+export type IConfigCardItem = {
+    /** Unique per config: source + organisation + all 5 fields (or the saved config's name). */
+    id: string;
+    source: IConfigSource;
+    /** The saved config's name; only for saved configs. */
+    name?: string;
+    data: IScenarioFormData;
+    /** Fields the user still has to fill before Launch. */
+    missingFields: IConfigField[];
+};
+
+/** The cards that share one subscriber URL. */
+export type IConfigGroup = {
+    subscriberUrl: string;
+    items: IConfigCardItem[];
+};
+
+/** Which app type the config list shows. */
+export type IConfigRoleFilter = "all" | "BAP" | "BPP";
+
+export type IConfigListProps = {
+    items: IConfigCardItem[];
+    selectedId: string | null;
+    onSelect: (id: string) => void;
+    onNewSession: () => void;
+};
+
+export type IConfigDetailPanelProps = {
+    item: IConfigCardItem;
+    domains: IDomain[];
+    isSubmitting: boolean;
+    onLaunch: (data: IScenarioFormData) => Promise<void>;
+    /** Small screens only: go back to the config list. */
+    onBack?: () => void;
 };

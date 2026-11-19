@@ -1,10 +1,10 @@
 import { useState, useEffect, useLayoutEffect, useMemo, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { CircleHelp, Plus } from "lucide-react";
 import { toast } from "sonner";
 import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
 import Alert from "@components/Shadcn/Alert";
 import Card from "@components/Shadcn/Card";
-import Accordion from "@components/Shadcn/Accordion";
 import { ReportPage } from "@pages/scenario/ReportPage";
 import { GetRequestEndpoint } from "@components/DomainFlowRunner/utils/get-request-endpoint";
 import { useSession } from "@hooks/useSession";
@@ -31,13 +31,16 @@ import {
 import { useAuth } from "@hooks/useAuth";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@pages/scenario/types";
-import { openSessionInNewTab } from "@pages/scenario/helpers";
+import { buildConfigCards, openSessionInNewTab } from "@pages/scenario/helpers";
 import NewSessionForm from "@pages/scenario/NewSessionForm";
 import { LoginGate } from "@pages/scenario/LoginGate";
 import Spinner from "@components/Shadcn/Spinner";
-import { SCENARIO_GUIDE_STEPS, SCENARIO_TIP_BANNER_MESSAGE } from "@pages/scenario/constants";
+import { ScenarioGuideDialog } from "@pages/scenario/ScenarioGuideDialog";
+import { ConfigList } from "@pages/scenario/ConfigList";
+import { ConfigDetailPanel } from "@pages/scenario/ConfigDetailPanel";
 import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
+import { cn } from "@/lib/utils";
 
 const Scenario = () => {
     const {
@@ -56,7 +59,6 @@ const Scenario = () => {
     const { sessionId: contextSessionId } = useSession();
     const { user, token, isAuthLoading } = useAuth();
     const { startLogin, isLoginRedirecting } = useGitHubLogin();
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const dispatch = useAppDispatch();
 
@@ -71,7 +73,17 @@ const Scenario = () => {
     const setExistingSessions = (sessions: IFlowTestingSessionEntry[]) =>
         dispatch(setSessions(sessions));
     const [isInitializing, setIsInitializing] = useState(true);
-    const [isTipVisible, setIsTipVisible] = useState(true);
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
+    // Logged-in view: the config shown on the right (the top one until the user picks
+    // another), whether small screens show its details instead of the list, and
+    // whether the New session page shows.
+    const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
+    const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+    const [isNewSessionOpen, setIsNewSessionOpen] = useState(false);
+    const openNewSession = () => {
+        setIsNewSessionOpen(true);
+        window.scrollTo({ top: 0, left: 0 });
+    };
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
     const [triggerGetScenarioFormData] = useLazyGetScenarioFormDataQuery();
@@ -235,15 +247,6 @@ const Scenario = () => {
         setFlowStepNum(0);
     };
 
-    const handleCreateConfigClick = () => {
-        if (user) {
-            navigate(ROUTES.PROFILE);
-            return;
-        }
-
-        startLogin(ROUTES.PROFILE);
-    };
-
     useEffect(() => {
         if (contextSessionId && !isFormSubmitted) {
             fetchSessionData(contextSessionId);
@@ -256,7 +259,31 @@ const Scenario = () => {
         }
     }, [flowStepNum, session]);
 
-    // Open at the top on refresh so the tip alert is in view: the browser's native
+    // Cards: NP Portal configs (empty until NP Portal's API is connected) plus
+    // the user's saved profile configs.
+    const configCards = useMemo(
+        () => buildConfigCards([], savedPreferences, domains),
+        [savedPreferences, domains]
+    );
+    // Grouping keeps first-seen order, so the first card is the top-most one in the list.
+    const selectedConfig =
+        configCards.find((card) => card.id === selectedConfigId) ?? configCards[0] ?? null;
+    const selectConfig = (id: string) => {
+        setSelectedConfigId(id);
+        setIsMobileDetailOpen(true);
+    };
+
+    // The Profile page's "Launch Test" links here with ?config=<name>: open that config's details.
+    const [isDeepLinkHandled, setIsDeepLinkHandled] = useState(false);
+    useEffect(() => {
+        if (isDeepLinkHandled || isInitializing || !initialSavedConfigKey) return;
+        setIsDeepLinkHandled(true);
+        if (savedPreferences[initialSavedConfigKey]) {
+            selectConfig(`saved|${initialSavedConfigKey}`);
+        }
+    }, [isDeepLinkHandled, isInitializing, initialSavedConfigKey, savedPreferences]);
+
+    // Open at the top on refresh: the browser's native
     // scroll restoration fires after mount and would re-scroll to the old position,
     // so disable it while this page is mounted. On unmount, reset to the browser
     // default ("auto") rather than a captured previous value — after a refresh here
@@ -276,6 +303,139 @@ const Scenario = () => {
     // Render via a switch expression (not a nested component) so parent
     // re-renders — e.g. isFormSubmitted toggling — don't remount the form
     // and wipe local state like showManualForm.
+    const historyPanel = (
+        <PreviousSessionsPanel
+            sessions={existingSessions}
+            onSessionsChange={setExistingSessions}
+            onOpenSession={(selectedSession) =>
+                openSessionInNewTab(
+                    selectedSession.sessionId,
+                    selectedSession.subscriberUrl,
+                    selectedSession.role
+                )
+            }
+        />
+    );
+
+    // "Home / Create new session": shared by the logged-out form and the logged-in New session page.
+    const breadcrumbs = (
+        <nav aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 text-body-2 text-text-secondary">
+                <li>
+                    <Link
+                        to={ROUTES.HOME}
+                        className="hover:text-brand-normal hover:underline underline-offset-4"
+                    >
+                        Home
+                    </Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li aria-current="page" className="font-semibold text-text-primary">
+                    Create new session
+                </li>
+            </ol>
+        </nav>
+    );
+
+    // Logged in: a split view, configs on the left and the picked one's details on the right.
+    // New session swaps it for the same full-page form the logged-out view uses.
+    const loggedInBody = (
+        <div className="flex w-full flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-h6 font-bold text-text-primary">Scenario Testing</h1>
+                    <p className="text-body-2 text-text-secondary">
+                        Pick one of your configs to start testing, or start a new session yourself.
+                    </p>
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-3 self-start sm:self-auto">
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsGuideOpen(true)}
+                        className="h-10 gap-2"
+                    >
+                        <CircleHelp className="size-4" aria-hidden="true" />
+                        How it works
+                    </Button>
+                    {isNewSessionOpen ? null : (
+                        <Button onClick={openNewSession} className="h-10 gap-2">
+                            <Plus className="size-4" aria-hidden="true" />
+                            New session
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {isNewSessionOpen ? (
+                <div className="flex flex-col gap-4">
+                    {breadcrumbs}
+                    <Card
+                        title="Create a new Session"
+                        description="Fill the details to begin flow testing."
+                    >
+                        <NewSessionForm
+                            domains={domains}
+                            isSubmitting={isFormSubmitted}
+                            onSubmit={onSubmitHandler}
+                            onCancel={() => setIsNewSessionOpen(false)}
+                        />
+                    </Card>
+                </div>
+            ) : (
+                <div
+                    className={cn(
+                        "grid items-start gap-5",
+                        configCards.length > 0 && "lg:grid-cols-[minmax(320px,400px)_1fr]"
+                    )}
+                >
+                    <section
+                        aria-label="Your configs"
+                        className={cn(
+                            "flex-col overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:flex",
+                            configCards.length > 0 &&
+                                "lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:min-h-[520px]",
+                            isMobileDetailOpen && selectedConfig ? "hidden" : "flex"
+                        )}
+                    >
+                        {isInitializing ? (
+                            <div className="flex items-center justify-center py-10">
+                                <Spinner />
+                            </div>
+                        ) : (
+                            <ConfigList
+                                items={configCards}
+                                selectedId={selectedConfig?.id ?? null}
+                                onSelect={selectConfig}
+                                onNewSession={openNewSession}
+                            />
+                        )}
+                    </section>
+
+                    {selectedConfig && !isInitializing ? (
+                        <section
+                            aria-label="Config details"
+                            className={cn(
+                                "overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:block",
+                                isMobileDetailOpen ? "block" : "hidden"
+                            )}
+                        >
+                            <ConfigDetailPanel
+                                key={selectedConfig.id}
+                                item={selectedConfig}
+                                domains={domains}
+                                isSubmitting={isFormSubmitted}
+                                onLaunch={onSubmitHandler}
+                                onBack={() => setIsMobileDetailOpen(false)}
+                            />
+                        </section>
+                    ) : null}
+                </div>
+            )}
+
+            {historyPanel}
+        </div>
+    );
+
     let body: ReactNode;
     switch (flowStepNum) {
         case 1:
@@ -299,59 +459,87 @@ const Scenario = () => {
             break;
         case 0:
         default:
-            body = (
+            body = user ? (
+                loggedInBody
+            ) : (
                 <div className="flex w-full flex-col gap-6">
-                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]">
-                        <Accordion title="Scenario Testing" steps={SCENARIO_GUIDE_STEPS} />
-
-                        <Card
-                            title="Create a new Session"
-                            description="Fill the details to begin flow testing."
-                            headerAction={
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCreateConfigClick}
-                                    isLoading={isLoginRedirecting}
-                                    disabled={isInitializing || isLoginRedirecting}
-                                >
-                                    Create profile config
-                                </Button>
-                            }
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-h6 font-bold text-text-primary">
+                                Scenario Testing
+                            </h1>
+                            <p className="text-body-2 text-text-secondary">
+                                Pick one of your configs to start testing, or start a new session
+                                yourself.
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsGuideOpen(true)}
+                            className="h-10 shrink-0 gap-2 self-start sm:self-auto"
                         >
-                            {isInitializing ? (
-                                <div className="flex items-center justify-center">
-                                    <Spinner />
-                                </div>
-                            ) : (
-                                <LoginGate
-                                    isLoggedOut={!user && !isAuthLoading}
-                                    isLoginRedirecting={isLoginRedirecting}
-                                    onLogin={() => startLogin(ROUTES.SCENARIO)}
-                                >
-                                    <NewSessionForm
-                                        domains={domains}
-                                        savedPreferences={savedPreferences}
-                                        initialSavedConfigKey={initialSavedConfigKey}
-                                        isSubmitting={isFormSubmitted}
-                                        onSubmit={onSubmitHandler}
-                                    />
-                                </LoginGate>
-                            )}
-                        </Card>
+                            <CircleHelp className="size-4" aria-hidden="true" />
+                            How it works
+                        </Button>
                     </div>
 
-                    <PreviousSessionsPanel
-                        sessions={existingSessions}
-                        onSessionsChange={setExistingSessions}
-                        onOpenSession={(selectedSession) =>
-                            openSessionInNewTab(
-                                selectedSession.sessionId,
-                                selectedSession.subscriberUrl,
-                                selectedSession.role
-                            )
-                        }
-                    />
+                    {isInitializing ? (
+                        <div className="flex items-center justify-center py-10">
+                            <Spinner />
+                        </div>
+                    ) : (
+                        <LoginGate
+                            isLoggedOut={!user && !isAuthLoading}
+                            isLoginRedirecting={isLoginRedirecting}
+                            onLogin={() => startLogin(ROUTES.SCENARIO)}
+                        >
+                            {({ isGuest, leaveGuest }) => (
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        {breadcrumbs}
+                                        {isGuest ? (
+                                            <p className="text-body-2 text-text-secondary">
+                                                Already have an account?{" "}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => startLogin(ROUTES.SCENARIO)}
+                                                    disabled={isLoginRedirecting}
+                                                    className="font-semibold text-brand-normal underline-offset-4 hover:underline disabled:opacity-50"
+                                                >
+                                                    Login
+                                                </button>
+                                            </p>
+                                        ) : null}
+                                    </div>
+
+                                    {isGuest ? (
+                                        <Alert
+                                            variant="warning"
+                                            className="py-2 dark:border-alert-800 dark:bg-alert-800/30 dark:text-alert-200"
+                                            message="You're not logged in"
+                                            description="Sessions you start now aren't linked to an account or organisation."
+                                        />
+                                    ) : null}
+
+                                    <Card
+                                        title="Create a new Session"
+                                        description="Fill the details to begin flow testing."
+                                    >
+                                        <NewSessionForm
+                                            domains={domains}
+                                            savedPreferences={savedPreferences}
+                                            initialSavedConfigKey={initialSavedConfigKey}
+                                            isSubmitting={isFormSubmitted}
+                                            onSubmit={onSubmitHandler}
+                                            onCancel={isGuest ? leaveGuest : undefined}
+                                        />
+                                    </Card>
+                                </div>
+                            )}
+                        </LoginGate>
+                    )}
+
+                    {historyPanel}
                 </div>
             );
     }
@@ -359,15 +547,8 @@ const Scenario = () => {
     return (
         <div className="w-full">
             <div className="mx-auto px-5 sm:px-8 md:px-10 lg:px-15 xl:px-20 py-6">
-                {isTipVisible && (
-                    <Alert
-                        variant="warning"
-                        message={SCENARIO_TIP_BANNER_MESSAGE}
-                        onClose={() => setIsTipVisible(false)}
-                        className="mb-6"
-                    />
-                )}
                 {body}
+                <ScenarioGuideDialog open={isGuideOpen} onOpenChange={setIsGuideOpen} />
             </div>
         </div>
     );

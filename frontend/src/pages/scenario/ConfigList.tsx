@@ -1,0 +1,237 @@
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, FolderOpen, Globe, Plus } from "lucide-react";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@components/Shadcn/Collapsible/collapsible";
+import { Badge } from "@components/Shadcn/Badge";
+import { Button } from "@components/Shadcn/Button";
+import { SearchField } from "@components/Shadcn/SearchField";
+import { Tabs, TabsList, TabsTrigger } from "@components/Shadcn/Tabs";
+import { cn } from "@/lib/utils";
+import { getScenarioDomainLabel } from "@pages/scenario/constants";
+import { groupConfigsBySubscriberUrl } from "@pages/scenario/helpers";
+import { IConfigCardItem, IConfigListProps, IConfigRoleFilter } from "@pages/scenario/types";
+
+const ROLE_FILTERS: { value: IConfigRoleFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "BAP", label: "Buyer apps" },
+    { value: "BPP", label: "Seller apps" },
+];
+
+/** Text a config can be found by: its name, URL, domain, version and use case. */
+const searchText = (item: IConfigCardItem) =>
+    [
+        item.name,
+        item.data.subscriberUrl,
+        item.data.domain,
+        item.data.domain ? getScenarioDomainLabel(item.data.domain) : "",
+        item.data.version,
+        item.data.usecaseId,
+    ]
+        .join(" ")
+        .toLowerCase();
+
+/** "Grocery (RET10) · v1.2.5", or what is missing. */
+export const buildLabel = (item: IConfigCardItem) => {
+    const domain = item.data.domain ? getScenarioDomainLabel(item.data.domain) : "Domain not set";
+    return `${domain}${item.data.version ? ` · v${item.data.version}` : ""}`;
+};
+
+/**
+ * Left side of the split view: the user's configs, searchable and filterable by
+ * app type, grouped by subscriber URL. Everything here works on data the page
+ * already has; nothing is fetched.
+ */
+export const ConfigList = ({ items, selectedId, onSelect, onNewSession }: IConfigListProps) => {
+    const [search, setSearch] = useState("");
+    const [roleFilter, setRoleFilter] = useState<IConfigRoleFilter>("all");
+
+    const visible = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        return items.filter(
+            (item) =>
+                (roleFilter === "all" || item.data.npType === roleFilter) &&
+                (!query || searchText(item).includes(query))
+        );
+    }, [items, search, roleFilter]);
+    const groups = useMemo(() => groupConfigsBySubscriberUrl(visible), [visible]);
+
+    // Each subscriber URL folds open to show its configs. Only the picked config's
+    // URL starts open; while searching, every matching URL is open.
+    const groupKeyOf = (id: string | null) =>
+        groupConfigsBySubscriberUrl(items).find((g) => g.items.some((i) => i.id === id))
+            ?.subscriberUrl;
+    const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+        const key = groupKeyOf(selectedId);
+        return new Set(key !== undefined ? [key] : []);
+    });
+    useEffect(() => {
+        const key = groupKeyOf(selectedId);
+        if (key !== undefined)
+            setOpenGroups((open) => (open.has(key) ? open : new Set(open).add(key)));
+    }, [selectedId]);
+    const isSearching = search.trim() !== "";
+    const toggleGroup = (key: string, isOpen: boolean) =>
+        setOpenGroups((open) => {
+            const next = new Set(open);
+            if (isOpen) next.add(key);
+            else next.delete(key);
+            return next;
+        });
+
+    if (items.length === 0) {
+        return (
+            <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                <FolderOpen className="size-8 text-text-secondary" aria-hidden="true" />
+                <div>
+                    <p className="text-body-1 font-semibold text-text-primary">No configs yet</p>
+                    <p className="text-body-2 text-text-secondary">
+                        Start a new session by filling the form yourself.
+                    </p>
+                </div>
+                <Button onClick={onNewSession} className="gap-2">
+                    <Plus className="size-4" aria-hidden="true" />
+                    New session
+                </Button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex min-h-0 flex-1 flex-col">
+            <div className="space-y-3 border-b border-n-30 px-5 pb-1 pt-5 dark:border-border-default">
+                <div className="flex items-center gap-2">
+                    <h2 className="text-body-1 font-bold text-text-primary">Your configs</h2>
+                    <Badge variant="info" data-testid="config-count">
+                        {visible.length}
+                    </Badge>
+                </div>
+                <SearchField
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by name, domain or URL"
+                    aria-label="Search configs"
+                    containerClassName="min-w-0"
+                    className="h-10"
+                />
+                <Tabs
+                    value={roleFilter}
+                    onValueChange={(value) => setRoleFilter(value as IConfigRoleFilter)}
+                >
+                    <TabsList aria-label="Filter by app type">
+                        {ROLE_FILTERS.map((filter) => (
+                            <TabsTrigger key={filter.value} value={filter.value}>
+                                {filter.label}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </Tabs>
+            </div>
+
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-3 py-3">
+                {groups.length === 0 ? (
+                    <p className="px-4 py-10 text-center text-body-2 text-text-secondary">
+                        No configs match your search.
+                    </p>
+                ) : (
+                    <div className="space-y-4">
+                        {groups.map((group) => (
+                            <Collapsible
+                                key={group.subscriberUrl || "none"}
+                                open={isSearching || openGroups.has(group.subscriberUrl)}
+                                onOpenChange={(isOpen) => toggleGroup(group.subscriberUrl, isOpen)}
+                                asChild
+                            >
+                                <section className="space-y-1">
+                                    <h3>
+                                        <CollapsibleTrigger className="group/trigger flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-caption-1 text-text-secondary transition-colors hover:bg-brand-light/40 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50 dark:hover:bg-surface-muted">
+                                            <Globe
+                                                className="size-3.5 shrink-0"
+                                                aria-hidden="true"
+                                            />
+                                            <span
+                                                className="min-w-0 truncate"
+                                                title={group.subscriberUrl}
+                                            >
+                                                {group.subscriberUrl.replace(/^https?:\/\//, "") ||
+                                                    "No subscriber URL"}
+                                            </span>
+                                            <span className="shrink-0">· {group.items.length}</span>
+                                            <ChevronDown
+                                                className="ml-auto size-4 shrink-0 transition-transform group-data-[state=open]/trigger:rotate-180"
+                                                aria-hidden="true"
+                                            />
+                                        </CollapsibleTrigger>
+                                    </h3>
+                                    <CollapsibleContent>
+                                        <ul className="space-y-1">
+                                            {group.items.map((item) => {
+                                                const isSelected = item.id === selectedId;
+                                                const needsInput = item.missingFields.length > 0;
+                                                return (
+                                                    <li key={item.id}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => onSelect(item.id)}
+                                                            aria-current={
+                                                                isSelected ? "true" : undefined
+                                                            }
+                                                            className={cn(
+                                                                "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50",
+                                                                isSelected
+                                                                    ? "border-brand-light-active bg-brand-light dark:border-brand-normal/40 dark:bg-brand-normal/15"
+                                                                    : "border-transparent hover:bg-brand-light/40 dark:hover:bg-surface-muted"
+                                                            )}
+                                                        >
+                                                            <span className="min-w-0 flex-1">
+                                                                <span className="block truncate text-body-2 font-semibold text-text-primary">
+                                                                    {item.name || buildLabel(item)}
+                                                                </span>
+                                                                <span className="block truncate text-caption-1 text-text-secondary">
+                                                                    {item.name
+                                                                        ? buildLabel(item)
+                                                                        : item.data.usecaseId ||
+                                                                          "Use case not set"}
+                                                                </span>
+                                                            </span>
+                                                            {item.data.npType ? (
+                                                                <Badge variant="outline">
+                                                                    {item.data.npType}
+                                                                </Badge>
+                                                            ) : null}
+                                                            <span
+                                                                className={cn(
+                                                                    "size-2 shrink-0 rounded-full",
+                                                                    needsInput
+                                                                        ? "bg-alert-500"
+                                                                        : "bg-success-500"
+                                                                )}
+                                                                title={
+                                                                    needsInput
+                                                                        ? "Needs input"
+                                                                        : "Ready to launch"
+                                                                }
+                                                            >
+                                                                <span className="sr-only">
+                                                                    {needsInput
+                                                                        ? "Needs input"
+                                                                        : "Ready to launch"}
+                                                                </span>
+                                                            </span>
+                                                        </button>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </CollapsibleContent>
+                                </section>
+                            </Collapsible>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};

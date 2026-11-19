@@ -15,6 +15,7 @@ export function useNewSessionForm({
     savedPreferences = {},
     initialSavedConfigKey = "",
     onSubmit,
+    onCancel,
 }: INewSessionFormProps) {
     const { user } = useAuth();
 
@@ -38,6 +39,7 @@ export function useNewSessionForm({
         handleSubmit,
         watch,
         setValue,
+        reset,
         formState: { errors },
     } = useForm<INewSessionFormValues>({ defaultValues: DEFAULT_VALUES, mode: "onBlur" });
 
@@ -189,6 +191,10 @@ export function useNewSessionForm({
             onDomainChange: handleDomainChange,
             onVersionChange: handleVersionChange,
             onConfigChange: handleConfigChange,
+            onCancel: () => {
+                reset(DEFAULT_VALUES);
+                onCancel?.();
+            },
         },
     };
 }
