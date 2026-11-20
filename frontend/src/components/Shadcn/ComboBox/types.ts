@@ -11,4 +11,11 @@ export interface IComboBoxProps<T extends FieldValues> {
     required?: boolean;
     disabled?: boolean;
     onValueChange?: (value: string) => void;
+    /** Optional help text shown from an "i" icon next to the label. */
+    tooltip?: string;
+    /**
+     * Label inside the box (like placeholder text) that moves up small once a value
+     * is picked or the field has focus; a tooltip then sits inside, after the arrow.
+     */
+    floatingLabel?: boolean;
 }

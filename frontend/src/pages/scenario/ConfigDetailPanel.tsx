@@ -9,7 +9,12 @@ import { ComboBox } from "@components/Shadcn/ComboBox";
 import { TextField } from "@components/Shadcn/TextField";
 import { ROUTES } from "@constants/routes";
 import { useAuth } from "@hooks/useAuth";
-import { OrganisationField, useOrganisationOptions } from "@pages/scenario/OrganisationField";
+import {
+    OrganisationField,
+    useOrganisationName,
+    useOrganisationOptions,
+} from "@pages/scenario/OrganisationField";
+import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
 import { versionLabel } from "@pages/scenario/helpers";
 import {
@@ -49,6 +54,7 @@ export const ConfigDetailPanel = ({
     const navigate = useNavigate();
     const { user } = useAuth();
     const orgOptions = useOrganisationOptions();
+    const organisationName = useOrganisationName();
     // The organisation is fixed when the config's own one is the user's, or when the
     // user has only one (asking would offer a single choice). Otherwise they pick.
     const isConfigOrgMine =
@@ -59,7 +65,8 @@ export const ConfigDetailPanel = ({
           ? orgOptions[0].value
           : "";
     const isOrgLocked = !!lockedOrgId;
-    const lockedOrgLabel = orgOptions.find((o) => o.value === lockedOrgId)?.label ?? "";
+    // Name only (no ID), like the header and the New session form.
+    const lockedOrgLabel = organisationName(lockedOrgId);
     const needsOrgPick = orgOptions.length > 1 && !isOrgLocked;
     const hasInputs = item.missingFields.length > 0 || needsOrgPick;
     const isMissing = (field: IConfigField) => item.missingFields.includes(field);
@@ -232,7 +239,7 @@ export const ConfigDetailPanel = ({
                             Fill in to launch
                         </h3>
                         {/* Only what the config is missing; an odd last field spans the row. */}
-                        <div className="grid items-start gap-x-6 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2 [&_[data-slot=input-group]]:h-11 [&_[data-slot=input]]:h-11">
+                        <div className="grid items-start gap-x-6 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2">
                             {needsOrgPick ? (
                                 <OrganisationField control={control} name="orgId" />
                             ) : null}
@@ -241,6 +248,8 @@ export const ConfigDetailPanel = ({
                                     control={control}
                                     name="npType"
                                     label="App type"
+                                    floatingLabel
+                                    tooltip={FIELD_TOOLTIPS.role}
                                     options={ROLE_OPTIONS}
                                     placeholder="Select app type"
                                     required
@@ -251,6 +260,8 @@ export const ConfigDetailPanel = ({
                                     control={control}
                                     name="subscriberUrl"
                                     label="Subscriber URL"
+                                    floatingLabel
+                                    tooltip={FIELD_TOOLTIPS.subscriberUrl}
                                     required
                                     placeholder="https://example.com"
                                     rules={{
@@ -266,6 +277,8 @@ export const ConfigDetailPanel = ({
                                     control={control}
                                     name="domain"
                                     label="Domain"
+                                    floatingLabel
+                                    tooltip={FIELD_TOOLTIPS.domain}
                                     options={domains.map((d) => ({
                                         value: d.key,
                                         label: getScenarioDomainLabel(d.key),
@@ -283,6 +296,8 @@ export const ConfigDetailPanel = ({
                                     control={control}
                                     name="version"
                                     label="Version"
+                                    floatingLabel
+                                    tooltip={FIELD_TOOLTIPS.version}
                                     options={versionOptions}
                                     placeholder="Select version"
                                     required
@@ -295,6 +310,8 @@ export const ConfigDetailPanel = ({
                                     control={control}
                                     name="usecaseId"
                                     label="Use case"
+                                    floatingLabel
+                                    tooltip={FIELD_TOOLTIPS.usecase}
                                     options={usecaseOptions}
                                     placeholder="Select use case"
                                     required

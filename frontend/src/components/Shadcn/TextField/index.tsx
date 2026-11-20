@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@components/Shadcn/Input";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
+import { FieldTooltip } from "./field-tooltip";
 import type { ITextFieldProps } from "./types";
 
 const buildValidationRules = <T extends FieldValues>(
@@ -33,6 +34,8 @@ export const TextField = <T extends FieldValues = FieldValues>({
     disable = false,
     onValueChange,
     labelInfo: _labelInfo,
+    tooltip,
+    floatingLabel = false,
     className,
     setValue: _setValue,
     ...inputProps
@@ -50,14 +53,48 @@ export const TextField = <T extends FieldValues = FieldValues>({
     const fieldLayout = (inputNode: React.ReactNode, fieldError?: string) => {
         const resolvedError = resolveError(fieldError);
 
+        if (floatingLabel && label) {
+            // The label comes after the input so it can follow the input's state with
+            // CSS alone: centred while empty, small at the top once typed in or focused.
+            return (
+                <Field data-invalid={!!resolvedError} className="w-full">
+                    <div className="relative">
+                        {inputNode}
+                        <label
+                            htmlFor={fieldId}
+                            className="pointer-events-none absolute top-2 left-3 text-caption-1 text-text-secondary transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-body-1 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-caption-1"
+                        >
+                            {label}
+                            {required && <span className="ml-0.5 text-destructive">*</span>}
+                        </label>
+                        {tooltip ? (
+                            <span className="absolute top-1/2 right-3 flex -translate-y-1/2">
+                                <FieldTooltip label={label} content={tooltip} />
+                            </span>
+                        ) : null}
+                    </div>
+                    {description && <FieldDescription>{description}</FieldDescription>}
+                    {resolvedError && <FieldError>{resolvedError}</FieldError>}
+                </Field>
+            );
+        }
+
         return (
             <Field data-invalid={!!resolvedError} className="w-full">
-                {label && (
+                {label && tooltip ? (
+                    <div className="flex items-center gap-1.5">
+                        <FieldLabel htmlFor={fieldId} className="font-semibold">
+                            {label}
+                            {required && <span className="text-destructive">*</span>}
+                        </FieldLabel>
+                        <FieldTooltip label={label} content={tooltip} />
+                    </div>
+                ) : label ? (
                     <FieldLabel htmlFor={fieldId} className="font-semibold">
                         {label}
                         {required && <span className="text-destructive">*</span>}
                     </FieldLabel>
-                )}
+                ) : null}
                 {description && <FieldDescription>{description}</FieldDescription>}
                 {inputNode}
                 {resolvedError && <FieldError>{resolvedError}</FieldError>}
@@ -68,7 +105,13 @@ export const TextField = <T extends FieldValues = FieldValues>({
     const sharedInputProps = {
         id: fieldId,
         disabled: disable,
-        className: cn("w-full", className),
+        className: cn(
+            "w-full",
+            floatingLabel &&
+                "peer h-13 rounded-lg bg-n-0 px-3 pt-5 pb-1 text-base shadow-none placeholder:text-transparent focus:placeholder:text-text-secondary md:text-base dark:bg-surface-muted",
+            floatingLabel && tooltip && "pr-10",
+            className
+        ),
         placeholder: inputProps.placeholder ?? "Type here...",
         onFocus: (event: React.FocusEvent<HTMLInputElement>) => event.stopPropagation(),
         onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => event.stopPropagation(),

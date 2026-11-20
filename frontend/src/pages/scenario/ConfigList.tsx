@@ -167,7 +167,7 @@ export const ConfigList = ({
                         No configs match your search.
                     </p>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {groups.map((group) => (
                             <Collapsible
                                 key={group.subscriberUrl || "none"}
@@ -175,11 +175,11 @@ export const ConfigList = ({
                                 onOpenChange={(isOpen) => toggleGroup(group.subscriberUrl, isOpen)}
                                 asChild
                             >
-                                <section className="space-y-1">
+                                <section className="overflow-hidden rounded-xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated">
                                     <h3>
-                                        <CollapsibleTrigger className="group/trigger flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-caption-1 text-text-secondary transition-colors hover:bg-brand-light/40 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/50 dark:hover:bg-surface-muted">
+                                        <CollapsibleTrigger className="group/trigger flex w-full min-w-0 items-center gap-2.5 px-4 py-3 text-left text-body-1 text-text-primary transition-colors hover:bg-brand-light/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-normal/50 dark:hover:bg-surface-muted">
                                             <Globe
-                                                className="size-3.5 shrink-0"
+                                                className="size-4 shrink-0 text-text-secondary"
                                                 aria-hidden="true"
                                             />
                                             <span
@@ -189,15 +189,18 @@ export const ConfigList = ({
                                                 {group.subscriberUrl.replace(/^https?:\/\//, "") ||
                                                     "No subscriber URL"}
                                             </span>
-                                            <span className="shrink-0">· {group.items.length}</span>
+                                            <span className="sr-only">
+                                                , {group.items.length}{" "}
+                                                {group.items.length === 1 ? "config" : "configs"}
+                                            </span>
                                             <ChevronDown
-                                                className="ml-auto size-4 shrink-0 transition-transform group-data-[state=open]/trigger:rotate-180"
+                                                className="ml-auto size-4 shrink-0 text-text-secondary transition-transform group-data-[state=open]/trigger:rotate-180"
                                                 aria-hidden="true"
                                             />
                                         </CollapsibleTrigger>
                                     </h3>
-                                    <CollapsibleContent>
-                                        <ul className="space-y-1">
+                                    <CollapsibleContent className="border-t border-n-30 dark:border-border-default">
+                                        <ul className="space-y-1 p-2">
                                             {group.items.map((item) => {
                                                 const isSelected = item.id === selectedId;
                                                 const needsInput = item.missingFields.length > 0;

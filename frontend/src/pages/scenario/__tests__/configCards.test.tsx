@@ -141,7 +141,10 @@ describe("config list (left side)", () => {
         const { onSelect } = renderList(PREFS, "saved|kiranakart-buyer");
 
         const groups = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-        expect(groups).toEqual(["buyer.kiranakart.example.com/ondc· 2", "two.example.com· 1"]);
+        expect(groups).toEqual([
+            "buyer.kiranakart.example.com/ondc, 2 configs",
+            "two.example.com, 1 config",
+        ]);
         // Only the picked config's URL starts open; the other folds open on click.
         expect(rows()).toEqual(["kiranakart-buyer", "kiranakart-seller"]);
         await userEvent.click(screen.getByRole("button", { name: /two\.example\.com/ }));
@@ -255,7 +258,7 @@ describe("config details (right side)", () => {
         expect(screen.getAllByTestId("locked-row")[0].parentElement?.className).toContain(
             "sm:grid-cols-2"
         );
-        expect(screen.getByText("UAT_1 Org (11899)")).toBeInTheDocument();
+        expect(screen.getByText("UAT_1 Org")).toBeInTheDocument();
         expect(screen.getAllByText("Buyer App (BAP)").length).toBeGreaterThan(0);
         expect(screen.getByRole("button", { name: "Launch" })).toBeEnabled();
     });
@@ -295,7 +298,7 @@ describe("config details (right side)", () => {
         expect(screen.getAllByTestId("locked-row")).toHaveLength(5);
         expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
 
-        await userEvent.click(screen.getByPlaceholderText("Select use case"));
+        await userEvent.click(screen.getByRole("combobox", { name: /^Use case/ }));
         await userEvent.click(await screen.findByRole("option", { name: "GROCERY" }));
         expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: "Launch" }));
@@ -308,7 +311,7 @@ describe("config details (right side)", () => {
         const onLaunch = renderPanel(saved({ orgId: "99001" }));
 
         expect(screen.queryByText("Select Organisation")).not.toBeInTheDocument();
-        expect(screen.getByText("UAT_1 Org (11899)")).toBeInTheDocument();
+        expect(screen.getByText("UAT_1 Org")).toBeInTheDocument();
         expect(screen.getByText("Ready to launch")).toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: "Launch" }));
         await waitFor(() =>
@@ -321,7 +324,7 @@ describe("config details (right side)", () => {
 
         const fillIn = screen.getByTestId("fill-in-section");
         expect(within(fillIn).getByText("Fill in to launch")).toBeInTheDocument();
-        expect(within(fillIn).getByPlaceholderText("Select use case")).toBeInTheDocument();
+        expect(within(fillIn).getByRole("combobox", { name: /^Use case/ })).toBeInTheDocument();
         expect(within(fillIn).queryByTestId("locked-row")).not.toBeInTheDocument();
         const known = screen.getAllByTestId("locked-row");
         expect(known.map((r) => r.firstChild?.textContent)).not.toContain("Use case");
@@ -353,7 +356,7 @@ describe("config details (right side)", () => {
         renderPanel(saved({ orgId: "99001" }));
 
         expect(screen.getByText("Select Organisation")).toBeInTheDocument();
-        expect(within(document.body).queryByText("99001")).not.toBeInTheDocument();
+        expect(within(document.body).queryByText(/99001/)).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
     });
 });
@@ -590,13 +593,13 @@ describe("NP Portal configs from SSO", () => {
             expect(screen.getByText("2 details to fill before launch")).toBeInTheDocument();
             expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
             const fillIn = screen.getByTestId("fill-in-section");
-            expect(within(fillIn).getByPlaceholderText("Select version")).toBeInTheDocument();
-            expect(within(fillIn).getByPlaceholderText("Select use case")).toBeDisabled();
+            expect(within(fillIn).getByRole("combobox", { name: /^Version/ })).toBeInTheDocument();
+            expect(within(fillIn).getByRole("combobox", { name: /^Use case/ })).toBeDisabled();
 
-            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(screen.getByRole("combobox", { name: /^Version/ }));
             await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
             expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
-            await userEvent.click(screen.getByPlaceholderText("Select use case"));
+            await userEvent.click(screen.getByRole("combobox", { name: /^Use case/ }));
             await userEvent.click(await screen.findByRole("option", { name: "GROCERY" }));
             expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
 
@@ -626,17 +629,17 @@ describe("NP Portal configs from SSO", () => {
             renderSso(sso({ domain: "ONDC:RET1A" }));
             expect(screen.queryByText(/NP Portal sent/)).not.toBeInTheDocument();
             expect(screen.queryByTestId("sent-value")).not.toBeInTheDocument();
-            expect(screen.getByPlaceholderText("Select domain")).toBeInTheDocument();
+            expect(screen.getByRole("combobox", { name: /^Domain/ })).toBeInTheDocument();
         });
 
         it("clears the use case when the version changes", async () => {
             renderSso(sso());
-            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(screen.getByRole("combobox", { name: /^Version/ }));
             await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
-            await userEvent.click(screen.getByPlaceholderText("Select use case"));
+            await userEvent.click(screen.getByRole("combobox", { name: /^Use case/ }));
             await userEvent.click(await screen.findByRole("option", { name: "GROCERY" }));
             expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
-            await userEvent.click(screen.getByPlaceholderText("Select version"));
+            await userEvent.click(screen.getByRole("combobox", { name: /^Version/ }));
             await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
             expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
         });

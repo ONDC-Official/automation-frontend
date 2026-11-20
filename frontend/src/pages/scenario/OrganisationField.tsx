@@ -24,6 +24,8 @@ export const useOrganisationOptions = (): IComboBoxOption[] => {
 interface IOrganisationFieldProps<T extends FieldValues> {
     control: Control<T>;
     name: Path<T>;
+    /** Optional help text shown from an "i" next to the label. */
+    tooltip?: string;
 }
 
 /**
@@ -34,6 +36,7 @@ interface IOrganisationFieldProps<T extends FieldValues> {
 export const OrganisationField = <T extends FieldValues>({
     control,
     name,
+    tooltip,
 }: IOrganisationFieldProps<T>) => {
     const options = useOrganisationOptions();
     const {
@@ -59,6 +62,55 @@ export const OrganisationField = <T extends FieldValues>({
             options={options}
             placeholder="Select your organisation"
             required
+            tooltip={tooltip}
         />
     );
+};
+
+/**
+ * The organisation a new session is for, shown as plain text (name only, not a
+ * dropdown): the one the user is logged in with. Sets the form's value to it.
+ * Shows nothing when logged out or for a login without an organisation.
+ */
+export const CurrentOrganisation = <T extends FieldValues>({
+    control,
+    name,
+}: {
+    control: Control<T>;
+    name: Path<T>;
+}) => {
+    const { user } = useAuth();
+    const orgs = user?.organisations ?? [];
+    const orgId = user?.organisationId || orgs[0]?.organisationId || "";
+    const orgName =
+        orgs.find((o) => o.organisationId === orgId)?.organisationName ||
+        user?.organisationName ||
+        orgId;
+    const {
+        field: { value, onChange },
+    } = useController({ control, name });
+
+    useEffect(() => {
+        if (orgId && value !== orgId) {
+            onChange(orgId);
+        }
+    }, [orgId, value, onChange]);
+
+    if (!orgId) {
+        return null;
+    }
+    return (
+        <p className="text-body-2 text-text-secondary" data-testid="current-organisation">
+            Organisation: <span className="font-semibold text-text-primary">{orgName}</span>
+        </p>
+    );
+};
+
+/** An organisation's name only (no ID), for showing. Falls back to the ID. */
+export const useOrganisationName = () => {
+    const { user } = useAuth();
+    return (orgId?: string) =>
+        (user?.organisations ?? []).find((o) => o.organisationId === orgId)?.organisationName ||
+        orgId ||
+        "";
 };

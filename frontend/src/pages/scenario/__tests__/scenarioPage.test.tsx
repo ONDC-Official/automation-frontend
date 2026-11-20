@@ -157,19 +157,48 @@ describe("Create new session form", () => {
     it("lays the fields out two per row, an odd last field taking the whole row", () => {
         render(<Form />);
 
-        const group = screen.getByText("Enter Subscriber Url").closest("[data-slot=field-group]");
+        const group = screen.getByLabelText(/^Subscriber URL/).closest("[data-slot=field-group]");
         expect(group?.className).toContain("sm:grid-cols-2");
         expect(group?.className).toContain("[&>*:last-child:nth-child(odd)]:col-span-2");
         expect(group?.children).toHaveLength(5);
-        expect(screen.queryByText("Select Environment")).not.toBeInTheDocument();
+        expect(screen.queryByText(/Environment/)).not.toBeInTheDocument();
     });
 
-    it("makes its inputs 44px tall (taller than the app's default 36px)", () => {
+    it("puts each label inside its 52px box, with the help 'i' inside on the right", () => {
         render(<Form />);
 
-        const group = screen.getByText("Enter Subscriber Url").closest("[data-slot=field-group]");
-        expect(group?.className).toContain("[&_[data-slot=input]]:h-11");
-        expect(group?.className).toContain("[&_[data-slot=input-group]]:h-11");
+        const url = screen.getByLabelText(/^Subscriber URL/);
+        expect(url.className).toContain("h-13");
+        for (const label of ["Subscriber URL", "Domain", "Version", "Use case", "Your role"]) {
+            expect(screen.getByRole("button", { name: `About ${label}` })).toBeInTheDocument();
+        }
+        // The label comes right after its input, inside the same box.
+        expect(url.nextElementSibling?.tagName).toBe("LABEL");
+    });
+
+    it("has no Past Report button", () => {
+        mockUser = { username: "25716" };
+        render(<Form />);
+        expect(screen.queryByRole("button", { name: "Past Report" })).not.toBeInTheDocument();
+    });
+
+    it("shows the logged-in organisation as its name only, not a dropdown", () => {
+        mockUser = {
+            username: "25716",
+            organisationId: "11899",
+            organisations: [{ organisationId: "11899", organisationName: "UAT_1 Org" }],
+        };
+        render(<Form />);
+        expect(screen.getByTestId("current-organisation")).toHaveTextContent(
+            "Organisation: UAT_1 Org"
+        );
+        expect(screen.queryByText(/11899/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Select Organisation")).not.toBeInTheDocument();
+    });
+
+    it("shows no organisation when logged out", () => {
+        render(<Form />);
+        expect(screen.queryByTestId("current-organisation")).not.toBeInTheDocument();
     });
 
     it("has no Create profile config button, and Cancel calls back", async () => {

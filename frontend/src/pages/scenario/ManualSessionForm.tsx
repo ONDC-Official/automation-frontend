@@ -5,9 +5,10 @@ import { TextField } from "@components/Shadcn/TextField";
 import { DomainVersionUsecaseFields } from "@pages/scenario/DomainVersionUsecaseFields";
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
-import { OrganisationField } from "@pages/scenario/OrganisationField";
+import { CurrentOrganisation } from "@pages/scenario/OrganisationField";
 import { IManualSessionFormProps } from "@pages/scenario/types";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
+import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
 
 export const ManualSessionForm = ({
     domains,
@@ -42,9 +43,12 @@ export const ManualSessionForm = ({
                 </Button>
             )}
 
-            {/* Two fields per row; an odd last field spans the whole row.
-                Inputs here are a little taller (44px) than the app default (36px). */}
-            <FieldGroup className="grid gap-x-4 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2 [&_[data-slot=input-group]]:h-11 [&_[data-slot=input]]:h-11">
+            {/* The organisation is the one the user is logged in with: shown, not picked. */}
+            <CurrentOrganisation control={control} name="orgId" />
+
+            {/* Two fields per row; an odd last field spans the whole row. Labels sit
+                inside the boxes (floating), with the help "i" inside on the right. */}
+            <FieldGroup className="grid gap-x-4 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2">
                 {/* {isLoggedIn ? (
                     <>
                         <ComboBox
@@ -67,13 +71,14 @@ export const ManualSessionForm = ({
                     </>
                 ) : ( */}
                 <>
-                    <OrganisationField control={control} name="orgId" />
                     <TextField
                         control={control}
                         name="subscriberUrl"
-                        label="Enter Subscriber Url"
+                        label="Subscriber URL"
                         required
                         placeholder="https://example.com"
+                        tooltip={FIELD_TOOLTIPS.subscriberUrl}
+                        floatingLabel
                         rules={{
                             pattern: {
                                 value: /^https?:\/\/.*/i,
@@ -96,17 +101,21 @@ export const ManualSessionForm = ({
                         }))}
                         onDomainChange={onDomainChange}
                         onVersionChange={onVersionChange}
+                        tooltips={FIELD_TOOLTIPS}
+                        floatingLabel
                     />
                     <ComboBox
                         control={control}
                         name="npType"
-                        label="Select Your Role"
+                        label="Your role"
+                        floatingLabel
                         options={[
                             { label: "Buyer App (BAP)", value: "BAP" },
                             { label: "Seller App (BPP)", value: "BPP" },
                         ]}
                         placeholder="Select your role"
                         required
+                        tooltip={FIELD_TOOLTIPS.role}
                         onValueChange={(value) => trackSchemaValidationForm("Added np type", value)}
                     />
                     {/* No Environment field: sessions use the default, PRE-PRODUCTION (its only option). */}

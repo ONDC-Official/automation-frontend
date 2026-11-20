@@ -139,6 +139,10 @@ export type IDomainVersionUsecaseFieldsProps<
     onDomainChange?: (domain: string) => void;
     onVersionChange: (version: string) => void;
     domainOptions?: ComboBoxOptionInput[];
+    /** Optional help text for each field, shown from an "i" next to its label. */
+    tooltips?: { domain?: string; version?: string; usecase?: string };
+    /** Labels inside the boxes (Scenario Testing style), with short noun labels. */
+    floatingLabel?: boolean;
 };
 
 export type ISessionFormActionsProps = {
