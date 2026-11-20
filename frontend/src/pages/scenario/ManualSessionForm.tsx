@@ -43,7 +43,7 @@ export const ManualSessionForm = ({
                 </Button>
             )}
 
-            {/* The organisation is the one the user is logged in with: shown, not picked. */}
+            {/* The organisation the user is working for (picked after login / top bar). */}
             <CurrentOrganisation control={control} name="orgId" />
 
             {/* Two fields per row; an odd last field spans the whole row. Labels sit

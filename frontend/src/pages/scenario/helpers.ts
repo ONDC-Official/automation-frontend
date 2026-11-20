@@ -64,6 +64,27 @@ export function npPortalConfigsFromUser(user?: IUser): INpPortalConfig[] {
     );
 }
 
+/**
+ * Only what belongs to the organisation the user is working for: its NP Portal
+ * configs, and saved configs made for it (or saved without an organisation).
+ * With no organisation (logged out, or a login without organisations) nothing is hidden.
+ */
+export function configsForOrganisation(
+    npPortalConfigs: INpPortalConfig[],
+    savedPreferences: Record<string, IScenarioFormData>,
+    organisationId?: string
+): { npPortalConfigs: INpPortalConfig[]; savedPreferences: Record<string, IScenarioFormData> } {
+    if (!organisationId) return { npPortalConfigs, savedPreferences };
+    return {
+        npPortalConfigs: npPortalConfigs.filter((c) => c.org_id === organisationId),
+        savedPreferences: Object.fromEntries(
+            Object.entries(savedPreferences).filter(
+                ([, pref]) => !pref.orgId || pref.orgId === organisationId
+            )
+        ),
+    };
+}
+
 /** A version for display: "v1.2.5". NP Portal already writes "v 1.2", so don't add a second v. */
 export function versionLabel(version?: string): string {
     const v = version?.trim() ?? "";

@@ -21,5 +21,5 @@ export const frameworkHealthPersistConfig: PersistConfig<IFrameworkHealthState> 
 export const authPersistConfig: PersistConfig<IAuthState> = {
     key: "auth",
     storage,
-    whitelist: ["token", "isLoginPending", "postLoginRedirect"],
+    whitelist: ["token", "isLoginPending", "postLoginRedirect", "activeOrgId"],
 };

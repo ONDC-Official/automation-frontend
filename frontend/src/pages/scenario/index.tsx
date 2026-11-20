@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useMemo, type ReactNode } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { CircleHelp, Plus } from "lucide-react";
 import { toast } from "sonner";
 import RenderFlows from "@components/DomainFlowRunner/RenderFlows";
@@ -29,10 +29,12 @@ import {
     useLazyGetSessionByIdQuery,
 } from "@store/api";
 import { useAuth } from "@hooks/useAuth";
+import { useActiveOrganisation } from "@hooks/useActiveOrganisation";
 import { useGitHubLogin } from "@hooks/useGitHubLogin";
 import { IScenarioFormData, ISessionResponse, ISavedPrefAPI } from "@pages/scenario/types";
 import {
     buildConfigCards,
+    configsForOrganisation,
     npPortalConfigsFromUser,
     openSessionInNewTab,
 } from "@pages/scenario/helpers";
@@ -83,10 +85,28 @@ const Scenario = () => {
     // whether the New session page shows.
     const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
     const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
-    const [isNewSessionOpen, setIsNewSessionOpen] = useState(false);
+    // The New session form (and the guest form) has its own address, /scenario?view=new,
+    // so browser Back, Cancel and the "Scenario Testing" breadcrumb all return to the list
+    // (or the login box), and refresh / Forward keep the form.
+    const navigate = useNavigate();
+    const location = useLocation();
+    const isNewSessionOpen = searchParams.get("view") === "new";
     const openNewSession = () => {
-        setIsNewSessionOpen(true);
+        const params = new URLSearchParams(searchParams);
+        params.set("view", "new");
+        navigate({ search: params.toString() }, { state: { openedFromScenario: true } });
         window.scrollTo({ top: 0, left: 0 });
+    };
+    const closeNewSession = () => {
+        // Opened from this page: step back, exactly like the browser's Back button.
+        // Opened directly (link, refresh): go to the list without leaving the site.
+        if ((location.state as { openedFromScenario?: boolean } | null)?.openedFromScenario) {
+            navigate(-1);
+            return;
+        }
+        const params = new URLSearchParams(searchParams);
+        params.delete("view");
+        navigate({ search: params.toString() }, { replace: true });
     };
     const [savedPreferences, setSavedPreferences] = useState<Record<string, IScenarioFormData>>({});
     const initialSavedConfigKey = searchParams.get("config") ?? "";
@@ -265,18 +285,17 @@ const Scenario = () => {
 
     // Cards: the NP Portal configs SSO sent with the user's organisations, plus the
     // user's saved profile configs. Nothing extra is fetched: both are already loaded.
-    const npPortalConfigs = useMemo(() => npPortalConfigsFromUser(user), [user]);
-    // With more than one organisation, list rows say which one each config is for.
-    const organisationNames = useMemo(() => {
-        const orgs = user?.organisations ?? [];
-        if (orgs.length < 2) return undefined;
-        return Object.fromEntries(
-            orgs.map((o) => [o.organisationId, o.organisationName || o.organisationId])
-        );
-    }, [user]);
+    // Only the organisation the user is working for: its NP Portal configs, and saved
+    // configs made for it (or saved without an organisation).
+    const { activeOrganisation } = useActiveOrganisation();
+    const activeOrgId = activeOrganisation?.organisationId;
+    const { npPortalConfigs, savedPreferences: visibleSavedPreferences } = useMemo(
+        () => configsForOrganisation(npPortalConfigsFromUser(user), savedPreferences, activeOrgId),
+        [user, savedPreferences, activeOrgId]
+    );
     const configCards = useMemo(
-        () => buildConfigCards(npPortalConfigs, savedPreferences, domains),
-        [npPortalConfigs, savedPreferences, domains]
+        () => buildConfigCards(npPortalConfigs, visibleSavedPreferences, domains),
+        [npPortalConfigs, visibleSavedPreferences, domains]
     );
     // Grouping keeps first-seen order, so the first card is the top-most one in the list.
     const selectedConfig =
@@ -330,7 +349,8 @@ const Scenario = () => {
         />
     );
 
-    // "Home / Create new session": shared by the logged-out form and the logged-in New session page.
+    // "Home / Scenario Testing / New session": shared by the logged-out form and the
+    // logged-in New session page. "Scenario Testing" goes back like Cancel.
     const breadcrumbs = (
         <nav aria-label="Breadcrumb">
             <ol className="flex items-center gap-2 text-body-2 text-text-secondary">
@@ -343,8 +363,18 @@ const Scenario = () => {
                     </Link>
                 </li>
                 <li aria-hidden="true">/</li>
+                <li>
+                    <button
+                        type="button"
+                        onClick={closeNewSession}
+                        className="hover:text-brand-normal hover:underline underline-offset-4 focus-visible:underline focus-visible:outline-none"
+                    >
+                        Scenario Testing
+                    </button>
+                </li>
+                <li aria-hidden="true">/</li>
                 <li aria-current="page" className="font-semibold text-text-primary">
-                    Create new session
+                    New session
                 </li>
             </ol>
         </nav>
@@ -390,7 +420,7 @@ const Scenario = () => {
                             domains={domains}
                             isSubmitting={isFormSubmitted}
                             onSubmit={onSubmitHandler}
-                            onCancel={() => setIsNewSessionOpen(false)}
+                            onCancel={closeNewSession}
                         />
                     </Card>
                 </div>
@@ -420,7 +450,6 @@ const Scenario = () => {
                                 selectedId={selectedConfig?.id ?? null}
                                 onSelect={selectConfig}
                                 onNewSession={openNewSession}
-                                organisationNames={organisationNames}
                             />
                         )}
                     </section>
@@ -503,6 +532,9 @@ const Scenario = () => {
                         </div>
                     ) : (
                         <LoginGate
+                            isGuest={isNewSessionOpen}
+                            onContinueWithoutLogin={openNewSession}
+                            onLeaveGuest={closeNewSession}
                             isLoggedOut={!user && !isAuthLoading}
                             isLoginRedirecting={isLoginRedirecting}
                             onLogin={() => startLogin(ROUTES.SCENARIO)}

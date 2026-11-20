@@ -37,6 +37,13 @@ interface ILoginGateProps {
     isLoginRedirecting: boolean;
     onLogin: () => void;
     children: (state: ILoginGateState) => ReactNode;
+    /**
+     * Optional: let the page own the "continue without login" state (e.g. from the
+     * URL, so browser Back leaves the guest form). Without these, the gate keeps it.
+     */
+    isGuest?: boolean;
+    onContinueWithoutLogin?: () => void;
+    onLeaveGuest?: () => void;
 }
 
 /**
@@ -51,10 +58,15 @@ export const LoginGate = ({
     isLoginRedirecting,
     onLogin,
     children,
+    isGuest: controlledIsGuest,
+    onContinueWithoutLogin,
+    onLeaveGuest,
 }: ILoginGateProps) => {
-    const [continueWithoutLogin, setContinueWithoutLogin] = useState(false);
+    const [ownIsGuest, setOwnIsGuest] = useState(false);
     const { provider, label } = useLoginLabel();
-    const leaveGuest = () => setContinueWithoutLogin(false);
+    const continueWithoutLogin = controlledIsGuest ?? ownIsGuest;
+    const leaveGuest = onLeaveGuest ?? (() => setOwnIsGuest(false));
+    const startGuest = onContinueWithoutLogin ?? (() => setOwnIsGuest(true));
 
     if (!isLoggedOut || provider !== "ondc") {
         return children({ isGuest: false, leaveGuest });
@@ -91,7 +103,7 @@ export const LoginGate = ({
                     </Button>
                     <button
                         type="button"
-                        onClick={() => setContinueWithoutLogin(true)}
+                        onClick={startGuest}
                         className="rounded text-body-2 font-medium text-brand-normal underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-normal/40"
                     >
                         Continue without login

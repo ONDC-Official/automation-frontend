@@ -3,6 +3,7 @@ import { useController, type Control, type FieldValues, type Path } from "react-
 import { ComboBox } from "@components/Shadcn/ComboBox";
 import type { IComboBoxOption } from "@components/Shadcn/ComboBox/combo-box-options";
 import { useAuth } from "@hooks/useAuth";
+import { organisationLabel, useActiveOrganisation } from "@hooks/useActiveOrganisation";
 
 export const ORGANISATION_LABEL = "Select Organisation";
 
@@ -68,9 +69,9 @@ export const OrganisationField = <T extends FieldValues>({
 };
 
 /**
- * The organisation a new session is for, shown as plain text (name only, not a
- * dropdown): the one the user is logged in with. Sets the form's value to it.
- * Shows nothing when logged out or for a login without an organisation.
+ * The organisation a new session is for, shown as text (not a field): the one the
+ * user is working for, picked after login or switched from the top bar. Sets the
+ * form's value to it. Shows nothing when logged out or without organisations.
  */
 export const CurrentOrganisation = <T extends FieldValues>({
     control,
@@ -79,13 +80,8 @@ export const CurrentOrganisation = <T extends FieldValues>({
     control: Control<T>;
     name: Path<T>;
 }) => {
-    const { user } = useAuth();
-    const orgs = user?.organisations ?? [];
-    const orgId = user?.organisationId || orgs[0]?.organisationId || "";
-    const orgName =
-        orgs.find((o) => o.organisationId === orgId)?.organisationName ||
-        user?.organisationName ||
-        orgId;
+    const { activeOrganisation } = useActiveOrganisation();
+    const orgId = activeOrganisation?.organisationId ?? "";
     const {
         field: { value, onChange },
     } = useController({ control, name });
@@ -96,12 +92,15 @@ export const CurrentOrganisation = <T extends FieldValues>({
         }
     }, [orgId, value, onChange]);
 
-    if (!orgId) {
+    if (!activeOrganisation) {
         return null;
     }
     return (
         <p className="text-body-2 text-text-secondary" data-testid="current-organisation">
-            Organisation: <span className="font-semibold text-text-primary">{orgName}</span>
+            Organisation:{" "}
+            <span className="font-semibold text-text-primary">
+                {organisationLabel(activeOrganisation)}
+            </span>
         </p>
     );
 };

@@ -5,6 +5,7 @@ import { ConfigList } from "@pages/scenario/ConfigList";
 import { ConfigDetailPanel } from "@pages/scenario/ConfigDetailPanel";
 import {
     buildConfigCards,
+    configsForOrganisation,
     findMissingFields,
     groupConfigsBySubscriberUrl,
     npPortalConfigsFromUser,
@@ -643,5 +644,31 @@ describe("NP Portal configs from SSO", () => {
             await userEvent.click(await screen.findByRole("option", { name: "1.2.5" }));
             expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
         });
+    });
+});
+
+describe("configs for the organisation the user is working for", () => {
+    const np = (org: string) => ({
+        subscriber_url: `https://${org}.example.com`,
+        np_type: "BAP",
+        domain: "ONDC:RET10",
+        org_id: org,
+    });
+    const prefs = {
+        "for-11899": saved({ orgId: "11899" }),
+        "for-99001": saved({ orgId: "99001" }),
+        "no-org": saved({ orgId: undefined }),
+    };
+
+    it("keeps only that organisation's NP Portal configs and saved configs (plus ones with no organisation)", () => {
+        const out = configsForOrganisation([np("11899"), np("99001")], prefs, "99001");
+        expect(out.npPortalConfigs.map((c) => c.org_id)).toEqual(["99001"]);
+        expect(Object.keys(out.savedPreferences)).toEqual(["for-99001", "no-org"]);
+    });
+
+    it("hides nothing when there is no organisation", () => {
+        const out = configsForOrganisation([np("11899"), np("99001")], prefs, undefined);
+        expect(out.npPortalConfigs).toHaveLength(2);
+        expect(Object.keys(out.savedPreferences)).toHaveLength(3);
     });
 });

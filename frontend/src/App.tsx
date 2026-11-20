@@ -8,6 +8,7 @@ import { store, persistor } from "@store/index";
 import { runLegacyStorageMigration } from "@store/legacyStorageMigration";
 import { trackPageView } from "@utils/analytics";
 import Layout from "@components/Layout";
+import { OrganisationPickerDialog } from "@components/OrganisationPicker";
 
 const Wrapper = () => {
     const location = useLocation();
@@ -24,6 +25,7 @@ const Wrapper = () => {
         <>
             <AuthInitializer />
             <Layout />
+            <OrganisationPickerDialog />
         </>
     );
 };

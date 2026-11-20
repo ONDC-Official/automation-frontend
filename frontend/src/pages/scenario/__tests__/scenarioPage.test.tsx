@@ -18,11 +18,25 @@ jest.mock("@hooks/useLoginLabel", () => ({
 }));
 let mockUser: object | undefined;
 jest.mock("@hooks/useAuth", () => ({ useAuth: () => ({ user: mockUser }) }));
+// The organisation the user is working for (normally from the store).
+type IMockOrg = { organisationId: string; organisationName: string };
+let mockActiveOrg: { organisations: IMockOrg[]; activeOrganisation?: IMockOrg } = {
+    organisations: [],
+};
+jest.mock("@hooks/useActiveOrganisation", () => ({
+    useActiveOrganisation: () => ({
+        ...mockActiveOrg,
+        needsChoice: false,
+        setActiveOrganisation: jest.fn(),
+    }),
+    organisationLabel: (o?: IMockOrg) => (o ? o.organisationName || o.organisationId : ""),
+}));
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({ useNavigate: () => mockNavigate }));
 
 beforeEach(() => {
     mockUser = undefined;
+    mockActiveOrg = { organisations: [] };
     jest.clearAllMocks();
 });
 
@@ -98,6 +112,39 @@ describe("LoginGate (logged out)", () => {
     });
 });
 
+describe("LoginGate (page-controlled guest state)", () => {
+    it("asks the page to open and close the guest form, and follows what it says", async () => {
+        const onContinueWithoutLogin = jest.fn();
+        const onLeaveGuest = jest.fn();
+        const gate = (isGuest: boolean) => (
+            <LoginGate
+                isLoggedOut
+                isLoginRedirecting={false}
+                onLogin={jest.fn()}
+                isGuest={isGuest}
+                onContinueWithoutLogin={onContinueWithoutLogin}
+                onLeaveGuest={onLeaveGuest}
+            >
+                {({ isGuest: guest, leaveGuest }) => (
+                    <div>
+                        <p>the form (guest: {String(guest)})</p>
+                        <button onClick={leaveGuest}>Cancel</button>
+                    </div>
+                )}
+            </LoginGate>
+        );
+        const { rerender } = render(gate(false));
+        await userEvent.click(screen.getByRole("button", { name: "Continue without login" }));
+        expect(onContinueWithoutLogin).toHaveBeenCalled();
+        expect(screen.queryByText(/the form/)).not.toBeInTheDocument(); // the page decides
+
+        rerender(gate(true));
+        expect(screen.getByText("the form (guest: true)")).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(onLeaveGuest).toHaveBeenCalled();
+    });
+});
+
 describe("Form buttons", () => {
     it("puts Cancel left of a 48px Submit, both on the right", () => {
         render(<SessionFormActions isSubmitting={false} onCancel={jest.fn()} />);
@@ -117,7 +164,7 @@ describe("Form buttons", () => {
 });
 
 describe("Create new session form", () => {
-    const Form = ({ onCancel = jest.fn() }) => {
+    const Form = ({ onCancel = jest.fn(), onFormSubmit = jest.fn() }) => {
         const { control, handleSubmit, watch, register, formState } =
             useForm<INewSessionFormValues>({
                 defaultValues: {
@@ -144,7 +191,7 @@ describe("Create new session form", () => {
                 watch={watch}
                 versionOptions={[]}
                 usecaseOptions={[]}
-                onFormSubmit={jest.fn()}
+                onFormSubmit={onFormSubmit}
                 onBackToSavedConfigs={jest.fn()}
                 onDomainChange={jest.fn()}
                 onVersionChange={jest.fn()}
@@ -182,18 +229,27 @@ describe("Create new session form", () => {
         expect(screen.queryByRole("button", { name: "Past Report" })).not.toBeInTheDocument();
     });
 
-    it("shows the logged-in organisation as its name only, not a dropdown", () => {
-        mockUser = {
-            username: "25716",
-            organisationId: "11899",
-            organisations: [{ organisationId: "11899", organisationName: "UAT_1 Org" }],
-        };
+    it("shows the organisation being worked for as text (name only), not a field", () => {
+        const uat = { organisationId: "11899", organisationName: "UAT_1 Org" };
+        mockActiveOrg = { organisations: [uat], activeOrganisation: uat };
         render(<Form />);
+
         expect(screen.getByTestId("current-organisation")).toHaveTextContent(
-            "Organisation: UAT_1 Org"
+            /^Organisation: UAT_1 Org$/
         );
+        expect(screen.queryByRole("combobox", { name: /^Organisation/ })).not.toBeInTheDocument();
         expect(screen.queryByText(/11899/)).not.toBeInTheDocument();
-        expect(screen.queryByText("Select Organisation")).not.toBeInTheDocument();
+    });
+
+    it("shows the picked organisation for users with several (no extra hint)", () => {
+        const uat = { organisationId: "11899", organisationName: "UAT_1 Org" };
+        const second = { organisationId: "99001", organisationName: "UAT_2 Test Org" };
+        mockActiveOrg = { organisations: [uat, second], activeOrganisation: second };
+        render(<Form />);
+
+        expect(screen.getByTestId("current-organisation")).toHaveTextContent(
+            /^Organisation: UAT_2 Test Org$/
+        );
     });
 
     it("shows no organisation when logged out", () => {
