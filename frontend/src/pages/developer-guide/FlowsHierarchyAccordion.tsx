@@ -811,7 +811,7 @@ const FlowsHierarchyAccordion: FC<FlowsHierarchyAccordionProps> = ({
                                                 : "Flow"}
                                         </span>
                                         <span className="min-w-0 text-body-2 font-semibold text-gray-900 dark:text-n-10 wrap-anywhere whitespace-normal leading-5">
-                                            {journeyGroup.primary.usecase ?? flowTitle(flowId)}
+                                            {flowTitle(flowId)}
                                         </span>
                                         {flowDescription && (
                                             <AccordionFlowDescription text={flowDescription} />
