@@ -58,7 +58,7 @@ export function npPortalConfigsFromUser(user?: IUser): INpPortalConfig[] {
             np_type: config?.npType,
             domain: config?.domain,
             version: config?.version,
-            usecase: config?.usecase,
+            usecase: config?.useCase,
             org_id: org.organisationId,
         }))
     );

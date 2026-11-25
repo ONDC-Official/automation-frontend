@@ -40,7 +40,7 @@ export interface IUserOrganisationConfig {
     subscriberUrl?: string;
     domain?: string;
     version?: string;
-    usecase?: string;
+    useCase?: string;
     npType?: string;
 }
 

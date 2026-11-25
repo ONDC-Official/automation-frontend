@@ -374,7 +374,7 @@ describe("NP Portal configs from SSO", () => {
         npType: "BPP",
         domain: "ONDC:RET10",
         version: "1.2.5",
-        usecase: "GROCERY",
+        useCase: "GROCERY",
         ...over,
     });
     const userWith = (...orgs: { id: string; configs?: IUserOrganisationConfig[] }[]) =>
@@ -433,7 +433,7 @@ describe("NP Portal configs from SSO", () => {
                     sso(),
                     sso({ environmentAccessId: "999" }), // same five details: a repeat
                     sso({ npType: "BAP" }),
-                    sso({ domain: "ONDC:LOG10", usecase: "Logistics (P2P)" }),
+                    sso({ domain: "ONDC:LOG10", useCase: "Logistics (P2P)" }),
                     sso({ subscriberUrl: "https://other.example.com" }),
                 ],
             })
@@ -485,8 +485,8 @@ describe("NP Portal configs from SSO", () => {
                 userWith({
                     id: "11899",
                     configs: [
-                        sso({ version: "v 1.2", usecase: "Grocery" }),
-                        sso({ version: "v 2.0.0", usecase: "Something else" }),
+                        sso({ version: "v 1.2", useCase: "Grocery" }),
+                        sso({ version: "v 2.0.0", useCase: "Something else" }),
                     ],
                 })
             ),
@@ -620,7 +620,7 @@ describe("NP Portal configs from SSO", () => {
         });
 
         it("doesn't show NP Portal's version or use case anywhere", () => {
-            renderSso(sso({ version: "v 1.2", usecase: "Grocery" }));
+            renderSso(sso({ version: "v 1.2", useCase: "Grocery" }));
             expect(screen.queryByText(/v 1\.2/)).not.toBeInTheDocument();
             expect(screen.queryByText("Grocery")).not.toBeInTheDocument();
             expect(screen.getByRole("heading", { name: "Grocery (RET10)" })).toBeInTheDocument();
