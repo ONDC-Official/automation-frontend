@@ -4,6 +4,7 @@ import LoadingOverlay from "@components/Shadcn/LoadingOverlay";
 import Header from "@components/Header";
 import Footer from "@components/Footer";
 import Routes from "@components/Routes";
+import { OrganisationPickerDialog } from "@components/OrganisationPicker";
 import { useAppSelector } from "@store/hooks";
 import { selectAuthToken, selectIsLoginPending } from "@store/slices/authSlice";
 import { isChromelessRoute } from "@constants/routes";
@@ -44,6 +45,8 @@ const Layout = () => {
             {suppressPageContent || chromeless ? null : <Footer />}
 
             {showLoginOverlay ? <LoadingOverlay /> : null}
+
+            <OrganisationPickerDialog />
 
             <Toaster />
         </div>

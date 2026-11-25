@@ -152,6 +152,8 @@ export type ISessionFormActionsProps = {
     onSubmit?: () => void;
     extraActions?: ReactNode;
     className?: string;
+    /** Top padding above the row: "default" clears space, "none" sits flush. */
+    spacing?: "default" | "none";
     /** Shows a Cancel button left of Submit. */
     onCancel?: () => void;
 };

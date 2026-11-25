@@ -54,11 +54,11 @@ const DEFAULT_ENV = "PRE-PRODUCTION";
 export function npPortalConfigsFromUser(user?: IUser): INpPortalConfig[] {
     return (user?.organisations ?? []).flatMap((org) =>
         (org.configs ?? []).map((config) => ({
-            subscriber_url: config.subscriberUrl,
-            np_type: config.npType,
-            domain: config.domain,
-            version: config.version,
-            usecase: config.usecase,
+            subscriber_url: config?.subscriberUrl,
+            np_type: config?.npType,
+            domain: config?.domain,
+            version: config?.version,
+            usecase: config?.usecase,
             org_id: org.organisationId,
         }))
     );

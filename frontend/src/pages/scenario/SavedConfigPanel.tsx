@@ -89,7 +89,7 @@ export const SavedConfigPanel = ({
                     !selectedSavedConfigKey || !savedUsecaseId || (needsOrg && !savedOrgId)
                 }
                 onSubmit={onSubmit}
-                className="flex flex-wrap items-center justify-end gap-3"
+                spacing="none"
                 extraActions={
                     <Button variant="link" className="mr-auto px-0" onClick={onFillManually}>
                         Fill manually instead
