@@ -1,4 +1,4 @@
-import { queryReader } from "./portalFlows";
+import { queryReader, titleFromFlowId } from "./portalFlows";
 import type { ProblemFieldError } from "./portalProblem";
 import { toRfc3339 } from "./portalProblem";
 import { signReportToken } from "./reportToken";
@@ -182,7 +182,8 @@ export const toSessionDetail = (
 	publicBaseUrl?: string | null,
 	flowTags?: ReadonlyMap<string, string[]>,
 	reportSecret?: string | null,
-	reportTtlSeconds?: number
+	reportTtlSeconds?: number,
+	flowTitles?: ReadonlyMap<string, string>
 ) => ({
 	...toSessionListItem(session),
 	report_url: reportUrl(
@@ -197,6 +198,7 @@ export const toSessionDetail = (
 	expires_at: session.expiresAt && toRfc3339(new Date(session.expiresAt)),
 	flow_summary: session.flowSummary.map((flow) => ({
 		flow_id: flow.flowId,
+		title: flowTitles?.get(flow.flowId) ?? titleFromFlowId(flow.flowId),
 		tags: flowTags?.get(flow.flowId) ?? [],
 		total_steps: flow.totalSteps,
 		passed_steps: flow.passedSteps,

@@ -368,6 +368,7 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 			flow_summary: [
 				{
 					flow_id: "ORDER",
+					title: "ORDER",
 					tags: ["WORKBENCH", "MANDATORY", "REPORTABLE"],
 					total_steps: 4,
 					passed_steps: 2,
@@ -540,10 +541,41 @@ describe("toSessionDetail", () => {
 		expect(detail.flow_summary[0].tags).toEqual([]);
 	});
 
-	it("puts tags right after flow_id", () => {
+	it("puts title and tags right after flow_id", () => {
 		const detail = toSessionDetail(storedDetail(), null, new Map([["ORDER", ["MANDATORY"]]]));
 
-		expect(Object.keys(detail.flow_summary[0]).slice(0, 2)).toEqual(["flow_id", "tags"]);
+		expect(Object.keys(detail.flow_summary[0]).slice(0, 3)).toEqual(["flow_id", "title", "tags"]);
+	});
+
+	it("titles each flow from the titles map when present", () => {
+		const detail = toSessionDetail(
+			storedDetail(),
+			null,
+			undefined,
+			undefined,
+			undefined,
+			new Map([["ORDER", "Place an Order"]])
+		);
+
+		expect(detail.flow_summary[0].title).toBe("Place an Order");
+	});
+
+	it("falls back to the flow id (underscores as spaces) with no title", () => {
+		const detail = toSessionDetail(
+			storedDetail({
+				flowSummary: [
+					{
+						flowId: "Buyer_Delivery_Flow",
+						totalSteps: 1,
+						passedSteps: 0,
+						failedSteps: 0,
+						transactionIds: [],
+					},
+				],
+			})
+		);
+
+		expect(detail.flow_summary[0].title).toBe("Buyer Delivery Flow");
 	});
 
 	it("signs report_url with a verifiable ?rt= when given a secret and TTL", () => {
