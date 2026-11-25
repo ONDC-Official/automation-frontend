@@ -11,7 +11,7 @@ import {
     ComboboxList,
 } from "@components/Shadcn/ComboBox/combobox";
 import { IComboBoxProps } from "@components/Shadcn/ComboBox/types";
-import { FieldTooltip } from "@components/Shadcn/TextField/field-tooltip";
+import { FieldTooltip } from "@components/Shadcn/FieldTooltip";
 import { cn } from "@/lib/utils";
 
 export const ComboBox = <T extends FieldValues>({

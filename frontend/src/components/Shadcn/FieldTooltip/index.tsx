@@ -17,7 +17,7 @@ interface IFieldTooltipProps {
 /**
  * A small "i" next to a form label that explains the field. Opens on hover, on
  * keyboard focus, and on tap (touch screens have no hover); closes on leaving,
- * Escape, or tapping elsewhere.
+ * Escape, or tapping elsewhere. Shared by TextField and ComboBox.
  */
 export const FieldTooltip = ({ label, content }: IFieldTooltipProps) => {
     const [open, setOpen] = useState(false);

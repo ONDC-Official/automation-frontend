@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@components/Shadcn/Input";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import { FieldTooltip } from "./field-tooltip";
+import { FieldTooltip } from "@components/Shadcn/FieldTooltip";
 import type { ITextFieldProps } from "./types";
 
 const buildValidationRules = <T extends FieldValues>(
