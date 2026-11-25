@@ -24,6 +24,13 @@ export interface ITextFieldProps<T extends FieldValues = FieldValues>
     error?: string;
     description?: string;
     labelInfo?: string;
+    /** Optional help text shown from an "i" icon next to the label. */
+    tooltip?: string;
+    /**
+     * Label inside the box (like placeholder text) that moves up small once the
+     * field has a value or focus; a tooltip then sits inside the box on the right.
+     */
+    floatingLabel?: boolean;
     strip?: boolean;
     disable?: boolean;
     onValueChange?: (value: string) => void;
