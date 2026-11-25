@@ -31,3 +31,32 @@ export const requirePortalToken =
 		}
 		next();
 	};
+
+/** Field NP Portal sends in the JSON body: its user's token (a JWT). */
+export const NP_TOKEN_FIELD = "np_token";
+
+/**
+ * The per-user token NP Portal sends in the JSON body, trimmed; "" when absent.
+ * Used as the rate-limit key (bucket = portal token + np_token, so each NP
+ * Portal user gets their own limit) and as the thing requireNpToken insists on.
+ * We do NOT verify it: the portal token proves the caller is NP Portal; np_token
+ * is only a per-user bucket label.
+ */
+export const npTokenFrom = (req: Request): string => {
+	const body = req.body as { np_token?: unknown } | undefined;
+	return typeof body?.np_token === "string" ? body.np_token.trim() : "";
+};
+
+/**
+ * Data routes must carry np_token in the body, so rate limiting is always per
+ * user (bucket = portal token + np_token); a call without it is rejected.
+ * /v1/health is mounted before this, so it stays exempt. Runs after the token
+ * check, so only authenticated callers are asked.
+ */
+export const requireNpToken = (req: Request, res: Response, next: NextFunction): void => {
+	if (!npTokenFrom(req)) {
+		sendProblem(res, 400, `Missing ${NP_TOKEN_FIELD} in request body`);
+		return;
+	}
+	next();
+};

@@ -57,7 +57,8 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}/report", () => {
 		);
 		return request(app).get(url);
 	};
-	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+	const call = (url: string) =>
+		unauthed(url).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 
 	it("returns the report page as HTML for the company's session", async () => {
 		const res = await call("/v1/organizations/11899/sessions/sess_1/report");

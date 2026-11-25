@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { NextFunction, Request, Response, Router } from "express";
+import express, { NextFunction, Request, Response, Router } from "express";
 import rateLimit from "express-rate-limit";
 import logger from "@ondc/automation-logger";
 import { loadPortalConfig, type PortalConfig } from "../config/portalConfig";
@@ -10,7 +10,7 @@ import {
 	listFlows,
 	listSessions,
 } from "../controllers/portalController";
-import { requirePortalToken } from "../middlewares/portalAuth";
+import { requirePortalToken, requireNpToken, npTokenFrom } from "../middlewares/portalAuth";
 import { portalRequestId } from "../middlewares/portalRequestId";
 import { sendProblem } from "../utils/portalProblem";
 
@@ -25,8 +25,17 @@ export function portalRoutes(config: PortalConfig): Router {
 	const router = Router();
 
 	router.use(portalRequestId);
+	// Parse the JSON body so np_token is available to the rate limiter below.
+	// app.ts also parses it; express.json() skips a body it already read, so this
+	// is safe and keeps portalRoutes self-contained for tests on a bare app.
+	router.use(express.json());
 
-	// Keyed by token, not IP: behind the ingress every caller shares one IP.
+	// Key = portal token (+ np_token when sent), not IP: behind the ingress every
+	// caller shares one IP. The token scopes the bucket; np_token (NP Portal's
+	// per-user JWT, sent in the body) splits it per user, so one user can't eat
+	// another's limit. Data routes require np_token (see requireNpToken below),
+	// so only /v1/health reaches the per-token fallback. We hash np_token so the
+	// key stays short and opaque.
 	router.use(
 		rateLimit({
 			windowMs: 60 * 1000,
@@ -35,9 +44,13 @@ export function portalRoutes(config: PortalConfig): Router {
 			legacyHeaders: false,
 			keyGenerator: (req) => {
 				const auth = req.get("Authorization");
-				return auth
+				const base = auth
 					? `token:${createHash("sha256").update(auth).digest("hex")}`
 					: `ip:${req.ip}`;
+				const npToken = npTokenFrom(req);
+				return npToken
+					? `${base}|np:${createHash("sha256").update(npToken).digest("hex")}`
+					: base;
 			},
 			handler: (_req, res) => sendProblem(res, 429, "Rate limit exceeded"),
 		})
@@ -47,6 +60,8 @@ export function portalRoutes(config: PortalConfig): Router {
 
 	// Everything below this line needs the token, including unknown paths.
 	router.use(requirePortalToken(config));
+	// ...and the per-user np_token in the body, so rate limiting is always per user.
+	router.use(requireNpToken);
 
 	router.get("/flows", listFlows(config));
 	router.get("/organizations/:org_id/sessions", listSessions(config));

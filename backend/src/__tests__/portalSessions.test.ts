@@ -65,7 +65,8 @@ describe("GET /v1/organizations/{org_id}/sessions", () => {
 		);
 		return request(app).get(url);
 	};
-	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+	const call = (url: string) =>
+		unauthed(url).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 
 	it("needs the token", async () => {
 		const res = await unauthed("/v1/organizations/org_1/sessions");
@@ -316,7 +317,7 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 		return request(app).get(url);
 	};
 	const call = (url: string, publicBaseUrl?: string) =>
-		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`);
+		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 
 	it("gives report_url, where NP Portal fetches the report, when the session has a report", async () => {
 		reply = storedDetail({ reportExists: true });
@@ -474,7 +475,8 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 
 			const res = await request(app)
 				.get("/v1/organizations/org_1/sessions")
-				.set("Authorization", `Bearer ${TOKEN}`);
+				.set("Authorization", `Bearer ${TOKEN}`)
+				.send({ np_token: "np" });
 
 			expect(res.status).toBe(200);
 			expect(res.body.data[0]).not.toHaveProperty("tags");
