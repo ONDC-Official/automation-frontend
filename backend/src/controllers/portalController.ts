@@ -115,7 +115,15 @@ export const getSession =
 				return;
 			}
 			const flowTags = await fetchSessionFlowTags(config, session);
-			res.json(toSessionDetail(session, config.publicBaseUrl, flowTags));
+			res.json(
+				toSessionDetail(
+					session,
+					config.publicBaseUrl,
+					flowTags,
+					config.apiToken,
+					config.reportLinkTtlSeconds
+				)
+			);
 		} catch (e) {
 			next(e);
 		}
@@ -173,14 +181,17 @@ export const getSessionReport =
 				sendProblem(res, 404, "This session has no report yet");
 				return;
 			}
-			res
-				.set({
-					"Cache-Control": "no-store",
-					"Content-Security-Policy": REPORT_CSP,
-					"X-Content-Type-Options": "nosniff",
-				})
-				.type("text/html; charset=utf-8")
-				.send(html);
+			const headers: Record<string, string> = {
+				"Cache-Control": "no-store",
+				"Content-Security-Policy": REPORT_CSP,
+				"X-Content-Type-Options": "nosniff",
+			};
+			// ?download=1 serves the report as a file download instead of rendering it.
+			if (req.query.download === "1" || req.query.download === "true") {
+				headers["Content-Disposition"] =
+					`attachment; filename="report-${encodeURIComponent(sessionId)}.html"`;
+			}
+			res.set(headers).type("text/html; charset=utf-8").send(html);
 		} catch (e) {
 			next(e);
 		}

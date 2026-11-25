@@ -1,6 +1,7 @@
 import { queryReader } from "./portalFlows";
 import type { ProblemFieldError } from "./portalProblem";
 import { toRfc3339 } from "./portalProblem";
+import { signReportToken } from "./reportToken";
 
 /** The Portal API's session endpoints: list filters, SessionListItem and SessionDetail. */
 
@@ -157,11 +158,20 @@ export const reportUrl = (
 	orgId: string,
 	sessionId: string,
 	reportExists: boolean,
-	publicBaseUrl: string | null | undefined
-): string | null =>
-	reportExists && publicBaseUrl
-		? `${publicBaseUrl}/v1/organizations/${encodeURIComponent(orgId)}/sessions/${encodeURIComponent(sessionId)}/report`
-		: null;
+	publicBaseUrl: string | null | undefined,
+	reportSecret?: string | null,
+	reportTtlSeconds?: number
+): string | null => {
+	if (!reportExists || !publicBaseUrl) return null;
+	const base = `${publicBaseUrl}/v1/organizations/${encodeURIComponent(orgId)}/sessions/${encodeURIComponent(sessionId)}/report`;
+	// With a secret + TTL, append a signed ?rt= so the link opens in a browser
+	// (which can't send the Bearer header) without exposing the portal token.
+	if (reportSecret && reportTtlSeconds && reportTtlSeconds > 0) {
+		const rt = signReportToken(orgId, sessionId, reportSecret, reportTtlSeconds);
+		return `${base}?rt=${encodeURIComponent(rt)}`;
+	}
+	return base;
+};
 
 /**
  * flowTags: each flow's tags (MANDATORY, OPTIONAL, REPORTABLE...) from the
@@ -170,10 +180,19 @@ export const reportUrl = (
 export const toSessionDetail = (
 	session: StoredSessionDetail,
 	publicBaseUrl?: string | null,
-	flowTags?: ReadonlyMap<string, string[]>
+	flowTags?: ReadonlyMap<string, string[]>,
+	reportSecret?: string | null,
+	reportTtlSeconds?: number
 ) => ({
 	...toSessionListItem(session),
-	report_url: reportUrl(session.orgId, session.sessionId, session.reportExists, publicBaseUrl),
+	report_url: reportUrl(
+		session.orgId,
+		session.sessionId,
+		session.reportExists,
+		publicBaseUrl,
+		reportSecret,
+		reportTtlSeconds
+	),
 	org_id: session.orgId,
 	expires_at: session.expiresAt && toRfc3339(new Date(session.expiresAt)),
 	flow_summary: session.flowSummary.map((flow) => ({

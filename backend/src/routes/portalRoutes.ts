@@ -10,7 +10,12 @@ import {
 	listFlows,
 	listSessions,
 } from "../controllers/portalController";
-import { requirePortalToken, requireNpToken, npTokenFrom } from "../middlewares/portalAuth";
+import {
+	requirePortalToken,
+	requireNpToken,
+	requireReportAccess,
+	npTokenFrom,
+} from "../middlewares/portalAuth";
 import { portalRequestId } from "../middlewares/portalRequestId";
 import { sendProblem } from "../utils/portalProblem";
 
@@ -58,6 +63,14 @@ export function portalRoutes(config: PortalConfig): Router {
 
 	router.get("/health", getHealth(config));
 
+	// Report: its own auth (a signed ?rt= OR a Bearer token), mounted before the
+	// token/np_token guards below so report_url can open in a browser.
+	router.get(
+		"/organizations/:org_id/sessions/:session_id/report",
+		requireReportAccess(config),
+		getSessionReport(config)
+	);
+
 	// Everything below this line needs the token, including unknown paths.
 	router.use(requirePortalToken(config));
 	// ...and the per-user np_token in the body, so rate limiting is always per user.
@@ -66,7 +79,6 @@ export function portalRoutes(config: PortalConfig): Router {
 	router.get("/flows", listFlows(config));
 	router.get("/organizations/:org_id/sessions", listSessions(config));
 	router.get("/organizations/:org_id/sessions/:session_id", getSession(config));
-	router.get("/organizations/:org_id/sessions/:session_id/report", getSessionReport(config));
 
 	router.use((req: Request, res: Response) =>
 		sendProblem(res, 404, `No such endpoint: ${req.method} ${req.baseUrl}${req.path}`)

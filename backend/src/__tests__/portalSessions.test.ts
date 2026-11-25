@@ -11,6 +11,7 @@ import {
 	type StoredSession,
 	type StoredSessionDetail,
 } from "../utils/portalSessions";
+import { verifyReportToken } from "../utils/reportToken";
 
 /** GET /v1/organizations/{org_id}/sessions against a stand-in for automation-db. */
 
@@ -543,6 +544,23 @@ describe("toSessionDetail", () => {
 		const detail = toSessionDetail(storedDetail(), null, new Map([["ORDER", ["MANDATORY"]]]));
 
 		expect(Object.keys(detail.flow_summary[0]).slice(0, 2)).toEqual(["flow_id", "tags"]);
+	});
+
+	it("signs report_url with a verifiable ?rt= when given a secret and TTL", () => {
+		const secret = "report-secret-0123456789abcdef";
+		const detail = toSessionDetail(
+			storedDetail({ reportExists: true }),
+			"https://w.example",
+			undefined,
+			secret,
+			3600
+		);
+
+		expect(detail.report_url).toMatch(
+			/^https:\/\/w\.example\/v1\/organizations\/org_1\/sessions\/sess_1\/report\?rt=/
+		);
+		const rt = decodeURIComponent(new URL(detail.report_url as string).searchParams.get("rt") ?? "");
+		expect(verifyReportToken(rt, "org_1", "sess_1", secret)).toBe(true);
 	});
 
 	it("keeps null for an expired session's expiry and an older session's settings", () => {

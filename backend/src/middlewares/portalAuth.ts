@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import logger from "@ondc/automation-logger";
 import type { PortalConfig } from "../config/portalConfig";
 import { sendProblem } from "../utils/portalProblem";
+import { verifyReportToken } from "../utils/reportToken";
 
 const digest = (value: string) => createHash("sha256").update(value).digest();
 
@@ -60,3 +61,31 @@ export const requireNpToken = (req: Request, res: Response, next: NextFunction):
 	}
 	next();
 };
+
+/**
+ * The report route can be reached two ways: a browser following report_url's
+ * signed `?rt=` (which we verify), or a normal `Authorization: Bearer` call from
+ * NP Portal. Either is enough; otherwise 401. This lets report_url open in a
+ * browser — which can't send a header — without weakening the rest of /v1.
+ */
+export const requireReportAccess =
+	(config: PortalConfig) =>
+	(req: Request, res: Response, next: NextFunction): void => {
+		if (!config.apiToken) {
+			logger.error(`Portal API report refused: ${config.tokenProblem}`);
+			sendProblem(res, 500, "The Portal API is not configured on this server");
+			return;
+		}
+		const rt = typeof req.query.rt === "string" ? req.query.rt : "";
+		if (rt && verifyReportToken(rt, req.params.org_id ?? "", req.params.session_id ?? "", config.apiToken)) {
+			next();
+			return;
+		}
+		const match = /^Bearer\s+(\S+)$/i.exec(req.get("Authorization") ?? "");
+		if (match && sameToken(match[1], config.apiToken)) {
+			next();
+			return;
+		}
+		res.setHeader("WWW-Authenticate", "Bearer");
+		sendProblem(res, 401, "Missing or invalid token");
+	};
