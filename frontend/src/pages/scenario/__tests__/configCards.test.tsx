@@ -1,5 +1,9 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import type { ReactElement } from "react";
+import scenarioDraftSlice from "@store/slices/scenarioDraftSlice";
 import type { IDomain } from "@pages/schema-validation/types";
 import { ConfigList } from "@pages/scenario/ConfigList";
 import { ConfigDetailPanel } from "@pages/scenario/ConfigDetailPanel";
@@ -29,7 +33,13 @@ const USER = {
     organisations: [{ organisationId: "11899", organisationName: "UAT_1 Org" }],
 };
 const DOMAINS = [
-    { key: "ONDC:RET10", version: [{ key: "1.2.5", usecase: ["GROCERY"] }] },
+    {
+        key: "ONDC:RET10",
+        version: [
+            { key: "1.2.5", usecase: ["GROCERY", "PHARMACY"] },
+            { key: "1.2.0", usecase: ["GROCERY", "PHARMACY"] },
+        ],
+    },
 ] as unknown as IDomain[];
 
 const saved = (over: Partial<IScenarioFormData> = {}): IScenarioFormData => ({
@@ -42,6 +52,13 @@ const saved = (over: Partial<IScenarioFormData> = {}): IScenarioFormData => ({
     orgId: "11899",
     ...over,
 });
+
+// ConfigDetailPanel persists its fill-in draft via Redux; a fresh minimal store
+// per render keeps each test isolated (the full app store can't load under Jest).
+const renderWithStore = (ui: ReactElement) => {
+    const store = configureStore({ reducer: { scenarioDraft: scenarioDraftSlice.reducer } });
+    return render(<Provider store={store}>{ui}</Provider>);
+};
 
 beforeEach(() => {
     mockUser = USER;
@@ -239,7 +256,7 @@ describe("config details (right side)", () => {
                       {},
                       DOMAINS
                   );
-        render(
+        renderWithStore(
             <ConfigDetailPanel
                 item={item}
                 domains={DOMAINS}
@@ -264,11 +281,11 @@ describe("config details (right side)", () => {
         expect(screen.getByRole("button", { name: "Launch" })).toBeEnabled();
     });
 
-    it("has Launch and View report at the top, and no Edit or last-run card", async () => {
+    it("has View report at the top and Launch at the bottom, and no Edit or last-run card", async () => {
         renderPanel();
 
         const buttons = screen.getAllByRole("button").map((b) => b.textContent);
-        expect(buttons).toEqual(["Launch", "View report"]);
+        expect(buttons).toEqual(["View report", "Launch"]);
         expect(screen.queryByText(/Edit|Last run/)).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: "View report" }));
         expect(mockNavigate).toHaveBeenCalledWith("/profile/history");
@@ -306,6 +323,37 @@ describe("config details (right side)", () => {
         await waitFor(() =>
             expect(onLaunch).toHaveBeenCalledWith(expect.objectContaining({ usecaseId: "GROCERY" }))
         );
+    });
+
+    it("auto-fills and locks a field that has only one option, with no dropdown arrow", async () => {
+        const single = [
+            { key: "ONDC:RET10", version: [{ key: "1.2.5", usecase: ["GROCERY"] }] },
+        ] as unknown as IDomain[];
+        const [item] = buildConfigCards(
+            [],
+            { c: saved({ version: "9.9.9", usecaseId: "PIZZA" }) },
+            single
+        );
+        renderWithStore(
+            <ConfigDetailPanel
+                item={item}
+                domains={single}
+                isSubmitting={false}
+                onLaunch={jest.fn()}
+            />
+        );
+
+        // The one version and one use case fill themselves in — nothing left to pick.
+        expect(await screen.findByText("Ready to launch")).toBeInTheDocument();
+        const version = screen.getByRole("combobox", { name: /^Version/ });
+        expect(version).toBeDisabled();
+        expect(version).toHaveValue("1.2.5");
+        // A locked single-value field shows no dropdown arrow.
+        expect(
+            version
+                .closest("[data-slot=input-group]")
+                ?.querySelector("[data-slot=combobox-trigger-icon]")
+        ).toBeNull();
     });
 
     it("uses the user's only organisation when the config's isn't theirs, without asking", async () => {
@@ -578,7 +626,7 @@ describe("NP Portal configs from SSO", () => {
                 {},
                 DOMAINS
             );
-            render(
+            renderWithStore(
                 <ConfigDetailPanel
                     item={item}
                     domains={DOMAINS}

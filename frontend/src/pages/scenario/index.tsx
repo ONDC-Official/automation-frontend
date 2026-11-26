@@ -13,6 +13,7 @@ import { useWorkbenchFlows } from "@hooks/useWorkbenchFlow";
 import { IDomain } from "@pages/schema-validation/types";
 import { Flow } from "@/types/flow-types";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { setScenarioSelectedConfig } from "@store/slices/scenarioDraftSlice";
 import {
     pruneExpiredSessions,
     setSessions,
@@ -83,7 +84,10 @@ const Scenario = () => {
     // Logged-in view: the config shown on the right (the top one until the user picks
     // another), whether small screens show its details instead of the list, and
     // whether the New session page shows.
-    const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
+    const persistedSelectedConfigId = useAppSelector((s) => s.scenarioDraft.selectedConfigId);
+    const [selectedConfigId, setSelectedConfigId] = useState<string | null>(
+        persistedSelectedConfigId
+    );
     const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
     // The New session form (and the guest form) has its own address, /scenario?view=new,
     // so browser Back, Cancel and the "Scenario Testing" breadcrumb all return to the list
@@ -303,6 +307,7 @@ const Scenario = () => {
     const selectConfig = (id: string) => {
         setSelectedConfigId(id);
         setIsMobileDetailOpen(true);
+        dispatch(setScenarioSelectedConfig(id));
     };
 
     // The Profile page's "Launch Test" links here with ?config=<name>: open that config's details.
@@ -458,7 +463,7 @@ const Scenario = () => {
                         <section
                             aria-label="Config details"
                             className={cn(
-                                "overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:block",
+                                "overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:flex lg:flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]",
                                 isMobileDetailOpen ? "block" : "hidden"
                             )}
                         >

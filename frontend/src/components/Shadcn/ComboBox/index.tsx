@@ -63,6 +63,7 @@ export const ComboBox = <T extends FieldValues>({
                                     className="h-13 w-full rounded-lg bg-n-0 dark:bg-surface-muted [&_input]:pt-5 [&_input]:pb-1 [&_input]:text-base"
                                     placeholder=""
                                     disabled={disabled}
+                                    showTrigger={!(disabled && !!field.value)}
                                     aria-invalid={!!fieldState.error}
                                 >
                                     {tooltip ? (
@@ -144,6 +145,7 @@ export const ComboBox = <T extends FieldValues>({
                                 className="w-full"
                                 placeholder={placeholder ?? "Select a value"}
                                 disabled={disabled}
+                                showTrigger={!(disabled && !!field.value)}
                                 aria-invalid={!!fieldState.error}
                             />
                             <ComboboxContent>

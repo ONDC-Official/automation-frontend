@@ -103,6 +103,7 @@ export const ManualSessionForm = ({
                         onVersionChange={onVersionChange}
                         tooltips={FIELD_TOOLTIPS}
                         floatingLabel
+                        lockSingleOption
                     />
                     <ComboBox
                         control={control}

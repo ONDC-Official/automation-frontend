@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, FileText, Globe, Play } from "lucide-react";
@@ -23,6 +23,8 @@ import {
     IDomainVersionWithUsecase,
     IScenarioFormData,
 } from "@pages/scenario/types";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { setConfigFillDraft, type ScenarioFormDraft } from "@store/slices/scenarioDraftSlice";
 
 const ROLE_OPTIONS = [
     { label: "Buyer App (BAP)", value: "BAP" },
@@ -71,24 +73,41 @@ export const ConfigDetailPanel = ({
     const hasInputs = item.missingFields.length > 0 || needsOrgPick;
     const isMissing = (field: IConfigField) => item.missingFields.includes(field);
 
-    // Missing fields start empty, so an unsupported value is never pre-picked.
+    const dispatch = useAppDispatch();
+    const persistedFill = useAppSelector((s) => s.scenarioDraft.fillByConfig[item.id]);
+
+    // Missing fields start empty, so an unsupported value is never pre-picked —
+    // unless there's a saved draft for this config (restored on refresh).
     const initialValues = useMemo<IScenarioFormData>(() => {
+        const draft: ScenarioFormDraft = persistedFill ?? {};
+        const fromDraft = (field: keyof IScenarioFormData) =>
+            typeof draft[field] === "string" ? draft[field] : "";
         const values: IScenarioFormData = {
             ...item.data,
             env: item.data.env || "PRE-PRODUCTION",
-            orgId: lockedOrgId,
+            orgId: isOrgLocked ? lockedOrgId : fromDraft("orgId"),
         };
         item.missingFields.forEach((field) => {
-            values[field] = "";
+            values[field] = fromDraft(field);
         });
         return values;
-    }, [item, lockedOrgId]);
+    }, [item, lockedOrgId, isOrgLocked, persistedFill]);
 
     const { control, handleSubmit, watch, setValue } = useForm<IScenarioFormData>({
         defaultValues: initialValues,
         mode: "onBlur",
     });
     const values = watch();
+
+    // Save every change so a refresh keeps what was typed here (persisted, no backend).
+    useEffect(() => {
+        const sub = watch((v) =>
+            dispatch(
+                setConfigFillDraft({ configId: item.id, values: v as unknown as ScenarioFormDraft })
+            )
+        );
+        return () => sub.unsubscribe();
+    }, [watch, item.id, dispatch]);
 
     const versionOptions = useMemo(() => {
         const domain = domains.find((d) => d.key === values.domain);
@@ -102,6 +121,27 @@ export const ConfigDetailPanel = ({
         const versions = (domain?.version as IDomainVersionWithUsecase[] | undefined) ?? [];
         return versions.find((v) => v.key === values.version)?.usecase ?? [];
     }, [domains, values.domain, values.version]);
+
+    // A required dropdown with exactly one choice is filled in and locked
+    // (shown prefilled, can't be opened or changed).
+    useEffect(() => {
+        if (
+            item.missingFields.includes("version") &&
+            versionOptions.length === 1 &&
+            !values.version
+        ) {
+            setValue("version", versionOptions[0], { shouldValidate: true });
+        }
+    }, [item, versionOptions, values.version, setValue]);
+    useEffect(() => {
+        if (
+            item.missingFields.includes("usecaseId") &&
+            usecaseOptions.length === 1 &&
+            !values.usecaseId
+        ) {
+            setValue("usecaseId", usecaseOptions[0], { shouldValidate: true });
+        }
+    }, [item, usecaseOptions, values.usecaseId, setValue]);
 
     // Ready once every missing detail (and the organisation, if one must be picked) is filled.
     const stillMissing = [
@@ -128,7 +168,7 @@ export const ConfigDetailPanel = ({
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col lg:h-full">
             <div className="flex flex-col gap-4 border-b border-n-30 px-5 py-5 sm:px-6 lg:flex-row lg:items-start lg:justify-between dark:border-border-default">
                 <div className="min-w-0 space-y-2">
                     {onBack ? (
@@ -161,17 +201,8 @@ export const ConfigDetailPanel = ({
                         ) : null}
                     </div>
                 </div>
-                <div className="flex shrink-0 flex-wrap gap-3">
-                    <Button
-                        type="submit"
-                        size="lg"
-                        className="h-11 gap-2"
-                        disabled={isSubmitting || !isReady}
-                    >
-                        <Play className="size-4" aria-hidden="true" />
-                        {isSubmitting ? "Launching..." : "Launch"}
-                    </Button>
-                    {user ? (
+                {user ? (
+                    <div className="flex shrink-0 flex-wrap gap-3">
                         <Button
                             type="button"
                             variant="outline"
@@ -182,11 +213,11 @@ export const ConfigDetailPanel = ({
                             <FileText className="size-4" aria-hidden="true" />
                             View report
                         </Button>
-                    ) : null}
-                </div>
+                    </div>
+                ) : null}
             </div>
 
-            <div className="space-y-5 px-5 py-5 sm:px-6">
+            <div className="space-y-5 px-5 py-5 sm:px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
                 {isReady ? (
                     <Alert
                         variant="success"
@@ -301,7 +332,7 @@ export const ConfigDetailPanel = ({
                                     options={versionOptions}
                                     placeholder="Select version"
                                     required
-                                    disabled={!values.domain}
+                                    disabled={!values.domain || versionOptions.length === 1}
                                     onValueChange={() => setValue("usecaseId", "")}
                                 />
                             ) : null}
@@ -315,12 +346,24 @@ export const ConfigDetailPanel = ({
                                     options={usecaseOptions}
                                     placeholder="Select use case"
                                     required
-                                    disabled={!values.version}
+                                    disabled={!values.version || usecaseOptions.length === 1}
                                 />
                             ) : null}
                         </div>
                     </div>
                 ) : null}
+            </div>
+
+            <div className="flex justify-end border-t border-n-30 px-5 py-4 sm:px-6 dark:border-border-default">
+                <Button
+                    type="submit"
+                    size="lg"
+                    className="h-11 gap-2"
+                    disabled={isSubmitting || !isReady}
+                >
+                    <Play className="size-4" aria-hidden="true" />
+                    {isSubmitting ? "Launching..." : "Launch"}
+                </Button>
             </div>
         </form>
     );

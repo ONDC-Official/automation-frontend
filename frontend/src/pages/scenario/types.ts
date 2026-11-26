@@ -143,6 +143,8 @@ export type IDomainVersionUsecaseFieldsProps<
     tooltips?: { domain?: string; version?: string; usecase?: string };
     /** Labels inside the boxes (Scenario Testing style), with short noun labels. */
     floatingLabel?: boolean;
+    /** When a field has exactly one option, show it prefilled and locked (no dropdown). */
+    lockSingleOption?: boolean;
 };
 
 export type ISessionFormActionsProps = {
