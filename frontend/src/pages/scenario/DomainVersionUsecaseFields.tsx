@@ -19,6 +19,7 @@ export const DomainVersionUsecaseFields = <
     domainOptions,
     tooltips,
     floatingLabel = false,
+    lockSingleOption = false,
 }: IDomainVersionUsecaseFieldsProps<T>) => (
     <>
         {domainOptions && (
@@ -43,7 +44,7 @@ export const DomainVersionUsecaseFields = <
             placeholder="Select version"
             required
             tooltip={tooltips?.version}
-            disabled={!watchedDomain}
+            disabled={!watchedDomain || (lockSingleOption && versionOptions.length === 1)}
             onValueChange={onVersionChange}
         />
         <ComboBox
@@ -55,7 +56,7 @@ export const DomainVersionUsecaseFields = <
             placeholder="Select usecase"
             required
             tooltip={tooltips?.usecase}
-            disabled={!watchedVersion}
+            disabled={!watchedVersion || (lockSingleOption && usecaseOptions.length === 1)}
             onValueChange={(value) => trackSchemaValidationForm("Added usecase", value)}
         />
     </>

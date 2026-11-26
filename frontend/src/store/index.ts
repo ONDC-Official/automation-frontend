@@ -31,6 +31,7 @@ import playgroundConfigsSlice from "@store/slices/playgroundConfigsSlice";
 import playgroundUiSlice from "@store/slices/playgroundUiSlice";
 import profileShellSlice from "@store/slices/profileShellSlice";
 import businessDashboardSlice from "@store/slices/businessDashboardSlice";
+import scenarioDraftSlice from "@store/slices/scenarioDraftSlice";
 import {
     sessionPersistConfig,
     frameworkHealthPersistConfig,
@@ -54,6 +55,7 @@ const rootReducer = combineReducers({
     sessionHistory: persistReducer(localPersist("sessionHistory"), sessionHistorySlice.reducer),
     supportSession: persistReducer(localPersist("supportSession"), supportSessionSlice.reducer),
     uiFlags: persistReducer(localPersist("uiFlags"), uiFlagsSlice.reducer),
+    scenarioDraft: persistReducer(localPersist("scenarioDraft"), scenarioDraftSlice.reducer),
     schemaValidation: persistReducer(
         localPersist("schemaValidation"),
         schemaValidationSlice.reducer
