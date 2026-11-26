@@ -8,7 +8,7 @@ import {
 	fetchSessions,
 	fetchSessionScope,
 } from "../services/portalDbService";
-import { parseFlowsQuery, readQuery, sortFlows, toFlowMeta } from "../utils/portalFlows";
+import { flowTitle, parseFlowsQuery, readQuery, sortFlows, toFlowMeta } from "../utils/portalFlows";
 import { sendProblem, toRfc3339 } from "../utils/portalProblem";
 import {
 	isValidSessionPath,
@@ -114,8 +114,17 @@ export const getSession =
 				sendProblem(res, 404, "Session not found");
 				return;
 			}
-			const flowTags = await fetchSessionFlowTags(config, session);
-			res.json(toSessionDetail(session, config.publicBaseUrl, flowTags));
+			const { tags, titles } = await fetchSessionFlowMeta(config, session);
+			res.json(
+				toSessionDetail(
+					session,
+					config.publicBaseUrl,
+					tags,
+					config.apiToken,
+					config.reportLinkTtlSeconds,
+					titles
+				)
+			);
 		} catch (e) {
 			next(e);
 		}
@@ -126,13 +135,13 @@ export const getSession =
  * optional flows without calling /v1/flows. Read from the catalog of the
  * session's domain, version and use case, where a flow ID is unique.
  */
-const fetchSessionFlowTags = async (
+const fetchSessionFlowMeta = async (
 	config: PortalConfig,
 	session: StoredSessionDetail
-): Promise<Map<string, string[]>> => {
+): Promise<{ tags: Map<string, string[]>; titles: Map<string, string> }> => {
 	const { domain, version, usecaseId } = session;
 	if (!session.flowSummary.length || !domain || !version || !usecaseId) {
-		return new Map();
+		return { tags: new Map(), titles: new Map() };
 	}
 	const flows = await fetchFlows(config, {
 		domains: [domain],
@@ -142,7 +151,10 @@ const fetchSessionFlowTags = async (
 		sort: "flow_id",
 		order: "asc",
 	});
-	return new Map(flows.map((flow) => [flow.flowId, flow.tags ?? []]));
+	return {
+		tags: new Map(flows.map((flow) => [flow.flowId, flow.tags ?? []])),
+		titles: new Map(flows.map((flow) => [flow.flowId, flowTitle(flow)])),
+	};
 };
 
 /**
@@ -173,14 +185,17 @@ export const getSessionReport =
 				sendProblem(res, 404, "This session has no report yet");
 				return;
 			}
-			res
-				.set({
-					"Cache-Control": "no-store",
-					"Content-Security-Policy": REPORT_CSP,
-					"X-Content-Type-Options": "nosniff",
-				})
-				.type("text/html; charset=utf-8")
-				.send(html);
+			const headers: Record<string, string> = {
+				"Cache-Control": "no-store",
+				"Content-Security-Policy": REPORT_CSP,
+				"X-Content-Type-Options": "nosniff",
+			};
+			// ?download=1 serves the report as a file download instead of rendering it.
+			if (req.query.download === "1" || req.query.download === "true") {
+				headers["Content-Disposition"] =
+					`attachment; filename="report-${encodeURIComponent(sessionId)}.html"`;
+			}
+			res.set(headers).type("text/html; charset=utf-8").send(html);
 		} catch (e) {
 			next(e);
 		}

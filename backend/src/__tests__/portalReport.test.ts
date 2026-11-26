@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import express from "express";
 import { portalRoutes } from "../routes/portalRoutes";
+import { signReportToken } from "../utils/reportToken";
 
 /**
  * GET /v1/organizations/{org_id}/sessions/{session_id}/report against a stand-in
@@ -58,6 +59,44 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}/report", () => {
 		return request(app).get(url);
 	};
 	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+
+	describe("signed report link (?rt=), opens in a browser without a token", () => {
+		it("opens with a valid signed rt and NO Authorization header", async () => {
+			const rt = signReportToken("11899", "sess_1", TOKEN, 3600);
+			const res = await unauthed(
+				`/v1/organizations/11899/sessions/sess_1/report?rt=${encodeURIComponent(rt)}`
+			);
+
+			expect(res.status).toBe(200);
+			expect(res.type).toBe("text/html");
+			expect(res.text).toBe(REPORT_HTML);
+		});
+
+		it("rejects an rt signed for a different session", async () => {
+			const rt = signReportToken("11899", "other_sess", TOKEN, 3600);
+			const res = await unauthed(
+				`/v1/organizations/11899/sessions/sess_1/report?rt=${encodeURIComponent(rt)}`
+			);
+
+			expect(res.status).toBe(401);
+		});
+
+		it("rejects an expired rt", async () => {
+			const rt = signReportToken("11899", "sess_1", TOKEN, -1);
+			const res = await unauthed(
+				`/v1/organizations/11899/sessions/sess_1/report?rt=${encodeURIComponent(rt)}`
+			);
+
+			expect(res.status).toBe(401);
+		});
+
+		it("serves a file download with ?download=1", async () => {
+			const res = await call("/v1/organizations/11899/sessions/sess_1/report?download=1");
+
+			expect(res.status).toBe(200);
+			expect(res.get("Content-Disposition")).toMatch(/attachment/);
+		});
+	});
 
 	it("returns the report page as HTML for the company's session", async () => {
 		const res = await call("/v1/organizations/11899/sessions/sess_1/report");
