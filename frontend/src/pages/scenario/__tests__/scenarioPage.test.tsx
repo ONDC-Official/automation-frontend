@@ -11,6 +11,8 @@ import type { INewSessionFormValues } from "@pages/scenario/types";
 // constants.ts reads import.meta, which Jest cannot parse.
 jest.mock("@pages/scenario/constants", () => ({
     getScenarioDomainLabel: (key: string) => key,
+    sortedDomainOptions: (domains: { key: string }[]) =>
+        domains.map((d) => ({ value: d.key, label: d.key })),
     SESSIONS_PER_PAGE: 4,
 }));
 jest.mock("@hooks/useLoginLabel", () => ({

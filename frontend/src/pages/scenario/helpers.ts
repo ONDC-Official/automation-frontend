@@ -143,6 +143,9 @@ const configCardId = (source: IConfigSource, data: IScenarioFormData) =>
 /**
  * One card per config: NP Portal configs first, then saved profile configs.
  * Only exact duplicates (same organisation and all 5 fields) are dropped.
+ * An NP Portal config whose domain Workbench has no flows for at all is left
+ * out entirely (there is nothing it could launch); a saved config is always
+ * kept, since the user picked its domain from Workbench's own list already.
  */
 export function buildConfigCards(
     npPortalConfigs: INpPortalConfig[],
@@ -152,13 +155,15 @@ export function buildConfigCards(
     const cards = new Map<string, IConfigCardItem>();
     npPortalConfigs.forEach((config) => {
         const data = npPortalConfigToFormData(config);
+        const missingFields = findMissingFields(data, domains);
+        if (missingFields.includes("domain")) return;
         const id = configCardId("np_portal", data);
         if (!cards.has(id)) {
             cards.set(id, {
                 id,
                 source: "np_portal",
                 data,
-                missingFields: findMissingFields(data, domains),
+                missingFields,
             });
         }
     });

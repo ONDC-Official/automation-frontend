@@ -7,7 +7,7 @@ import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { SessionFormActions } from "@pages/scenario/SessionFormActions";
 import { CurrentOrganisation } from "@pages/scenario/OrganisationField";
 import { IManualSessionFormProps } from "@pages/scenario/types";
-import { getScenarioDomainLabel } from "@pages/scenario/constants";
+import { sortedDomainOptions } from "@pages/scenario/constants";
 import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
 
 export const ManualSessionForm = ({
@@ -95,10 +95,7 @@ export const ManualSessionForm = ({
                         usecaseOptions={usecaseOptions}
                         watchedDomain={watchedDomain}
                         watchedVersion={watchedVersion}
-                        domainOptions={domains.map((d) => ({
-                            value: d.key,
-                            label: getScenarioDomainLabel(d.key),
-                        }))}
+                        domainOptions={sortedDomainOptions(domains)}
                         onDomainChange={onDomainChange}
                         onVersionChange={onVersionChange}
                         tooltips={FIELD_TOOLTIPS}
