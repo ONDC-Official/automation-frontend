@@ -126,18 +126,23 @@ export function groupBuildsByFamily(builds: BuildEntry[]): DomainFamilyGroup[] {
         });
 }
 
+const BETA_LIVE_DOMAIN_NAMES = new Set(["Credit", "Insurance"]);
+
 /** Beta release scope for "Explore by Domain": whenever the Developer Guide
  * is enabled (`isDevGuideEnabled`), hides every family except Financial
- * Services, and within it every domain except Credit — applied identically
- * wherever `groupBuildsByFamily`'s output feeds the UI (left sidebar nav
- * tree, the standalone domains page), so both stay in sync from this one
- * place. The development environment (`isDev`) shows every domain. */
+ * Services, and within it every domain not in `BETA_LIVE_DOMAIN_NAMES` —
+ * applied identically wherever `groupBuildsByFamily`'s output feeds the UI
+ * (left sidebar nav tree, the standalone domains page), so both stay in sync
+ * from this one place. The development environment (`isDev`) shows every
+ * domain. */
 export function applyDevGuideBetaDomainScope(families: DomainFamilyGroup[]): DomainFamilyGroup[] {
     if (!isDevGuideEnabled || isDev) return families;
     return families
         .filter((family) => family.familyKey === "FIS")
         .map((family) => ({
             ...family,
-            domains: family.domains.filter((dom) => getDomainFriendlyName(dom.key) === "Credit"),
+            domains: family.domains.filter((dom) =>
+                BETA_LIVE_DOMAIN_NAMES.has(getDomainFriendlyName(dom.key))
+            ),
         }));
 }
