@@ -1,3 +1,4 @@
+import type { IDomain } from "@pages/schema-validation/types";
 import { INewSessionFormValues } from "@pages/scenario/types";
 
 export const DEFAULT_VALUES: INewSessionFormValues = {
@@ -13,9 +14,9 @@ export const DEFAULT_VALUES: INewSessionFormValues = {
 
 /** Friendly labels for the Scenario Testing "Select Domain" field, keyed by the raw domain key the API returns. */
 export const SCENARIO_DOMAIN_LABELS: Record<string, string> = {
-    "nic2004:60232": "Logistics 1.2.0 (nic2004:60232)",
-    "ONDC:LOG10": "Logistics 1.2.5 P2P (LOG10)",
-    "ONDC:LOG11": "Logistics 1.2.5 P2H2P (LOG11)",
+    "nic2004:60232": "Logistics (nic2004:60232)",
+    "ONDC:LOG10": "Logistics P2P (LOG10)",
+    "ONDC:LOG11": "Logistics P2H2P (LOG11)",
     "ONDC:TRV10": "Ride hailing (TRV10)",
     "ONDC:TRV11": "Unreserved travel ticketing (TRV11)",
     "ONDC:TRV12": "Reserved travel ticketing (TRV12)",
@@ -44,6 +45,24 @@ export const SCENARIO_DOMAIN_LABELS: Record<string, string> = {
 /** Label for the Scenario Testing domain select; falls back to the raw key for any domain not in the map. */
 export const getScenarioDomainLabel = (domainKey: string): string =>
     SCENARIO_DOMAIN_LABELS[domainKey] ?? domainKey;
+
+/**
+ * Domain select options, sorted for the user: domains with a friendly label
+ * first (alphabetically by that label), then domains with no friendly label
+ * (showing their raw code, e.g. AGR10, NTS10) at the end, alphabetically by
+ * that code. Display order only — each option's value is still the domain's
+ * own key, unchanged.
+ */
+export const sortedDomainOptions = (domains: IDomain[]): { value: string; label: string }[] => {
+    const labeled: { value: string; label: string }[] = [];
+    const unlabeled: { value: string; label: string }[] = [];
+    domains.forEach((d) => {
+        const entry = { value: d.key, label: getScenarioDomainLabel(d.key) };
+        (d.key in SCENARIO_DOMAIN_LABELS ? labeled : unlabeled).push(entry);
+    });
+    const byLabel = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label);
+    return [...labeled.sort(byLabel), ...unlabeled.sort(byLabel)];
+};
 
 export const LS_KEY = "flowTestingSessions";
 export const SESSIONS_PER_PAGE = 4;

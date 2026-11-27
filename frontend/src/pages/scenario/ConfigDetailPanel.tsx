@@ -10,7 +10,7 @@ import { ROUTES } from "@constants/routes";
 import { useAuth } from "@hooks/useAuth";
 import { OrganisationField, useOrganisationOptions } from "@pages/scenario/OrganisationField";
 import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
-import { getScenarioDomainLabel } from "@pages/scenario/constants";
+import { getScenarioDomainLabel, sortedDomainOptions } from "@pages/scenario/constants";
 import {
     IConfigDetailPanelProps,
     IConfigField,
@@ -316,10 +316,7 @@ export const ConfigDetailPanel = ({
                             label="Domain"
                             floatingLabel
                             tooltip={FIELD_TOOLTIPS.domain}
-                            options={domains.map((d) => ({
-                                value: d.key,
-                                label: getScenarioDomainLabel(d.key),
-                            }))}
+                            options={sortedDomainOptions(domains)}
                             placeholder="Select domain"
                             required
                             onValueChange={() => {

@@ -21,6 +21,11 @@ import type { IScenarioFormData } from "@pages/scenario/types";
 // constants.ts reads import.meta, which Jest cannot parse.
 jest.mock("@pages/scenario/constants", () => ({
     getScenarioDomainLabel: (key: string) => ({ "ONDC:RET10": "Grocery (RET10)" })[key] ?? key,
+    sortedDomainOptions: (domains: { key: string }[]) =>
+        domains.map((d) => ({
+            value: d.key,
+            label: ({ "ONDC:RET10": "Grocery (RET10)" } as Record<string, string>)[d.key] ?? d.key,
+        })),
 }));
 let mockUser: object | undefined;
 jest.mock("@hooks/useAuth", () => ({ useAuth: () => ({ user: mockUser }) }));
@@ -511,7 +516,6 @@ describe("NP Portal configs from SSO", () => {
                     id: "11899",
                     configs: [
                         sso(), // even exact Workbench values are not used
-                        sso({ domain: "ONDC:RET1A", npType: "BAP" }),
                         sso({ npType: "Admin" }),
                         sso({ subscriberUrl: "" }),
                     ],
@@ -524,14 +528,46 @@ describe("NP Portal configs from SSO", () => {
             ["", ""],
             ["", ""],
             ["", ""],
-            ["", ""],
         ]);
         expect(cards.map((c) => c.missingFields)).toEqual([
             ["version", "usecaseId"],
-            ["domain", "version", "usecaseId"],
             ["npType", "version", "usecaseId"],
             ["subscriberUrl", "version", "usecaseId"],
         ]);
+    });
+
+    it("drops an NP Portal config whose domain Workbench has no flows for at all", () => {
+        const cards = buildConfigCards(
+            npPortalConfigsFromUser(
+                userWith({
+                    id: "11899",
+                    configs: [
+                        sso(), // ONDC:RET10, supported — kept
+                        sso({ domain: "ONDC:RET1A" }), // not in DOMAINS — dropped
+                        sso({ domain: "ONDC:RET1B", npType: "BAP" }), // also dropped
+                    ],
+                })
+            ),
+            {},
+            DOMAINS
+        );
+        // Only the supported-domain config becomes a card; the unsupported ones
+        // are left out entirely rather than shown asking the user to pick a domain.
+        expect(cards).toHaveLength(1);
+        expect(cards[0].data.domain).toBe("ONDC:RET10");
+    });
+
+    it("keeps a saved config even when its domain isn't in Workbench's current list", () => {
+        // Saved configs are never dropped: the user picked this domain from
+        // Workbench's own list when they saved it, so it's trusted as-is.
+        const cards = buildConfigCards(
+            [],
+            { "old-config": saved({ domain: "ONDC:RET1A" }) },
+            DOMAINS
+        );
+        expect(cards).toHaveLength(1);
+        expect(cards[0].data.domain).toBe("ONDC:RET1A");
+        expect(cards[0].missingFields).toContain("domain");
     });
 
     it("treats configs that differ only by version or use case as one", () => {
@@ -677,8 +713,25 @@ describe("NP Portal configs from SSO", () => {
             expect(screen.getByRole("heading", { name: "Grocery (RET10)" })).toBeInTheDocument();
         });
 
-        it("shows no 'NP Portal sent' notes, even for a domain Workbench doesn't have", () => {
-            renderSso(sso({ domain: "ONDC:RET1A" }));
+        it("shows no 'NP Portal sent' notes for a saved config whose domain Workbench doesn't have", () => {
+            // An NP Portal config with an unsupported domain is dropped before this
+            // panel ever renders (see buildConfigCards); a saved config isn't, so
+            // this is the one path where the "unsupported domain" detail view still
+            // has to work.
+            const onLaunch = jest.fn().mockResolvedValue(undefined);
+            const [item] = buildConfigCards(
+                [],
+                { "old-config": saved({ domain: "ONDC:RET1A" }) },
+                DOMAINS
+            );
+            renderWithStore(
+                <ConfigDetailPanel
+                    item={item}
+                    domains={DOMAINS}
+                    isSubmitting={false}
+                    onLaunch={onLaunch}
+                />
+            );
             expect(screen.queryByText(/NP Portal sent/)).not.toBeInTheDocument();
             expect(screen.queryByTestId("sent-value")).not.toBeInTheDocument();
             expect(screen.getByRole("combobox", { name: /^Domain/ })).toBeInTheDocument();
