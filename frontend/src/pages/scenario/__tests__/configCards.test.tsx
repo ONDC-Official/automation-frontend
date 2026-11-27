@@ -155,7 +155,7 @@ describe("config list (left side)", () => {
         "other-buyer": saved({ subscriberUrl: "https://two.example.com", usecaseId: "" }),
     };
 
-    it("groups configs under their subscriber URL, with name, build, role and a status dot", async () => {
+    it("groups configs under their subscriber URL, with name, build and role", async () => {
         const { onSelect } = renderList(PREFS, "saved|kiranakart-buyer");
 
         const groups = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
@@ -168,8 +168,6 @@ describe("config list (left side)", () => {
         await userEvent.click(screen.getByRole("button", { name: /two\.example\.com/ }));
         expect(rows()).toEqual(["kiranakart-buyer", "kiranakart-seller", "other-buyer"]);
         expect(screen.getAllByText("Grocery (RET10) · v1.2.5")).toHaveLength(3);
-        expect(screen.getAllByText("Ready to launch")).toHaveLength(2);
-        expect(screen.getByText("Needs input")).toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: /two\.example\.com/ }));
         expect(rows()).toEqual(["kiranakart-buyer", "kiranakart-seller"]);
         // Counts sit on the filter tabs, not next to the heading.
@@ -267,27 +265,34 @@ describe("config details (right side)", () => {
         return onLaunch;
     };
 
-    it("shows a complete config read-only, 2 per row, as Ready to launch", () => {
+    it("shows a complete config, Ready to launch, with version and use case prefilled", () => {
         renderPanel();
 
-        expect(screen.getByRole("heading", { name: "kiranakart-buyer" })).toBeInTheDocument();
+        // Title is the friendly domain label (with code), not the saved name.
+        expect(screen.getByRole("heading", { name: "Grocery (RET10)" })).toBeInTheDocument();
+        // The exact domain code sits next to the title.
+        expect(screen.getByText("ONDC:RET10")).toBeInTheDocument();
         expect(screen.getByText("Ready to launch")).toBeInTheDocument();
-        expect(screen.getAllByTestId("locked-row")).toHaveLength(6);
-        expect(screen.getAllByTestId("locked-row")[0].parentElement?.className).toContain(
-            "sm:grid-cols-2"
-        );
-        expect(screen.getByText("UAT_1 Org")).toBeInTheDocument();
-        expect(screen.getAllByText("Buyer App (BAP)").length).toBeGreaterThan(0);
+        // Header facts: subscriber URL and role (organisation is not repeated here).
+        expect(screen.getAllByTestId("locked-row")).toHaveLength(2);
+        expect(screen.getAllByText("Buyer App").length).toBeGreaterThan(0);
+        // Version and use case are always inputs now, prefilled from the config.
+        expect(screen.getByRole("combobox", { name: /^Version/ })).toHaveValue("1.2.5");
+        expect(screen.getByRole("combobox", { name: /^Use case/ })).toHaveValue("GROCERY");
         expect(screen.getByRole("button", { name: "Launch" })).toBeEnabled();
     });
 
     it("has View report at the top and Launch at the bottom, and no Edit or last-run card", async () => {
         renderPanel();
 
-        const buttons = screen.getAllByRole("button").map((b) => b.textContent);
-        expect(buttons).toEqual(["View report", "Launch"]);
+        const viewReport = screen.getByRole("button", { name: "View report" });
+        const launch = screen.getByRole("button", { name: "Launch" });
         expect(screen.queryByText(/Edit|Last run/)).not.toBeInTheDocument();
-        await userEvent.click(screen.getByRole("button", { name: "View report" }));
+        // View report sits above Launch.
+        expect(
+            viewReport.compareDocumentPosition(launch) & Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        await userEvent.click(viewReport);
         expect(mockNavigate).toHaveBeenCalledWith("/profile/history");
     });
 
@@ -313,7 +318,8 @@ describe("config details (right side)", () => {
 
         expect(screen.getByText("1 detail to fill before launch")).toBeInTheDocument();
         expect(screen.getByText("Use case")).toBeInTheDocument();
-        expect(screen.getAllByTestId("locked-row")).toHaveLength(5);
+        // Header facts: subscriber URL and role (organisation is not repeated here).
+        expect(screen.getAllByTestId("locked-row")).toHaveLength(2);
         expect(screen.getByRole("button", { name: "Launch" })).toBeDisabled();
 
         await userEvent.click(screen.getByRole("combobox", { name: /^Use case/ }));
@@ -360,33 +366,34 @@ describe("config details (right side)", () => {
         const onLaunch = renderPanel(saved({ orgId: "99001" }));
 
         expect(screen.queryByText("Select Organisation")).not.toBeInTheDocument();
-        expect(screen.getByText("UAT_1 Org")).toBeInTheDocument();
         expect(screen.getByText("Ready to launch")).toBeInTheDocument();
+        // The organisation isn't shown on the card, but it is used on launch.
         await userEvent.click(screen.getByRole("button", { name: "Launch" }));
         await waitFor(() =>
             expect(onLaunch).toHaveBeenCalledWith(expect.objectContaining({ orgId: "11899" }))
         );
     });
 
-    it("puts the missing details in their own section below the known ones", () => {
+    it("puts the version and use case inputs after the known facts", () => {
         renderPanel(saved({ usecaseId: "" }));
 
         const fillIn = screen.getByTestId("fill-in-section");
-        expect(within(fillIn).getByText("Fill in to launch")).toBeInTheDocument();
+        expect(within(fillIn).getByRole("combobox", { name: /^Version/ })).toBeInTheDocument();
         expect(within(fillIn).getByRole("combobox", { name: /^Use case/ })).toBeInTheDocument();
         expect(within(fillIn).queryByTestId("locked-row")).not.toBeInTheDocument();
         const known = screen.getAllByTestId("locked-row");
-        expect(known.map((r) => r.firstChild?.textContent)).not.toContain("Use case");
-        // The fill-in section comes after the known details.
+        // The inputs come after the known facts.
         expect(
             known[known.length - 1].compareDocumentPosition(fillIn) &
                 Node.DOCUMENT_POSITION_FOLLOWING
         ).toBeTruthy();
     });
 
-    it("has no fill-in section when nothing is missing", () => {
+    it("always shows the version and use case inputs, even for a complete config", () => {
         renderPanel();
-        expect(screen.queryByTestId("fill-in-section")).not.toBeInTheDocument();
+        const fillIn = screen.getByTestId("fill-in-section");
+        expect(within(fillIn).getByRole("combobox", { name: /^Version/ })).toBeInTheDocument();
+        expect(within(fillIn).getByRole("combobox", { name: /^Use case/ })).toBeInTheDocument();
     });
 
     it("says how many details are missing, with no extra line", () => {
@@ -578,7 +585,7 @@ describe("NP Portal configs from SSO", () => {
             />
         );
         expect(screen.getByText("Grocery (RET10)")).toBeInTheDocument();
-        expect(screen.getByText("Version & use case: pick at launch")).toBeInTheDocument();
+        expect(screen.getByText("ONDC:RET10")).toBeInTheDocument();
         expect(screen.queryByText(/v 1\.2|vv/)).not.toBeInTheDocument();
     });
 
@@ -600,12 +607,8 @@ describe("NP Portal configs from SSO", () => {
                 organisationNames={{ "11899": "UAT_1 Org", "99001": "Second Org" }}
             />
         );
-        expect(
-            screen.getByText("Version & use case: pick at launch · UAT_1 Org")
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Version & use case: pick at launch · Second Org")
-        ).toBeInTheDocument();
+        expect(screen.getByText("ONDC:RET10 · UAT_1 Org")).toBeInTheDocument();
+        expect(screen.getByText("ONDC:RET10 · Second Org")).toBeInTheDocument();
 
         rerender(
             <ConfigList

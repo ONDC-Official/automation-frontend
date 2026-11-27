@@ -463,7 +463,7 @@ const Scenario = () => {
                         <section
                             aria-label="Config details"
                             className={cn(
-                                "overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:flex lg:flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]",
+                                "overflow-hidden rounded-2xl border border-n-30 bg-n-0 dark:border-border-default dark:bg-surface-elevated lg:flex lg:flex-col lg:sticky lg:top-24 lg:self-start",
                                 isMobileDetailOpen ? "block" : "hidden"
                             )}
                         >

@@ -203,7 +203,6 @@ export const ConfigList = ({
                                         <ul className="space-y-1 p-2">
                                             {group.items.map((item) => {
                                                 const isSelected = item.id === selectedId;
-                                                const needsInput = item.missingFields.length > 0;
                                                 return (
                                                     <li key={item.id}>
                                                         <button
@@ -221,13 +220,17 @@ export const ConfigList = ({
                                                         >
                                                             <span className="min-w-0 flex-1">
                                                                 <span className="block truncate text-body-2 font-semibold text-text-primary">
-                                                                    {item.name || buildLabel(item)}
+                                                                    {item.name ||
+                                                                        (item.data.domain
+                                                                            ? getScenarioDomainLabel(
+                                                                                  item.data.domain
+                                                                              )
+                                                                            : "Domain not set")}
                                                                 </span>
                                                                 <span className="block truncate text-caption-1 text-text-secondary">
                                                                     {item.name
                                                                         ? buildLabel(item)
-                                                                        : item.data.usecaseId ||
-                                                                          "Version & use case: pick at launch"}
+                                                                        : item.data.domain}
                                                                     {organisationNames &&
                                                                     item.data.orgId
                                                                         ? ` · ${organisationNames[item.data.orgId] ?? item.data.orgId}`
@@ -239,25 +242,6 @@ export const ConfigList = ({
                                                                     {item.data.npType}
                                                                 </Badge>
                                                             ) : null}
-                                                            <span
-                                                                className={cn(
-                                                                    "size-2 shrink-0 rounded-full",
-                                                                    needsInput
-                                                                        ? "bg-alert-500"
-                                                                        : "bg-success-500"
-                                                                )}
-                                                                title={
-                                                                    needsInput
-                                                                        ? "Needs input"
-                                                                        : "Ready to launch"
-                                                                }
-                                                            >
-                                                                <span className="sr-only">
-                                                                    {needsInput
-                                                                        ? "Needs input"
-                                                                        : "Ready to launch"}
-                                                                </span>
-                                                            </span>
                                                         </button>
                                                     </li>
                                                 );

@@ -3,20 +3,14 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, FileText, Globe, Play } from "lucide-react";
 import Alert from "@components/Shadcn/Alert";
-import { Badge } from "@components/Shadcn/Badge";
 import { Button } from "@components/Shadcn/Button";
 import { ComboBox } from "@components/Shadcn/ComboBox";
 import { TextField } from "@components/Shadcn/TextField";
 import { ROUTES } from "@constants/routes";
 import { useAuth } from "@hooks/useAuth";
-import {
-    OrganisationField,
-    useOrganisationName,
-    useOrganisationOptions,
-} from "@pages/scenario/OrganisationField";
+import { OrganisationField, useOrganisationOptions } from "@pages/scenario/OrganisationField";
 import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
-import { versionLabel } from "@pages/scenario/helpers";
 import {
     IConfigDetailPanelProps,
     IConfigField,
@@ -27,16 +21,39 @@ import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { setConfigFillDraft, type ScenarioFormDraft } from "@store/slices/scenarioDraftSlice";
 
 const ROLE_OPTIONS = [
-    { label: "Buyer App (BAP)", value: "BAP" },
-    { label: "Seller App (BPP)", value: "BPP" },
+    { label: "Buyer App", value: "BAP" },
+    { label: "Seller App", value: "BPP" },
 ];
 const roleLabel = (value: string) => ROLE_OPTIONS.find((o) => o.value === value)?.label ?? value;
 
-/** A detail that is already known: shown as plain text, not as an input. */
-const ReadOnlyField = ({ label, value }: { label: string; value: string }) => (
-    <div data-testid="locked-row" className="flex min-w-0 flex-col gap-1">
-        <span className="text-body-2 text-text-secondary">{label}</span>
-        <span className="break-words text-body-1 font-semibold text-text-primary">{value}</span>
+/** One read-only fact in the detail header: the value on top, its label beneath. */
+const HeaderFact = ({
+    label,
+    value,
+    icon: Icon,
+    withDivider,
+}: {
+    label: string;
+    value: string;
+    icon?: typeof Globe;
+    withDivider: boolean;
+}) => (
+    <div
+        data-testid="locked-row"
+        className={
+            "flex min-w-0 max-w-[16rem] flex-col gap-0.5" +
+            (withDivider ? " border-l border-n-30 pl-5 dark:border-border-default" : "")
+        }
+    >
+        <span className="flex min-w-0 items-center gap-1.5 text-body-1 font-semibold text-text-primary">
+            {Icon ? (
+                <Icon className="size-3.5 shrink-0 text-text-secondary" aria-hidden="true" />
+            ) : null}
+            <span className="truncate" title={value}>
+                {value}
+            </span>
+        </span>
+        <span className="text-caption-1 text-text-secondary">{label}</span>
     </div>
 );
 
@@ -56,7 +73,6 @@ export const ConfigDetailPanel = ({
     const navigate = useNavigate();
     const { user } = useAuth();
     const orgOptions = useOrganisationOptions();
-    const organisationName = useOrganisationName();
     // The organisation is fixed when the config's own one is the user's, or when the
     // user has only one (asking would offer a single choice). Otherwise they pick.
     const isConfigOrgMine =
@@ -67,31 +83,48 @@ export const ConfigDetailPanel = ({
           ? orgOptions[0].value
           : "";
     const isOrgLocked = !!lockedOrgId;
-    // Name only (no ID), like the header and the New session form.
-    const lockedOrgLabel = organisationName(lockedOrgId);
     const needsOrgPick = orgOptions.length > 1 && !isOrgLocked;
-    const hasInputs = item.missingFields.length > 0 || needsOrgPick;
     const isMissing = (field: IConfigField) => item.missingFields.includes(field);
 
     const dispatch = useAppDispatch();
     const persistedFill = useAppSelector((s) => s.scenarioDraft.fillByConfig[item.id]);
 
-    // Missing fields start empty, so an unsupported value is never pre-picked —
-    // unless there's a saved draft for this config (restored on refresh).
+    // Version and use case are always inputs now, so pre-fill them from the config's
+    // own values when those are actually in Workbench's list (saved configs); NP Portal
+    // configs come blank. A saved draft (from a refresh) always wins. Other missing
+    // fields start empty so an unsupported value is never pre-picked.
     const initialValues = useMemo<IScenarioFormData>(() => {
         const draft: ScenarioFormDraft = persistedFill ?? {};
+        const hasDraft = !!persistedFill;
         const fromDraft = (field: keyof IScenarioFormData) =>
             typeof draft[field] === "string" ? draft[field] : "";
+
+        const domainEntry = domains.find((d) => d.key === item.data.domain);
+        const domainVersions =
+            (domainEntry?.version as IDomainVersionWithUsecase[] | undefined) ?? [];
+        const validVersion = domainVersions.some((v) => v.key === item.data.version)
+            ? (item.data.version ?? "")
+            : "";
+        const validUsecase = domainVersions
+            .find((v) => v.key === validVersion)
+            ?.usecase?.includes(item.data.usecaseId ?? "")
+            ? (item.data.usecaseId ?? "")
+            : "";
+
         const values: IScenarioFormData = {
             ...item.data,
             env: item.data.env || "PRE-PRODUCTION",
             orgId: isOrgLocked ? lockedOrgId : fromDraft("orgId"),
+            version: hasDraft ? fromDraft("version") : validVersion,
+            usecaseId: hasDraft ? fromDraft("usecaseId") : validUsecase,
         };
+        // Any other unsupported/empty detail (domain, app type, URL) starts blank.
         item.missingFields.forEach((field) => {
-            values[field] = fromDraft(field);
+            if (field === "version" || field === "usecaseId") return;
+            values[field] = hasDraft ? fromDraft(field) : "";
         });
         return values;
-    }, [item, lockedOrgId, isOrgLocked, persistedFill]);
+    }, [item, domains, lockedOrgId, isOrgLocked, persistedFill]);
 
     const { control, handleSubmit, watch, setValue } = useForm<IScenarioFormData>({
         defaultValues: initialValues,
@@ -123,41 +156,44 @@ export const ConfigDetailPanel = ({
     }, [domains, values.domain, values.version]);
 
     // A required dropdown with exactly one choice is filled in and locked
-    // (shown prefilled, can't be opened or changed).
+    // (shown prefilled, can't be opened or changed, no dropdown arrow).
     useEffect(() => {
-        if (
-            item.missingFields.includes("version") &&
-            versionOptions.length === 1 &&
-            !values.version
-        ) {
+        if (versionOptions.length === 1 && !values.version) {
             setValue("version", versionOptions[0], { shouldValidate: true });
         }
-    }, [item, versionOptions, values.version, setValue]);
+    }, [versionOptions, values.version, setValue]);
     useEffect(() => {
-        if (
-            item.missingFields.includes("usecaseId") &&
-            usecaseOptions.length === 1 &&
-            !values.usecaseId
-        ) {
+        if (usecaseOptions.length === 1 && !values.usecaseId) {
             setValue("usecaseId", usecaseOptions[0], { shouldValidate: true });
         }
-    }, [item, usecaseOptions, values.usecaseId, setValue]);
+    }, [usecaseOptions, values.usecaseId, setValue]);
 
-    // Ready once every missing detail (and the organisation, if one must be picked) is filled.
+    // Version and use case must always be chosen; add any other detail the config is
+    // missing, plus the organisation when one has to be picked.
+    const requiredFields = Array.from(
+        new Set<IConfigField>([...item.missingFields, "version", "usecaseId"])
+    );
     const stillMissing = [
-        ...item.missingFields.filter((field) => !values[field]),
+        ...requiredFields.filter((field) => !values[field]),
         ...(needsOrgPick && !values.orgId ? ["orgId"] : []),
     ];
     const isReady = stillMissing.length === 0;
 
-    const domainLabel = values.domain ? getScenarioDomainLabel(values.domain) : "";
-    const title =
-        item.name ||
-        `${domainLabel || getScenarioDomainLabel(item.data.domain) || "Config"}${
-            values.version || item.data.version
-                ? ` · ${versionLabel(values.version || item.data.version)}`
-                : ""
-        }`;
+    // Title: friendly domain label (which already carries the short code), no version.
+    const title = getScenarioDomainLabel(values.domain || item.data.domain) || "Config";
+    // The exact ONDC domain code, shown next to the friendly title.
+    const domainCode = values.domain || item.data.domain;
+
+    // Read-only facts shown under the title: subscriber URL and role (the organisation
+    // is already chosen in the top bar, so it isn't repeated here).
+    const headerFacts = [
+        !isMissing("subscriberUrl") && item.data.subscriberUrl
+            ? { label: "Subscriber URL", value: item.data.subscriberUrl, icon: Globe }
+            : null,
+        !isMissing("npType") && item.data.npType
+            ? { label: "Role", value: roleLabel(item.data.npType) }
+            : null,
+    ].filter(Boolean) as { label: string; value: string; icon?: typeof Globe }[];
 
     const onSubmit = async (formValues: IScenarioFormData) => {
         await onLaunch({
@@ -168,7 +204,7 @@ export const ConfigDetailPanel = ({
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col lg:h-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
             <div className="flex flex-col gap-4 border-b border-n-30 px-5 py-5 sm:px-6 lg:flex-row lg:items-start lg:justify-between dark:border-border-default">
                 <div className="min-w-0 space-y-2">
                     {onBack ? (
@@ -182,24 +218,27 @@ export const ConfigDetailPanel = ({
                             All configs
                         </Button>
                     ) : null}
-                    {item.data.subscriberUrl ? (
-                        <p className="flex min-w-0 items-center gap-2 text-caption-1 text-text-secondary">
-                            <Globe className="size-3.5 shrink-0" aria-hidden="true" />
-                            <span className="truncate" title={item.data.subscriberUrl}>
-                                {item.data.subscriberUrl}
+                    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                        <h2 className="break-words text-h6 font-bold text-text-primary">{title}</h2>
+                        {domainCode ? (
+                            <span className="text-body-2 font-semibold text-text-secondary">
+                                {domainCode}
                             </span>
-                        </p>
-                    ) : null}
-                    <h2 className="break-words text-h6 font-bold text-text-primary">{title}</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                        {values.npType ? (
-                            <Badge variant="outline">{roleLabel(values.npType)}</Badge>
-                        ) : null}
-                        {domainLabel ? <Badge variant="outline">{domainLabel}</Badge> : null}
-                        {values.usecaseId ? (
-                            <Badge variant="outline">{values.usecaseId}</Badge>
                         ) : null}
                     </div>
+                    {headerFacts.length > 0 ? (
+                        <div className="flex flex-wrap items-start gap-x-9 gap-y-2 pt-4">
+                            {headerFacts.map((fact, i) => (
+                                <HeaderFact
+                                    key={fact.label}
+                                    label={fact.label}
+                                    value={fact.value}
+                                    icon={fact.icon}
+                                    withDivider={i > 0}
+                                />
+                            ))}
+                        </div>
+                    ) : null}
                 </div>
                 {user ? (
                     <div className="flex shrink-0 flex-wrap gap-3">
@@ -217,7 +256,7 @@ export const ConfigDetailPanel = ({
                 ) : null}
             </div>
 
-            <div className="space-y-5 px-5 py-5 sm:px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            <div className="space-y-5 px-5 py-5 sm:px-6">
                 {isReady ? (
                     <Alert
                         variant="success"
@@ -233,128 +272,89 @@ export const ConfigDetailPanel = ({
                     />
                 )}
 
-                <div className="space-y-4">
-                    <h3 className="text-body-1 font-bold text-text-primary">Config details</h3>
-                    {/* Only what the config already gives, two per row. */}
-                    <div className="grid items-start gap-x-6 gap-y-5 sm:grid-cols-2">
-                        {isOrgLocked ? (
-                            <ReadOnlyField label="Organisation" value={lockedOrgLabel} />
-                        ) : null}
-                        {isMissing("npType") ? null : (
-                            <ReadOnlyField label="App type" value={roleLabel(item.data.npType)} />
-                        )}
-                        {isMissing("subscriberUrl") ? null : (
-                            <ReadOnlyField label="Subscriber URL" value={item.data.subscriberUrl} />
-                        )}
-                        {isMissing("domain") ? null : (
-                            <ReadOnlyField
-                                label="Domain"
-                                value={getScenarioDomainLabel(item.data.domain)}
-                            />
-                        )}
-                        {isMissing("version") ? null : (
-                            <ReadOnlyField label="Version" value={item.data.version} />
-                        )}
-                        {isMissing("usecaseId") ? null : (
-                            <ReadOnlyField label="Use case" value={item.data.usecaseId} />
-                        )}
-                    </div>
+                {/* Version and use case are always asked for here; any detail the config
+                    is missing (org, app type, URL, domain) is added only when needed. An
+                    odd last field spans the full row. */}
+                <div
+                    data-testid="fill-in-section"
+                    className="grid items-start gap-x-6 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2"
+                >
+                    {needsOrgPick ? <OrganisationField control={control} name="orgId" /> : null}
+                    {isMissing("npType") ? (
+                        <ComboBox
+                            control={control}
+                            name="npType"
+                            label="App type"
+                            floatingLabel
+                            tooltip={FIELD_TOOLTIPS.role}
+                            options={ROLE_OPTIONS}
+                            placeholder="Select app type"
+                            required
+                        />
+                    ) : null}
+                    {isMissing("subscriberUrl") ? (
+                        <TextField
+                            control={control}
+                            name="subscriberUrl"
+                            label="Subscriber URL"
+                            floatingLabel
+                            tooltip={FIELD_TOOLTIPS.subscriberUrl}
+                            required
+                            placeholder="https://example.com"
+                            rules={{
+                                pattern: {
+                                    value: /^https?:\/\/.+/i,
+                                    message: "URL must start with http:// or https://",
+                                },
+                            }}
+                        />
+                    ) : null}
+                    {isMissing("domain") ? (
+                        <ComboBox
+                            control={control}
+                            name="domain"
+                            label="Domain"
+                            floatingLabel
+                            tooltip={FIELD_TOOLTIPS.domain}
+                            options={domains.map((d) => ({
+                                value: d.key,
+                                label: getScenarioDomainLabel(d.key),
+                            }))}
+                            placeholder="Select domain"
+                            required
+                            onValueChange={() => {
+                                setValue("version", "");
+                                setValue("usecaseId", "");
+                            }}
+                        />
+                    ) : null}
+                    <ComboBox
+                        control={control}
+                        name="version"
+                        label="Version"
+                        floatingLabel
+                        tooltip={FIELD_TOOLTIPS.version}
+                        options={versionOptions}
+                        placeholder="Select version"
+                        required
+                        disabled={!values.domain || versionOptions.length === 1}
+                        onValueChange={() => setValue("usecaseId", "")}
+                    />
+                    <ComboBox
+                        control={control}
+                        name="usecaseId"
+                        label="Use case"
+                        floatingLabel
+                        tooltip={FIELD_TOOLTIPS.usecase}
+                        options={usecaseOptions}
+                        placeholder="Select use case"
+                        required
+                        disabled={!values.version || usecaseOptions.length === 1}
+                    />
                 </div>
-
-                {hasInputs ? (
-                    <div
-                        data-testid="fill-in-section"
-                        className="space-y-4 border-t border-n-30 pt-5 dark:border-border-default"
-                    >
-                        <h3 className="text-body-1 font-bold text-text-primary">
-                            Fill in to launch
-                        </h3>
-                        {/* Only what the config is missing; an odd last field spans the row. */}
-                        <div className="grid items-start gap-x-6 gap-y-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2">
-                            {needsOrgPick ? (
-                                <OrganisationField control={control} name="orgId" />
-                            ) : null}
-                            {isMissing("npType") ? (
-                                <ComboBox
-                                    control={control}
-                                    name="npType"
-                                    label="App type"
-                                    floatingLabel
-                                    tooltip={FIELD_TOOLTIPS.role}
-                                    options={ROLE_OPTIONS}
-                                    placeholder="Select app type"
-                                    required
-                                />
-                            ) : null}
-                            {isMissing("subscriberUrl") ? (
-                                <TextField
-                                    control={control}
-                                    name="subscriberUrl"
-                                    label="Subscriber URL"
-                                    floatingLabel
-                                    tooltip={FIELD_TOOLTIPS.subscriberUrl}
-                                    required
-                                    placeholder="https://example.com"
-                                    rules={{
-                                        pattern: {
-                                            value: /^https?:\/\/.+/i,
-                                            message: "URL must start with http:// or https://",
-                                        },
-                                    }}
-                                />
-                            ) : null}
-                            {isMissing("domain") ? (
-                                <ComboBox
-                                    control={control}
-                                    name="domain"
-                                    label="Domain"
-                                    floatingLabel
-                                    tooltip={FIELD_TOOLTIPS.domain}
-                                    options={domains.map((d) => ({
-                                        value: d.key,
-                                        label: getScenarioDomainLabel(d.key),
-                                    }))}
-                                    placeholder="Select domain"
-                                    required
-                                    onValueChange={() => {
-                                        setValue("version", "");
-                                        setValue("usecaseId", "");
-                                    }}
-                                />
-                            ) : null}
-                            {isMissing("version") ? (
-                                <ComboBox
-                                    control={control}
-                                    name="version"
-                                    label="Version"
-                                    floatingLabel
-                                    tooltip={FIELD_TOOLTIPS.version}
-                                    options={versionOptions}
-                                    placeholder="Select version"
-                                    required
-                                    disabled={!values.domain || versionOptions.length === 1}
-                                    onValueChange={() => setValue("usecaseId", "")}
-                                />
-                            ) : null}
-                            {isMissing("usecaseId") ? (
-                                <ComboBox
-                                    control={control}
-                                    name="usecaseId"
-                                    label="Use case"
-                                    floatingLabel
-                                    tooltip={FIELD_TOOLTIPS.usecase}
-                                    options={usecaseOptions}
-                                    placeholder="Select use case"
-                                    required
-                                    disabled={!values.version || usecaseOptions.length === 1}
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-                ) : null}
             </div>
 
-            <div className="flex justify-end border-t border-n-30 px-5 py-4 sm:px-6 dark:border-border-default">
+            <div className="flex justify-end px-5 pb-5 pt-1 sm:px-6">
                 <Button
                     type="submit"
                     size="lg"
