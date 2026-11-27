@@ -126,7 +126,8 @@ describe("Portal API foundation", () => {
 		it("lets the right token through to the next handler", async () => {
 			const res = await request(appWith())
 				.get("/v1/no-such-endpoint")
-				.set("Authorization", `Bearer ${TOKEN}`);
+				.set("Authorization", `Bearer ${TOKEN}`)
+				.send({ np_token: "np" });
 
 			expect(res.status).toBe(404);
 			expect(res.body.type).toBe("urn:ondc:workbench:problem:not-found");
@@ -165,6 +166,60 @@ describe("Portal API foundation", () => {
 
 			expect(other.status).toBe(200);
 		});
+
+		it("gives each user their own bucket under one token (np_token in body)", async () => {
+			const app = appWith({ rateLimitPerMinute: 1 });
+			const token = `Bearer ${TOKEN}`;
+
+			await request(app).get("/v1/health").set("Authorization", token).send({ np_token: "alice" });
+			const aliceAgain = await request(app)
+				.get("/v1/health")
+				.set("Authorization", token)
+				.send({ np_token: "alice" });
+			const bob = await request(app)
+				.get("/v1/health")
+				.set("Authorization", token)
+				.send({ np_token: "bob" });
+
+			expect(aliceAgain.status).toBe(429); // alice's own bucket is full
+			expect(bob.status).not.toBe(429); // bob has a separate bucket
+		});
+
+		it("without np_token, one token shares a single bucket", async () => {
+			const app = appWith({ rateLimitPerMinute: 1 });
+			const token = `Bearer ${TOKEN}`;
+
+			await request(app).get("/v1/health").set("Authorization", token);
+			const second = await request(app).get("/v1/health").set("Authorization", token);
+
+			expect(second.status).toBe(429); // same token, no np_token -> shared bucket
+		});
+	});
+
+	describe("np_token is required on data routes", () => {
+		it("rejects a data route without np_token", async () => {
+			const res = await request(appWith())
+				.get("/v1/flows")
+				.set("Authorization", `Bearer ${TOKEN}`);
+
+			expect(res.status).toBe(400);
+			expect(res.body.detail).toMatch(/np_token/);
+		});
+
+		it("lets a data route past the guard with np_token", async () => {
+			const res = await request(appWith())
+				.get("/v1/flows")
+				.set("Authorization", `Bearer ${TOKEN}`)
+				.send({ np_token: "user-jwt-123" });
+
+			expect(res.status).not.toBe(400); // cleared the guard (may 5xx without a db)
+		});
+
+		it("keeps /v1/health open without np_token", async () => {
+			const res = await request(appWith()).get("/v1/health");
+
+			expect(res.status).not.toBe(400);
+		});
 	});
 });
 
@@ -194,4 +249,5 @@ describe("loadPortalConfig", () => {
 		expect(config.apiToken).toBe(TOKEN);
 		expect(config.rateLimitPerMinute).toBe(120);
 	});
+
 });

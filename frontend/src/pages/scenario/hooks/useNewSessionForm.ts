@@ -9,12 +9,19 @@ import {
 } from "@pages/scenario/types";
 import { trackSchemaValidationForm } from "@pages/scenario/helpers";
 import { useOrganisationOptions } from "@pages/scenario/OrganisationField";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import {
+    setNewSessionDraft,
+    clearNewSessionDraft,
+    type ScenarioFormDraft,
+} from "@store/slices/scenarioDraftSlice";
 
 export function useNewSessionForm({
     domains,
     savedPreferences = {},
     initialSavedConfigKey = "",
     onSubmit,
+    onCancel,
 }: INewSessionFormProps) {
     const { user } = useAuth();
 
@@ -32,14 +39,29 @@ export function useNewSessionForm({
     const orgOptions = useOrganisationOptions();
     const [chosenOrgId, setChosenOrgId] = useState("");
 
+    const dispatch = useAppDispatch();
+    const persistedNewSession = useAppSelector((s) => s.scenarioDraft.newSession);
+
     const {
         control,
         register,
         handleSubmit,
         watch,
         setValue,
+        reset,
         formState: { errors },
-    } = useForm<INewSessionFormValues>({ defaultValues: DEFAULT_VALUES, mode: "onBlur" });
+    } = useForm<INewSessionFormValues>({
+        defaultValues: { ...DEFAULT_VALUES, ...(persistedNewSession ?? {}) },
+        mode: "onBlur",
+    });
+
+    // Save every change so a refresh keeps what was typed (persisted, no backend).
+    useEffect(() => {
+        const sub = watch((values) =>
+            dispatch(setNewSessionDraft(values as unknown as ScenarioFormDraft))
+        );
+        return () => sub.unsubscribe();
+    }, [watch, dispatch]);
 
     const watchedDomain = watch("domain");
     const watchedVersion = watch("version");
@@ -57,6 +79,21 @@ export function useNewSessionForm({
         const version = versions.find((v) => v.key === watchedVersion);
         return version?.usecase ?? [];
     }, [domains, watchedDomain, watchedVersion]);
+
+    const watchedUsecase = watch("usecaseId");
+
+    // Consistency with the config panel: a field with exactly one option is
+    // auto-filled (and locked in the UI via lockSingleOption on the fields).
+    useEffect(() => {
+        if (versionOptions.length === 1 && !watchedVersion) {
+            setValue("version", versionOptions[0], { shouldValidate: true });
+        }
+    }, [versionOptions, watchedVersion, setValue]);
+    useEffect(() => {
+        if (usecaseOptions.length === 1 && !watchedUsecase) {
+            setValue("usecaseId", usecaseOptions[0], { shouldValidate: true });
+        }
+    }, [usecaseOptions, watchedUsecase, setValue]);
 
     // const configOptions = useMemo(
     //     () =>
@@ -189,6 +226,11 @@ export function useNewSessionForm({
             onDomainChange: handleDomainChange,
             onVersionChange: handleVersionChange,
             onConfigChange: handleConfigChange,
+            onCancel: () => {
+                reset(DEFAULT_VALUES);
+                dispatch(clearNewSessionDraft());
+                onCancel?.();
+            },
         },
     };
 }

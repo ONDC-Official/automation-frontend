@@ -158,7 +158,7 @@ export const titleFromFlowId = (flowId: string): string =>
 	flowId.replace(/_+/g, " ").trim();
 
 /** The spec's flow name if it has one with text in it, else one made from the flow ID. */
-const flowTitle = (flow: StoredFlow): string => {
+export const flowTitle = (flow: StoredFlow): string => {
 	const name = flow.config?.meta?.flowName;
 	return (typeof name === "string" && name.trim()) || titleFromFlowId(flow.flowId);
 };

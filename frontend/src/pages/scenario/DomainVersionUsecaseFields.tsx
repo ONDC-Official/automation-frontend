@@ -17,37 +17,46 @@ export const DomainVersionUsecaseFields = <
     onDomainChange,
     onVersionChange,
     domainOptions,
+    tooltips,
+    floatingLabel = false,
+    lockSingleOption = false,
 }: IDomainVersionUsecaseFieldsProps<T>) => (
     <>
         {domainOptions && (
             <ComboBox
                 control={control}
                 name={"domain" as FieldPath<T>}
-                label="Select Domain"
+                label={floatingLabel ? "Domain" : "Select Domain"}
+                floatingLabel={floatingLabel}
                 options={domainOptions}
                 placeholder="Select domain"
                 required
+                tooltip={tooltips?.domain}
                 onValueChange={onDomainChange}
             />
         )}
         <ComboBox
             control={control}
             name={"version" as FieldPath<T>}
-            label="Select Version"
+            label={floatingLabel ? "Version" : "Select Version"}
+            floatingLabel={floatingLabel}
             options={versionOptions}
             placeholder="Select version"
             required
-            disabled={!watchedDomain}
+            tooltip={tooltips?.version}
+            disabled={!watchedDomain || (lockSingleOption && versionOptions.length === 1)}
             onValueChange={onVersionChange}
         />
         <ComboBox
             control={control}
             name={"usecaseId" as FieldPath<T>}
-            label="Select Usecase"
+            label={floatingLabel ? "Use case" : "Select Usecase"}
+            floatingLabel={floatingLabel}
             options={usecaseOptions}
             placeholder="Select usecase"
             required
-            disabled={!watchedVersion}
+            tooltip={tooltips?.usecase}
+            disabled={!watchedVersion || (lockSingleOption && usecaseOptions.length === 1)}
             onValueChange={(value) => trackSchemaValidationForm("Added usecase", value)}
         />
     </>

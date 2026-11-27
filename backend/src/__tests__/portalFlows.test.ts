@@ -70,7 +70,7 @@ describe("GET /v1/flows", () => {
 			"/v1",
 			portalRoutes({ apiToken: TOKEN, rateLimitPerMinute: 1000, dbServiceUrl: dbUrl, dbApiKey: DB_KEY })
 		);
-		return request(app).get(url).set("Authorization", `Bearer ${TOKEN}`);
+		return request(app).get(url).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 	};
 
 	it("needs the token", async () => {

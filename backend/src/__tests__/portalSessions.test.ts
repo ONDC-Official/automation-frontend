@@ -11,6 +11,7 @@ import {
 	type StoredSession,
 	type StoredSessionDetail,
 } from "../utils/portalSessions";
+import { verifyReportToken } from "../utils/reportToken";
 
 /** GET /v1/organizations/{org_id}/sessions against a stand-in for automation-db. */
 
@@ -65,7 +66,8 @@ describe("GET /v1/organizations/{org_id}/sessions", () => {
 		);
 		return request(app).get(url);
 	};
-	const call = (url: string) => unauthed(url).set("Authorization", `Bearer ${TOKEN}`);
+	const call = (url: string) =>
+		unauthed(url).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 
 	it("needs the token", async () => {
 		const res = await unauthed("/v1/organizations/org_1/sessions");
@@ -316,7 +318,7 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 		return request(app).get(url);
 	};
 	const call = (url: string, publicBaseUrl?: string) =>
-		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`);
+		unauthed(url, publicBaseUrl).set("Authorization", `Bearer ${TOKEN}`).send({ np_token: "np" });
 
 	it("gives report_url, where NP Portal fetches the report, when the session has a report", async () => {
 		reply = storedDetail({ reportExists: true });
@@ -366,6 +368,7 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 			flow_summary: [
 				{
 					flow_id: "ORDER",
+					title: "ORDER",
 					tags: ["WORKBENCH", "MANDATORY", "REPORTABLE"],
 					total_steps: 4,
 					passed_steps: 2,
@@ -474,7 +477,8 @@ describe("GET /v1/organizations/{org_id}/sessions/{session_id}", () => {
 
 			const res = await request(app)
 				.get("/v1/organizations/org_1/sessions")
-				.set("Authorization", `Bearer ${TOKEN}`);
+				.set("Authorization", `Bearer ${TOKEN}`)
+				.send({ np_token: "np" });
 
 			expect(res.status).toBe(200);
 			expect(res.body.data[0]).not.toHaveProperty("tags");
@@ -537,10 +541,58 @@ describe("toSessionDetail", () => {
 		expect(detail.flow_summary[0].tags).toEqual([]);
 	});
 
-	it("puts tags right after flow_id", () => {
+	it("puts title and tags right after flow_id", () => {
 		const detail = toSessionDetail(storedDetail(), null, new Map([["ORDER", ["MANDATORY"]]]));
 
-		expect(Object.keys(detail.flow_summary[0]).slice(0, 2)).toEqual(["flow_id", "tags"]);
+		expect(Object.keys(detail.flow_summary[0]).slice(0, 3)).toEqual(["flow_id", "title", "tags"]);
+	});
+
+	it("titles each flow from the titles map when present", () => {
+		const detail = toSessionDetail(
+			storedDetail(),
+			null,
+			undefined,
+			undefined,
+			undefined,
+			new Map([["ORDER", "Place an Order"]])
+		);
+
+		expect(detail.flow_summary[0].title).toBe("Place an Order");
+	});
+
+	it("falls back to the flow id (underscores as spaces) with no title", () => {
+		const detail = toSessionDetail(
+			storedDetail({
+				flowSummary: [
+					{
+						flowId: "Buyer_Delivery_Flow",
+						totalSteps: 1,
+						passedSteps: 0,
+						failedSteps: 0,
+						transactionIds: [],
+					},
+				],
+			})
+		);
+
+		expect(detail.flow_summary[0].title).toBe("Buyer Delivery Flow");
+	});
+
+	it("signs report_url with a verifiable ?rt= when given a secret and TTL", () => {
+		const secret = "report-secret-0123456789abcdef";
+		const detail = toSessionDetail(
+			storedDetail({ reportExists: true }),
+			"https://w.example",
+			undefined,
+			secret,
+			3600
+		);
+
+		expect(detail.report_url).toMatch(
+			/^https:\/\/w\.example\/v1\/organizations\/org_1\/sessions\/sess_1\/report\?rt=/
+		);
+		const rt = decodeURIComponent(new URL(detail.report_url as string).searchParams.get("rt") ?? "");
+		expect(verifyReportToken(rt, "org_1", "sess_1", secret)).toBe(true);
 	});
 
 	it("keeps null for an expired session's expiry and an older session's settings", () => {
