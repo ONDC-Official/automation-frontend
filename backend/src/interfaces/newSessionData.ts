@@ -64,4 +64,9 @@ export interface SessionCache {
     userId?: string;
     /** NP Portal organisation the session is run for (Login via ONDC only). */
     orgId?: string;
+    /**
+     * An FD (ONDC:FIS14:FD) session: it lives on the FD workbench, which holds its participant,
+     * plan, runs and certificates. Beckn flows do not apply (flowConfigs is empty).
+     */
+    fd?: { participant: string; role: "INVESTOR_APP" | "DEPOSIT_ISSUER" };
 }

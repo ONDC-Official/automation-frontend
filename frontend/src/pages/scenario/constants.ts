@@ -9,6 +9,7 @@ export const DEFAULT_VALUES: INewSessionFormValues = {
     env: "PRE-PRODUCTION",
     orgId: "",
     config: "",
+    fd: { subscriberId: "", ukId: "", signingPublicKey: "", declaration: "" },
 };
 
 /** Friendly labels for the Scenario Testing "Select Domain" field, keyed by the raw domain key the API returns. */
@@ -39,6 +40,7 @@ export const SCENARIO_DOMAIN_LABELS: Record<string, string> = {
     "ONDC:FIS12:SL": "Loan Against Mutual Funds (FIS12:SL)",
     "ONDC:FIS13": "Insurance (FIS13)",
     "ONDC:FIS14": "Investment (FIS14)",
+    "ONDC:FIS14:FD": "Fixed Deposit (FIS14:FD)",
 };
 
 /** Label for the Scenario Testing domain select; falls back to the raw key for any domain not in the map. */

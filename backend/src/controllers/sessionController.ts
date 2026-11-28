@@ -11,6 +11,7 @@ import {
 	updateSessionService,
 	setMockSession,
 } from "../services/sessionService";
+import { FdWorkbenchError } from "../services/fdWorkbenchService";
 import {
 	OrganisationNotAllowedError,
 	resolveSessionOwner,
@@ -57,6 +58,11 @@ export const createSession = async (req: Request, res: Response) => {
 	} catch (error: any) {
 		if (error instanceof OrganisationNotAllowedError) {
 			res.status(403).send({ message: error.message });
+			return;
+		}
+		if (error instanceof FdWorkbenchError) {
+			logger.error("FD workbench refused the session", getLoggerMeta(req), error);
+			res.status(error.status).send({ message: error.message });
 			return;
 		}
 		logger.error("Error creating session", getLoggerMeta(req), error);

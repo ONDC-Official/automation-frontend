@@ -9,6 +9,8 @@ import { CurrentOrganisation } from "@pages/scenario/OrganisationField";
 import { IManualSessionFormProps } from "@pages/scenario/types";
 import { getScenarioDomainLabel } from "@pages/scenario/constants";
 import { FIELD_TOOLTIPS } from "@pages/scenario/fieldTooltips";
+import { FD_ROLE_OPTIONS, isFdDomain } from "@pages/fd-session/constants";
+import { FdRegistrationFields } from "@pages/fd-session/FdRegistrationFields";
 
 export const ManualSessionForm = ({
     domains,
@@ -29,6 +31,7 @@ export const ManualSessionForm = ({
 }: IManualSessionFormProps) => {
     const watchedDomain = watch("domain");
     const watchedVersion = watch("version");
+    const isFd = isFdDomain(watchedDomain);
 
     return (
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
@@ -110,16 +113,22 @@ export const ManualSessionForm = ({
                         name="npType"
                         label="Your role"
                         floatingLabel
-                        options={[
-                            { label: "Buyer App (BAP)", value: "BAP" },
-                            { label: "Seller App (BPP)", value: "BPP" },
-                        ]}
+                        options={
+                            isFd
+                                ? FD_ROLE_OPTIONS
+                                : [
+                                      { label: "Buyer App (BAP)", value: "BAP" },
+                                      { label: "Seller App (BPP)", value: "BPP" },
+                                  ]
+                        }
                         placeholder="Select your role"
                         required
                         tooltip={FIELD_TOOLTIPS.role}
                         onValueChange={(value) => trackSchemaValidationForm("Added np type", value)}
                     />
                     {/* No Environment field: sessions use the default, PRE-PRODUCTION (its only option). */}
+                    {/* FD runs on its own workbench, which registers the participant itself. */}
+                    {isFd && <FdRegistrationFields control={control} />}
                 </>
                 {/* )} */}
             </FieldGroup>
