@@ -5,6 +5,7 @@ import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
 import { saveSessionSettingsInDb, SettingChange, upsertSessionInDb } from "./dbService";
 import { resolveChangedBy } from "./sessionOwnerService";
+import { fdFlowsUrl, isFdSession } from "./fdWorkbenchService";
 const SESSION_EXPIRY = 3600 * 24 * 4; // 48 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
@@ -55,8 +56,9 @@ export const createSessionService = async (
     loggerMeta,
   );
 
+  // FD runs on its own workbench, which serves its flows in place of the config service.
   const flowResponse = await axios.get(
-    `${process.env.CONFIG_SERVICE as string}/ui/flow`,
+    isFdSession(domain) ? fdFlowsUrl() : `${process.env.CONFIG_SERVICE as string}/ui/flow`,
     {
       params: {
         domain: domain,
