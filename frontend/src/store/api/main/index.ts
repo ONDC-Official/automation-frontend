@@ -8,4 +8,3 @@ export * from "./endpoints/registry";
 export * from "./endpoints/session";
 export * from "./endpoints/flow";
 export * from "./endpoints/media";
-export * from "./endpoints/fd";

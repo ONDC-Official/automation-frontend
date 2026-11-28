@@ -9,7 +9,6 @@ export const DEFAULT_VALUES: INewSessionFormValues = {
     env: "PRE-PRODUCTION",
     orgId: "",
     config: "",
-    fd: { subscriberId: "", ukId: "", signingPublicKey: "", declaration: "" },
 };
 
 /** Friendly labels for the Scenario Testing "Select Domain" field, keyed by the raw domain key the API returns. */

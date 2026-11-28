@@ -18,7 +18,6 @@ import scenarioPreferencesRoutes from "./scenarioPreferencesRoutes";
 import reportsRoutes from "./reportsRoutes";
 import dashboardRoutes from "./dashboardRoutes"; // Import business dashboard routes
 import portalRoutes from "./portalRoutes"; // Import Portal Integration API (NP Portal)
-import fdRoutes from "./fdRoutes"; // FD (ONDC:FIS14:FD) pages, onto the FD workbench
 const router = Router();
 
 // Mount session-related routes
@@ -46,6 +45,4 @@ router.use("/dev-guide", devGuideRoutes);
 router.use("/ai", aiProxyRoutes);
 // Portal Integration API for NP Portal: token auth, problem+json errors
 router.use("/v1", portalRoutes);
-// FD sessions live on the standalone FD workbench (FD_WORKBENCH_URL)
-router.use("/fd", fdRoutes);
 export default router;

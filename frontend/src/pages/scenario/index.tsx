@@ -48,7 +48,6 @@ import { ConfigDetailPanel } from "@pages/scenario/ConfigDetailPanel";
 import { Button } from "@components/Shadcn/Button";
 import { ROUTES } from "@constants/routes";
 import { cn } from "@/lib/utils";
-import { fdSessionPath, isFdDomain } from "@pages/fd-session/constants";
 
 const Scenario = () => {
     const {
@@ -122,15 +121,9 @@ const Scenario = () => {
     const [triggerGetSessionById] = useLazyGetSessionByIdQuery();
 
     const createAndOpenSession = async (data: IScenarioFormData, newTab = true) => {
-        if (isFdDomain(data.domain)) {
-            await createAndOpenFdSession(data);
-            return;
-        }
         try {
-            // The FD registration fields belong to FD sessions only.
-            const { fd: _fd, ...rest } = data;
             data = {
-                ...rest,
+                ...data,
                 subscriberUrl: data?.subscriberUrl?.replace(/\/+$/, ""),
             };
 
@@ -163,32 +156,6 @@ const Scenario = () => {
         } catch (e) {
             toast.error("Error while creating session");
             console.error("error while sending response", e);
-        }
-    };
-
-    /**
-     * An FD session opens on the FD workbench (registering the participant), then on the FD
-     * session page. The workbench's refusal (a bad key, a declaration that does not validate)
-     * is shown as it is, so the tester can fix the field.
-     */
-    const createAndOpenFdSession = async (data: IScenarioFormData) => {
-        try {
-            const response = await createSession({
-                ...data,
-                subscriberUrl: data.subscriberUrl.trim().replace(/\/+$/, ""),
-                orgId: data.orgId || undefined,
-                userId: user?.username,
-            }).unwrap();
-            dispatch(setScenarioSession(response.sessionId));
-            navigate(fdSessionPath(response.sessionId));
-        } catch (e) {
-            const message = (e as { message?: string })?.message;
-            toast.error(
-                message
-                    ? `Could not open the FD session: ${message}`
-                    : "Error while creating session"
-            );
-            console.error("error while creating the FD session", e);
         }
     };
 

@@ -75,13 +75,6 @@ export interface IScenarioFormData {
     env: string;
     /** NP Portal organisation the session is for; only set for ONDC logins. */
     orgId?: string;
-    /** FD (ONDC:FIS14:FD) only: the participant's Registry identity and capability declaration. */
-    fd?: {
-        subscriberId: string;
-        ukId: string;
-        signingPublicKey: string;
-        declaration?: string;
-    };
 }
 
 export interface ISessionResponse {

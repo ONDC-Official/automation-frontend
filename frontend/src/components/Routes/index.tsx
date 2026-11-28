@@ -16,7 +16,6 @@ import McpSessionPage from "@pages/mcp-session";
 import TrackPage from "@pages/track";
 import NotFoundPage from "@components/NotFound";
 import ScenarioPage from "@pages/scenario";
-import FdSessionPage from "@pages/fd-session";
 import HomePage from "@pages/home";
 import SupportPage from "@pages/support";
 // import SellerLoadTesting from "@pages/seller-load-testing";
@@ -51,8 +50,6 @@ const Routes = () => (
         <Route path={ROUTES.SCENARIO} element={page(<ScenarioPage />)} />
         {/* ROUTES.FLOW_TESTING is for Flow testing through URL parameters not via scenario testing page */}
         <Route path={ROUTES.FLOW_TESTING} element={page(<FlowTestingWrapper />)} />
-        {/* FD sessions: opened from Scenario Testing for ONDC:FIS14:FD, reached by session id like FLOW_TESTING. */}
-        <Route path={ROUTES.FD_SESSION} element={page(<FdSessionPage />)} />
         {/* Read-only viewer for a session on an ondc-mcp engine. Reached only
             by the link that engine hands out, so it has no nav entry — and
             unguarded like FLOW_TESTING, because the token in the link is what

@@ -1,3 +1,4 @@
+import { fdMockUrl, isFdSession } from "../services/fdWorkbenchService";
 import { getSessionService } from "../services/sessionService";
 import { getUser, createUser } from "../services/dbService";
 import logger from "@ondc/automation-logger";
@@ -5,6 +6,8 @@ import logger from "@ondc/automation-logger";
 export const buildMockBaseURL = async (url: string, sessionId: string) => {
 	const sessionData = await getSessionService(sessionId);
 
+	// FD runs on its own workbench, which answers the mock service's flow calls.
+	if (isFdSession(sessionData.domain)) return fdMockUrl(url);
 	let mockUrl = process.env.MOCK_SERVICE as string;
 	const usecase = sessionData.usecaseId;
 	if (usecase === "PLAYGROUND-FLOW") {

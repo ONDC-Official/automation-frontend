@@ -5,13 +5,7 @@ import axios from "../utils/axios";
 import logger from "@ondc/automation-logger";
 import { saveSessionSettingsInDb, SettingChange, upsertSessionInDb } from "./dbService";
 import { resolveChangedBy } from "./sessionOwnerService";
-import {
-  fdCall,
-  fdEnabled,
-  fdSessionBody,
-  isFdDomain,
-  type FdRegistration,
-} from "./fdWorkbenchService";
+import { fdFlowsUrl, isFdSession } from "./fdWorkbenchService";
 const SESSION_EXPIRY = 3600 * 24 * 4; // 48 hour
 const EXPECTATION_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
@@ -52,23 +46,19 @@ const recordSettings = async (
 
 export const createSessionService = async (
   sessionId: string,
-  data: SessionCache & { fd?: FdRegistration },
+  data: SessionCache,
   loggerMeta: any,
 ) => {
   const { npType, domain, version, subscriberUrl, env, usecaseId } = data;
-
-  // FD runs on its own workbench (decision 3): no Beckn flows from the config service.
-  if (isFdDomain(domain) && fdEnabled()) {
-    return createFdSession(sessionId, data, loggerMeta);
-  }
 
   logger.info(
     `[createSessionService] userId received: ${data.userId ?? "NOT PROVIDED"}`,
     loggerMeta,
   );
 
+  // FD runs on its own workbench, which serves its flows in place of the config service.
   const flowResponse = await axios.get(
-    `${process.env.CONFIG_SERVICE as string}/ui/flow`,
+    isFdSession(domain) ? fdFlowsUrl() : `${process.env.CONFIG_SERVICE as string}/ui/flow`,
     {
       params: {
         domain: domain,
@@ -130,62 +120,6 @@ export const createSessionService = async (
     logger.error("Error creating session", loggerMeta, e);
     throw new Error("Error creating session");
   }
-};
-
-/**
- * Opens the session on the FD workbench (registering the participant with its declaration), then
- * keeps the usual session record so the rest of the website (history, reports, dashboard) sees it.
- */
-const createFdSession = async (
-  sessionId: string,
-  data: SessionCache & { fd?: FdRegistration },
-  loggerMeta: any,
-) => {
-  const body = fdSessionBody(sessionId, data);
-  const opened = await fdCall<{ session: { participant: string; role: "INVESTOR_APP" | "DEPOSIT_ISSUER" }; warning?: string }>(
-    "POST",
-    "/control/sessions",
-    body,
-  );
-  const cache: SessionCache = {
-    transactionIds: [],
-    flowMap: {},
-    npType: data.npType,
-    domain: data.domain,
-    version: data.version,
-    subscriberId: body.subscriber_id,
-    subscriberUrl: body.subscriber_url,
-    env: data.env,
-    usecaseId: data.usecaseId,
-    sessionDifficulty: {
-      sensitiveTTL: true,
-      useGateway: false,
-      stopAfterFirstNack: true,
-      protocolValidations: true,
-      timeValidations: true,
-      headerValidaton: true,
-      useGzip: false,
-    },
-    flowConfigs: {},
-    activeFlow: null,
-    activeStep: 0,
-    userId: data.userId,
-    orgId: data.orgId,
-    fd: { participant: opened.session.participant, role: opened.session.role },
-  };
-  await RedisService.setKey(sessionId, JSON.stringify(cache), SESSION_EXPIRY);
-  upsertSessionInDb(sessionId, {
-    userId: data.userId,
-    orgId: data.orgId,
-    npType: data.npType,
-    npId: body.subscriber_url,
-    usecaseId: data.usecaseId,
-    domain: data.domain,
-    version: data.version,
-    settings: cache.sessionDifficulty,
-  }).catch((e) => logger.error("DB session upsert failed", loggerMeta, e));
-  logger.info("FD session created on the FD workbench", loggerMeta, { participant: opened.session.participant });
-  return opened.warning ? `FD session created. Warning: ${opened.warning}` : "FD session created";
 };
 
 export const createSessionWithCompleteData = async (

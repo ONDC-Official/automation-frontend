@@ -7,8 +7,6 @@ export const ROUTES = {
     SCHEMA: "/schema-validation",
     SCENARIO: "/scenario",
     FLOW_TESTING: "/flow-testing",
-    /** An FD (ONDC:FIS14:FD) session: FD runs on its own workbench, not the Beckn flows. `?sessionId=` */
-    FD_SESSION: "/fd/session",
     /**
      * Read-only viewer for a session on an `ondc-mcp` engine.
      *

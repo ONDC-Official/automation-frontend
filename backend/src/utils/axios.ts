@@ -1,4 +1,5 @@
 import axios, {InternalAxiosRequestConfig} from "axios";
+import { fdHttpsAgent, isFdWorkbenchUrl } from "../services/fdWorkbenchService";
 
 // Creating an axios instance to be used for all requests.
 // This instance will be used to set up interceptors and other configurations.
@@ -35,6 +36,13 @@ const apiServiceKey = process.env.API_SERVICE_KEY as string;
 axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const url = config.url;
+        // FD runs on its own workbench, which takes its control token instead of the API key.
+        if (isFdWorkbenchUrl(url)) {
+            config.headers["x-fd-control-token"] = process.env.FD_CONTROL_TOKEN ?? "";
+            const agent = fdHttpsAgent();
+            if (agent) config.httpsAgent = agent;
+            return config;
+        }
         const apiKey = apiKeyStore.find((key) => url?.startsWith(key));
         if (apiKey) {
             const token = apiServiceKey;
